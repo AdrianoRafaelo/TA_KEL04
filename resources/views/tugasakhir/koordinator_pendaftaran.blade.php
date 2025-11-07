@@ -20,9 +20,9 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="kp-tabs d-flex flex-wrap gap-2">
-                <a href="{{ route('pendaftaran.ta') }}" class="kp-tab">Pendaftaran Judul</a>
-                <a href="#" class="kp-tab">Mahasiswa TA</a>
-                <button class="kp-tab active">Seminar Proposal</button>
+                <a href="{{ url('/koordinator-pendaftaran') }}" class="kp-tab">Pendaftaran Judul</a>
+                <a href="{{ route('koordinator.mahasiswa.ta') }}" class="kp-tab">Mahasiswa TA</a>
+                <a href="{{ route(name: 'koordinator.sempro') }}" class="kp-tab">Seminar Proposal</a>
                 <button class="kp-tab" disabled>Seminar Hasil</button>
                 <button class="kp-tab" disabled>Sidang Akhir</button>
                 <button class="kp-tab" disabled>Unggah Skripsi</button>

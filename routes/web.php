@@ -47,7 +47,9 @@ Route::get('/seminar-proposal-mahasiswa', [TugasAkhirController::class, 'seminar
 Route::get('/seminar-hasil-mahasiswa', [TugasAkhirController::class, 'seminarHasilMahasiswa'])->name('seminar.hasil.mahasiswa')->middleware('auth.session');
 Route::get('/sidang-akhir-mahasiswa', [TugasAkhirController::class, 'sidangAkhirMahasiswa'])->name('sidang.akhir.mahasiswa')->middleware('auth.session');
 Route::get('/bimbingan-mahasiswa', [TugasAkhirController::class, 'bimbinganMahasiswa'])->name('bimbingan.mahasiswa')->middleware('auth.session');
-Route::get('/koordinator-pendaftaran', [TugasAkhirController::class, 'koordinatorpendaftaran'])->name('koordinator.pendaftaran')->middleware('auth.session');
+Route::get('/koordinator-pendaftaran', [TugasAkhirController::class, 'koordinatorPendaftaran'])->name('koordinator.pendaftaran')->middleware('auth.session');
+Route::get('/koordinator-mahasiswa-ta', [TugasAkhirController::class, 'koordinatorMahasiswaTa'])->name('koordinator.mahasiswa.ta')->middleware('auth.session');
+Route::get('/koordinator-sempro', [TugasAkhirController::class, 'koordinatorSempro'])->name('koordinator.sempro')->middleware('auth.session');
 
 
 

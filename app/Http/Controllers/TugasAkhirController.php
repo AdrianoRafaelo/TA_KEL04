@@ -219,7 +219,7 @@ class TugasAkhirController extends Controller
     {
         return view('tugasakhir.bimbingan_mahasiswa');
     }
-    public function koordinatorpendaftaran()
+    public function koordinatorPendaftaran()
     {
         // Fetch judul dari dosen (Batch I)
         $judul_dosen = TaPendaftaran::where('active', 1)->whereNotNull('dosen')->get();
@@ -229,4 +229,16 @@ class TugasAkhirController extends Controller
 
         return view('tugasakhir.koordinator_pendaftaran', compact('judul_dosen', 'judul_mahasiswa'));
     }
+
+    public function koordinatorMahasiswaTa()
+    {
+        return view('tugasakhir.koordinator_mahasiswa_ta');
+    }
+
+
+    public function koordinatorSempro()
+    {
+        return view('tugasakhir.koordinator_sempro');
+    }
+
 }
