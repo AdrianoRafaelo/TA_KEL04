@@ -47,6 +47,7 @@ Route::get('/seminar-proposal-mahasiswa', [TugasAkhirController::class, 'seminar
 Route::get('/seminar-hasil-mahasiswa', [TugasAkhirController::class, 'seminarHasilMahasiswa'])->name('seminar.hasil.mahasiswa')->middleware('auth.session');
 Route::get('/sidang-akhir-mahasiswa', [TugasAkhirController::class, 'sidangAkhirMahasiswa'])->name('sidang.akhir.mahasiswa')->middleware('auth.session');
 Route::get('/bimbingan-mahasiswa', [TugasAkhirController::class, 'bimbinganMahasiswa'])->name('bimbingan.mahasiswa')->middleware('auth.session');
+Route::get('/koordinator-pendaftaran', [TugasAkhirController::class, 'koordinatorpendaftaran'])->name('koordinator.pendaftaran')->middleware('auth.session');
 
 
 
@@ -66,3 +67,7 @@ Route::get('/pengumuman/{pengumuman}', [PengumumanController::class, 'show'])->n
 Route::get('/pengumuman/{pengumuman}/edit', [PengumumanController::class, 'edit'])->name('pengumuman.edit')->middleware('auth.session');
 Route::put('/pengumuman/{pengumuman}', [PengumumanController::class, 'update'])->name('pengumuman.update')->middleware('auth.session');
 Route::delete('/pengumuman/{pengumuman}', [PengumumanController::class, 'destroy'])->name('pengumuman.destroy')->middleware('auth.session');
+
+
+Route::get('/ta/pendaftaran', [TaController::class, 'pendaftaran'])->name('pendaftaran.ta');
+Route::get('/ta/seminar-proposal', [TaController::class, 'seminarProposal'])->name('seminar.proposal');
