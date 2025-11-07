@@ -13,7 +13,7 @@
     </nav>
     <h4 class="mb-2">Kerja Praktik</h4>
   </div>
-</div>
+</div>    
 
 <div class="row mb-3">
   <div class="col-12">

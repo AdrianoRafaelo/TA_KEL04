@@ -108,7 +108,7 @@ class TugasAkhirController extends Controller
         $status_pendaftaran_sendiri = $username ? TaPendaftaran::with('status')->where('active', 1)->where('created_by', $username)->whereNull('dosen')->get() : collect();
 
         // Tampilkan status pendaftaran mahasiswa yang mengambil tawaran dosen
-        $status_pendaftaran_tawaran = $username ? TaPendaftaranTransaksi::with(['pendaftaran', 'status'])->where('active', 1)->where('username', $username)->whereHas('pendaftaran', function($q) {
+        $status_pendaftaran_tawaran = $username ? TaPendaftaranTransaksi::with(['pendaftaran', 'status'])->where('active', 1)->where('username', $username)->whereHas('pendaftaran', function ($q) {
             $q->whereNotNull('dosen');
         })->get() : collect();
 
@@ -124,7 +124,7 @@ class TugasAkhirController extends Controller
         $judul_mahasiswa = TaPendaftaran::with('transaksi')->where('active', 1)->whereNull('dosen')->get();
 
         // Tampilkan mahasiswa yang mendaftar (transaksi untuk tawaran dosen yang diambil mahasiswa)
-        $mahasiswa_mendaftar = TaPendaftaranTransaksi::with('pendaftaran')->where('active', 1)->whereHas('pendaftaran', function($q) {
+        $mahasiswa_mendaftar = TaPendaftaranTransaksi::with('pendaftaran')->where('active', 1)->whereHas('pendaftaran', function ($q) {
             $q->whereNotNull('dosen');
         })->get();
 
@@ -198,5 +198,25 @@ class TugasAkhirController extends Controller
     public function seminarProposal()
     {
         return view('tugasakhir.seminar_proposal');
+    }
+
+    public function seminarProposalMahasiswa()
+    {
+        return view('tugasakhir.sempro_mahasiswa');
+    }
+
+    public function seminarHasilMahasiswa()
+    {
+        return view('tugasakhir.semhas_mahasiswa');
+    }
+
+    public function sidangAkhirMahasiswa()
+    {
+        return view('tugasakhir.sidang_akhir_mahasiswa');
+    }
+
+    public function bimbinganMahasiswa()
+    {
+        return view('tugasakhir.bimbingan_mahasiswa');
     }
 }

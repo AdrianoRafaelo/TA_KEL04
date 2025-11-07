@@ -43,6 +43,11 @@ Route::post('/ta/store', [TugasAkhirController::class, 'store'])->middleware('au
 Route::post('/ta/store-transaksi', [TugasAkhirController::class, 'storeTransaksi'])->middleware('auth.session');
 Route::post('/ta/terima-transaksi/{id}', [TugasAkhirController::class, 'terimaTransaksi'])->name('ta.terimaTransaksi')->middleware('auth.session');
 Route::get('/seminar-proposal', [TugasAkhirController::class, 'seminarProposal'])->name('seminar.proposal')->middleware('auth.session');
+Route::get('/seminar-proposal-mahasiswa', [TugasAkhirController::class, 'seminarProposalMahasiswa'])->name('seminar.proposal.mahasiswa')->middleware('auth.session');
+Route::get('/seminar-hasil-mahasiswa', [TugasAkhirController::class, 'seminarHasilMahasiswa'])->name('seminar.hasil.mahasiswa')->middleware('auth.session');
+Route::get('/sidang-akhir-mahasiswa', [TugasAkhirController::class, 'sidangAkhirMahasiswa'])->name('sidang.akhir.mahasiswa')->middleware('auth.session');
+Route::get('/bimbingan-mahasiswa', [TugasAkhirController::class, 'bimbinganMahasiswa'])->name('bimbingan.mahasiswa')->middleware('auth.session');
+
 
 
 Route::get('/admin/roles', [FtiRoleController::class, 'index'])->name('admin.fti_roles.index')->middleware('auth.session');

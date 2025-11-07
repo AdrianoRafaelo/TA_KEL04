@@ -17,14 +17,15 @@
 <div class="row mb-3">
   <div class="col-12">
     <div class="kp-tabs">
-      <button class="kp-tab active">Pendaftaran TA</button>
-      <button class="kp-tab" disabled>Seminar Proposal</button>
-      <button class="kp-tab" disabled>Seminar Hasil</button>
-      <button class="kp-tab" disabled>Sidang Akhir</button>
-      <button class="kp-tab" disabled>Bimbingan</button>
+      <a href="{{ url('/pendaftaran-ta') }}" class="kp-tab active">Pendaftaran TA</a>
+      <a href="{{ route('seminar.proposal.mahasiswa') }}" class="kp-tab ">Seminar Proposal</a>
+      <a href="{{ route('seminar.hasil.mahasiswa') }}" class="kp-tab ">Seminar Hasil</a>
+      <a href="{{ route('sidang.akhir.mahasiswa') }}" class="kp-tab ">Sidang Akhir</a>
+      <a href="{{ route('bimbingan.mahasiswa') }}" class="kp-tab ">Bimbingan</a>
     </div>
   </div>
 </div>
+
 
 <div class="row mb-3">
   <div class="col-12">
