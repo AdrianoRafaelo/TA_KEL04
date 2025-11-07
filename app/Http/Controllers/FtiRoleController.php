@@ -10,7 +10,7 @@ class FtiRoleController extends Controller
 {
     public function index()
     {
-        $datas = FtiData::with('role')->get();
+        $datas = FtiData::with('role')->paginate(25);
         $roles = Role::whereIn('name', ['Dosen', 'Koordinator', 'Mahasiswa'])->get();
         return view('admin.fti_roles.index', compact('datas', 'roles'));
     }
