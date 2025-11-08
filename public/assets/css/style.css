@@ -21152,7 +21152,7 @@ body.light-mode .table,
 body.light-mode .dropdown-menu,
 body.light-mode .form-control,
 body.light-mode .input-group-text {
-  background: #fff !important;
+  background: #f0f0f0 !important;
   color: #222 !important;
 }
 

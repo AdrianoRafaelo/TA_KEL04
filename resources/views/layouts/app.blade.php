@@ -26,6 +26,7 @@
   <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}">
   <!-- End layout styles -->
   <link rel="shortcut icon" href="{{ asset('assets/images/favicon.png') }}" />
+  <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
 <body class="light-mode">
@@ -67,6 +68,9 @@
   <script src="{{ asset('assets/js/settings.js') }}"></script>
   <script src="{{ asset('assets/js/todolist.js') }}"></script>
   <script src="{{ asset('assets/js/dashboard.js') }}"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  @yield('scripts')
 </body>
 
 </html>

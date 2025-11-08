@@ -219,10 +219,48 @@ class TugasAkhirController extends Controller
     {
         return view('tugasakhir.bimbingan_mahasiswa');
     }
+
+    public function terimaJudulBatch1(Request $request)
+    {
+        $ids = $request->input('ids');
+        foreach ($ids as $id) {
+            $pendaftaran = TaPendaftaran::find($id);
+            if ($pendaftaran) {
+                $statusDisetujui = \App\Models\RefStatusTa::where('name', 'disetujui')->first();
+                if ($statusDisetujui) {
+                    $pendaftaran->status_id = $statusDisetujui->id;
+                    $pendaftaran->save();
+                }
+            }
+        }
+        return response()->json(['message' => 'Judul Batch I berhasil diterima']);
+    }
+
+    public function terimaJudulBatch2(Request $request)
+    {
+        $ids = $request->input('ids');
+        foreach ($ids as $id) {
+            $pendaftaran = TaPendaftaran::find($id);
+            if ($pendaftaran) {
+                $statusDisetujui = \App\Models\RefStatusTa::where('name', 'disetujui')->first();
+                if ($statusDisetujui) {
+                    $pendaftaran->status_id = $statusDisetujui->id;
+                    $pendaftaran->save();
+                }
+            }
+        }
+        return response()->json(['message' => 'Judul Batch II berhasil diterima']);
+    }
+
     public function koordinatorPendaftaran()
     {
-        // Fetch judul dari dosen (Batch I)
-        $judul_dosen = TaPendaftaran::where('active', 1)->whereNotNull('dosen')->get();
+        // Fetch judul dari dosen (Batch I) dengan mahasiswa tertarik
+        $judul_dosen = TaPendaftaran::where('active', 1)->whereNotNull('dosen')->with(['transaksi' => function($q) {
+            $q->where('active', 1);
+        }])->get()->map(function($jd) {
+            $jd->interested_students = $jd->transaksi->pluck('username')->toArray();
+            return $jd;
+        });
 
         // Fetch judul dari mahasiswa (Batch II)
         $judul_mahasiswa = TaPendaftaran::with('transaksi')->where('active', 1)->whereNull('dosen')->get();
@@ -232,7 +270,10 @@ class TugasAkhirController extends Controller
 
     public function koordinatorMahasiswaTa()
     {
-        return view('tugasakhir.koordinator_mahasiswa_ta');
+        $statusDisetujui = \App\Models\RefStatusTa::where('name', 'disetujui')->first();
+        $accepted_titles = TaPendaftaran::where('status_id', $statusDisetujui->id)->with('transaksi')->get();
+
+        return view('tugasakhir.koordinator_mahasiswa_ta', compact('accepted_titles'));
     }
 
 

@@ -48,6 +48,8 @@ Route::get('/seminar-hasil-mahasiswa', [TugasAkhirController::class, 'seminarHas
 Route::get('/sidang-akhir-mahasiswa', [TugasAkhirController::class, 'sidangAkhirMahasiswa'])->name('sidang.akhir.mahasiswa')->middleware('auth.session');
 Route::get('/bimbingan-mahasiswa', [TugasAkhirController::class, 'bimbinganMahasiswa'])->name('bimbingan.mahasiswa')->middleware('auth.session');
 Route::get('/koordinator-pendaftaran', [TugasAkhirController::class, 'koordinatorPendaftaran'])->name('koordinator.pendaftaran')->middleware('auth.session');
+Route::post('/koordinator/terima-judul-batch1', [TugasAkhirController::class, 'terimaJudulBatch1'])->name('koordinator.terima.judul.batch1')->middleware('auth.session');
+Route::post('/koordinator/terima-judul-batch2', [TugasAkhirController::class, 'terimaJudulBatch2'])->name('koordinator.terima.judul.batch2')->middleware('auth.session');
 Route::get('/koordinator-mahasiswa-ta', [TugasAkhirController::class, 'koordinatorMahasiswaTa'])->name('koordinator.mahasiswa.ta')->middleware('auth.session');
 Route::get('/koordinator-sempro', [TugasAkhirController::class, 'koordinatorSempro'])->name('koordinator.sempro')->middleware('auth.session');
 
@@ -71,5 +73,5 @@ Route::put('/pengumuman/{pengumuman}', [PengumumanController::class, 'update'])-
 Route::delete('/pengumuman/{pengumuman}', [PengumumanController::class, 'destroy'])->name('pengumuman.destroy')->middleware('auth.session');
 
 
-Route::get('/ta/pendaftaran', [TaController::class, 'pendaftaran'])->name('pendaftaran.ta');
-Route::get('/ta/seminar-proposal', [TaController::class, 'seminarProposal'])->name('seminar.proposal');
+Route::get('/ta/pendaftaran', [TugasAkhirController::class, 'pendaftaran'])->name('pendaftaran.ta');
+Route::get('/ta/seminar-proposal', [TugasAkhirController::class, 'seminarProposal'])->name('seminar.proposal');
