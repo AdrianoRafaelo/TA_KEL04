@@ -21,7 +21,7 @@
     <div class="kp-tabs">
       <a href="{{ url('/kerja-praktik') }}" class="kp-tab">Informasi Umum</a>
       <a href="{{ url('/pendaftaran-kp') }}" class="kp-tab active">Pendaftaran KP</a>
-      <button class="kp-tab" disabled>Pelaksanaan KP</button>
+      <a href="{{ url('/kerja-praktik-mahasiswa-pelaksanaan') }}" class="kp-tab">Pelaksanaan KP</a>
       <button class="kp-tab" disabled>Seminar KP</button>
     </div>
   </div>
@@ -36,12 +36,19 @@
           <form method="POST" action="{{ route('pendaftaran-kp.permohonan') }}">
             @csrf
             <div class="form-group">
-              <label>Nama Perusahaan</label>
-              <input type="text" name="nama_perusahaan" class="form-control" placeholder="Ketik nama perusahaan" required>
+              <label>Pilih Perusahaan</label>
+              <select name="perusahaan_id" class="form-control" id="perusahaan_select" required>
+                <option value="">Pilih Perusahaan</option>
+                @if(isset($perusahaans))
+                  @foreach($perusahaans as $perusahaan)
+                    <option value="{{ $perusahaan->id }}" data-alamat="{{ $perusahaan->alamat }}">{{ $perusahaan->nama_perusahaan }}</option>
+                  @endforeach
+                @endif
+              </select>
             </div>
             <div class="form-group">
               <label>Alamat Perusahaan</label>
-              <input type="text" name="alamat_perusahaan" class="form-control" placeholder="Ketik alamat perusahaan" required>
+              <input type="text" name="alamat_perusahaan" id="alamat_perusahaan" class="form-control" placeholder="Alamat akan terisi otomatis" readonly required>
             </div>
             <div class="form-group">
               <label>Waktu Awal KP</label>
@@ -68,11 +75,11 @@
             @csrf
             <div class="form-group">
               <label>Perusahaan KP</label>
-              <select name="company_id" class="form-control" required>
+              <select name="perusahaan_id" class="form-control" required>
                 <option value="">Pilih Perusahaan KP</option>
-                @if(isset($permohonan_requests))
-                  @foreach($permohonan_requests as $request)
-                    <option value="{{ $request->company_id }}">{{ $request->company->nama_perusahaan ?? 'N/A' }}</option>
+                @if(isset($perusahaans))
+                  @foreach($perusahaans as $perusahaan)
+                    <option value="{{ $perusahaan->id }}">{{ $perusahaan->nama_perusahaan }}</option>
                   @endforeach
                 @endif
               </select>
@@ -131,4 +138,16 @@
     </div>
   </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+$(document).ready(function() {
+    $('#perusahaan_select').on('change', function() {
+        const selectedOption = $(this).find('option:selected');
+        const alamat = selectedOption.data('alamat') || '';
+        $('#alamat_perusahaan').val(alamat);
+    });
+});
+</script>
 @endsection

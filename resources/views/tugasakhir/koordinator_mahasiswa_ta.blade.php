@@ -25,9 +25,9 @@
                 <a href="{{ url('/koordinator-pendaftaran') }}" class="kp-tab">Pendaftaran Judul</a>
                 <a href="{{ route('koordinator.mahasiswa.ta') }}" class="kp-tab active">Mahasiswa TA</a>
                 <a href="{{ route('koordinator.sempro') }}" class="kp-tab">Seminar Proposal</a>
-                <button class="kp-tab" disabled>Seminar Hasil</button>
-                <button class="kp-tab" disabled>Sidang Akhir</button>
-                <button class="kp-tab" disabled>Unggah Skripsi</button>
+                <a href="{{ route('koordinator.semhas') }}" class="kp-tab">Seminar Hasil</a>
+                <a href="{{ route('koordinator.sidang') }}" class="kp-tab">Sidang Akhir</a>
+                <a href="{{ url('/koordinator-skripsi') }}" class="kp-tab">Unggah Skripsi</a>
             </div>
         </div>
     </div>
@@ -41,77 +41,76 @@
         </div>
     </div>
 
-    <!-- Table -->
-    <div class="table-responsive bg-white shadow-sm rounded p-3">
-        <table class="table align-middle mb-0">
-            <thead style="background-color:#f8f9fa; color:#555; font-size:12px; text-transform:uppercase; border-bottom: 2px solid #b3743b;">
-                <tr>
-                    <th style="width: 40px;">No.</th>
-                    <th style="width: 150px;">Mahasiswa</th>
-                    <th style="width: 420px;">Judul</th>
-                    <th style="width: 120px;">Pembimbing</th>
-                    <th style="width: 130px;">Pengulas I</th>
-                    <th style="width: 130px;">Pengulas II</th>
-                </tr>
-            </thead>
-            <tbody style="font-size:14px; color:#111;">
-                @foreach($accepted_titles as $index => $title)
-                <tr class="hover-row">
-                    <td>{{ $loop->iteration }}.</td>
-                    <td class="fw-semibold">{{ $title->created_by }}</td>
-                    <td>{{ $title->judul }}</td>
+    <!-- Form untuk menyimpan data -->
+    <form method="POST" action="{{ route('koordinator.save.mahasiswa.ta') }}">
+        @csrf
+        <!-- Table -->
+        <div class="table-responsive bg-white shadow-sm rounded p-3">
+            <table class="table align-middle mb-0">
+                <thead style="background-color:#f8f9fa; color:#555; font-size:12px; text-transform:uppercase; border-bottom: 2px solid #b3743b;">
+                    <tr>
+                        <th style="width: 40px;">No.</th>
+                        <th style="width: 150px;">Mahasiswa</th>
+                        <th style="width: 420px;">Judul</th>
+                        <th style="width: 120px;">Pembimbing</th>
+                        <th style="width: 130px;">Pengulas I</th>
+                        <th style="width: 130px;">Pengulas II</th>
+                    </tr>
+                </thead>
+                <tbody style="font-size:14px; color:#111;">
+                    @foreach($accepted_titles as $index => $title)
+                    <tr class="hover-row">
+                        <td>{{ $loop->iteration }}.</td>
+                        <td class="fw-semibold">{{ $title->nama }} @if($title->nim) ({{ $title->nim }}) @endif</td>
+                        <td>{{ $title->judul }}</td>
 
-                    <!-- Pembimbing -->
-                    <td>
-                        @if($title->pembimbing)
-                            <span>{{ $title->pembimbing }}</span>
-                        @else
-                            <select class="form-select form-select-sm">
+                        <!-- Pembimbing -->
+                        <td>
+                            <input type="hidden" name="titles[{{ $title->id }}][id]" value="{{ $title->id }}">
+                            <select class="form-select form-select-sm" name="titles[{{ $title->id }}][pembimbing]">
                                 <option value="">Pilih Dosen</option>
-                                <option>ISW</option>
-                                <option>SHT</option>
-                                <option>ANA</option>
+                                @foreach($lecturers as $lecturer)
+                                    <option value="{{ $lecturer->nama }}" {{ $title->mahasiswaTugasAkhir ? ($title->mahasiswaTugasAkhir->pembimbing == $lecturer->nama ? 'selected' : '') : '' }}>
+                                        {{ $lecturer->nama }}
+                                    </option>
+                                @endforeach
                             </select>
-                        @endif
-                    </td>
+                        </td>
 
-                    <!-- Pengulas I -->
-                    <td>
-                        @if($title->pengulas1)
-                            <span>{{ $title->pengulas1 }}</span>
-                        @else
-                            <select class="form-select form-select-sm">
+                        <!-- Pengulas I -->
+                        <td>
+                            <select class="form-select form-select-sm" name="titles[{{ $title->id }}][pengulas1]">
                                 <option value="">Pilih Dosen</option>
-                                <option>HSS</option>
-                                <option>JBJ</option>
-                                <option>ANA</option>
+                                @foreach($lecturers as $lecturer)
+                                    <option value="{{ $lecturer->nama }}" {{ $title->mahasiswaTugasAkhir ? ($title->mahasiswaTugasAkhir->pengulas_1 == $lecturer->nama ? 'selected' : '') : '' }}>
+                                        {{ $lecturer->nama }}
+                                    </option>
+                                @endforeach
                             </select>
-                        @endif
-                    </td>
+                        </td>
 
-                    <!-- Pengulas II -->
-                    <td>
-                        @if($title->pengulas2)
-                            <span>{{ $title->pengulas2 }}</span>
-                        @else
-                            <select class="form-select form-select-sm">
+                        <!-- Pengulas II -->
+                        <td>
+                            <select class="form-select form-select-sm" name="titles[{{ $title->id }}][pengulas2]">
                                 <option value="">Pilih Dosen</option>
-                                <option>SAM</option>
-                                <option>WMS</option>
-                                <option>NSS</option>
+                                @foreach($lecturers as $lecturer)
+                                    <option value="{{ $lecturer->nama }}" {{ $title->mahasiswaTugasAkhir ? ($title->mahasiswaTugasAkhir->pengulas_2 == $lecturer->nama ? 'selected' : '') : '' }}>
+                                        {{ $lecturer->nama }}
+                                    </option>
+                                @endforeach
                             </select>
-                        @endif
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
 
-    <!-- Footer -->
-    <div class="d-flex justify-content-end mt-3">
-        <button class="btn btn-success">Simpan</button>
-    </div>
+        <!-- Footer -->
+        <div class="d-flex justify-content-end mt-3">
+            <button type="submit" class="btn btn-success">Simpan</button>
+        </div>
+    </form>
 </div>
 
 <!-- Tambahan CSS -->

@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Models\UserRole;
 use App\Models\Pengumuman;
 use App\Models\FtiData;
+use App\Models\User;
 
 class LoginController extends Controller
 {
@@ -38,6 +39,44 @@ class LoginController extends Controller
 
             \Log::info('Login Success - Username: ' . $request->username . ', Role: Admin');
             return redirect()->route('welcome');
+        }
+
+        // 🔹 DEVELOPMENT MODE: Skip API untuk environment local
+        if (env('APP_ENV') === 'local') {
+            // Cari role dari fti_datas berdasarkan username
+            $ftiData = FtiData::where('username', $request->username)->first();
+
+            if ($ftiData && $ftiData->role_id) {
+                $role = Role::find($ftiData->role_id);
+                $roleName = $role ? $role->name : 'Mahasiswa';
+            } else {
+                // Default role untuk development
+                $roleName = 'Mahasiswa';
+            }
+
+            // Set session untuk development
+            $request->session()->put('api_token', 'dev_token_' . $request->username);
+            $request->session()->put('username', $request->username);
+            $request->session()->put('role', $roleName);
+            $request->session()->put('user', [
+                'id' => null,
+                'username' => $request->username,
+                'nama' => $request->username, // Gunakan username sebagai nama
+                'role' => $roleName
+            ]);
+
+            \Log::info('Login Success (Development) - Username: ' . $request->username . ', Role: ' . $roleName);
+
+            // Arahkan berdasarkan role
+            if (strtolower($roleName) === 'dosen') {
+                return redirect()->route('dosen.home');
+            } elseif (strtolower($roleName) === 'mahasiswa') {
+                return redirect()->route('mahasiswa.home');
+            } elseif (strtolower($roleName) === 'koordinator') {
+                return redirect()->route('welcome');
+            } else {
+                return redirect()->route('welcome');
+            }
         }
 
         try {
@@ -93,12 +132,29 @@ class LoginController extends Controller
                 }
             }
 
+            // 🔹 Simpan data ke tabel users
+            $userId = $data['user']['user_id'] ?? null;
+            $nim = $data['user']['nim'] ?? $request->username; // Gunakan username sebagai fallback jika nim tidak ada
+            $email = $data['user']['email'] ?? null;
+
+            User::updateOrCreate(
+                ['nim' => $nim], // Cari berdasarkan nim
+                [
+                    'name' => $nama,
+                    'email' => $email,
+                    'password' => bcrypt('password'), // Default password
+                    'created_by' => $request->username,
+                    'updated_by' => $request->username,
+                    'active' => '1', // Default active
+                ]
+            );
+
             // 🔹 Simpan sesi
             $request->session()->put('api_token', $token);
             $request->session()->put('username', $request->username);
             $request->session()->put('role', $roleName);
             $request->session()->put('user', [
-                'id' => $data['user']['user_id'] ?? null,
+                'id' => $userId,
                 'username' => $request->username,
                 'nama' => $nama,
                 'role' => $roleName

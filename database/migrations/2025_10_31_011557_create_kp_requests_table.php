@@ -16,7 +16,7 @@ return new class extends Migration
             $table->enum('type', ['permohonan', 'pengantar']);
             $table->unsignedBigInteger('company_id');
             $table->unsignedBigInteger('supervisor_id')->nullable();
-            $table->unsignedBigInteger('mahasiswa_id');
+            $table->string('mahasiswa_id');
             $table->string('status')->default('pending'); // pending, approved, rejected
             $table->text('notes')->nullable();
             $table->timestamps();

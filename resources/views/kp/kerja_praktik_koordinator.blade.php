@@ -1,4 +1,4 @@
-@extends('layouts.app')
+\@extends('layouts.app')
 
 @section('content')
 <div class="row mb-3">
@@ -19,7 +19,7 @@
   <div class="col-12">
     <div class="kp-tabs">
       <a href="{{ url('/kerja-praktik-koordinator') }}" class="kp-tab {{ request()->routeIs('kerja-praktik-koordinator') ? 'active' : '' }}">Mahasiswa KP</a>
-      <a href="{{ url('/kerja-praktik') }}" class="kp-tab {{ request()->routeIs('kerja-praktik.index') ? 'active' : '' }}">Pelaksanaan KP</a>
+      <a href="{{ url('/kerja-praktik-koordinator-pelaksanaan') }}" class="kp-tab {{ request()->routeIs('kerja-praktik.index') ? 'active' : '' }}">Pelaksanaan KP</a>
       <a href="{{ url('/kerja-praktik/seminar') }}" class="kp-tab {{ request()->routeIs('kerja-praktik.seminar') ? 'active' : '' }}">Seminar KP</a>
     </div>
   </div>
@@ -31,21 +31,15 @@
     <div class="d-flex overflow-auto gap-3 p-2" style="scrollbar-width: none; -ms-overflow-style: none;">
       <div class="flex-shrink-0 position-relative" style="width: 320px;">
         <img src="{{ asset('assets/images/kp-banner-1.jpg') }}" class="img-fluid rounded" alt="Banner 1">
-        <div class="position-absolute bottom-0 start-0 end-0 text-center text-white small fw-bold p-2" style="background: rgba(0,0,0,0.6); border-radius: 0 0 8px 8px;">
-          Peran Manajemen Rekayasa Dalam Peningkatan Energi Terbarukan
-        </div>
+
       </div>
       <div class="flex-shrink-0 position-relative" style="width: 320px;">
         <img src="{{ asset('assets/images/kp-banner-2.jpg') }}" class="img-fluid rounded" alt="Banner 2">
-        <div class="position-absolute bottom-0 start-0 end-0 text-center text-white small fw-bold p-2" style="background: rgba(0,0,0,0.6); border-radius: 0 0 8px 8px;">
-          Peraturan Pemerintah Melalui Gerakan Hijau
-        </div>
+
       </div>
       <div class="flex-shrink-0 position-relative" style="width: 320px;">
         <img src="{{ asset('assets/images/kp-banner-3.jpg') }}" class="img-fluid rounded" alt="Banner 3">
-        <div class="position-absolute bottom-0 start-0 end-0 text-center text-white small fw-bold p-2" style="background: rgba(0,0,0,0.6); border-radius: 0 0 8px 8px;">
-          Peran Manajemen Rekayasa Dalam Peningkatan Energi Terbarukan
-        </div>
+
       </div>
     </div>
   </div>
@@ -77,7 +71,7 @@
               <tr>
                 <td class="text-center">{{ $loop->iteration }}.</td>
                 <td>
-                  <div class="fw-bold">{{ $request->mahasiswa->name ?? 'N/A' }}</div>
+                  <div class="fw-bold">{{ $request->mahasiswa->nama ?? 'N/A' }}</div>
                   <div class="text-muted small">{{ $request->company->tahun_ajaran ?? 'N/A' }}</div>
                 </td>
                 <td>{{ $request->company->nama_perusahaan ?? 'N/A' }}</td>
@@ -152,46 +146,52 @@
               <tr>
                 <td class="text-center">{{ $loop->iteration }}.</td>
                 <td>
-                  <div class="fw-bold">{{ $request->mahasiswa->name ?? 'N/A' }}</div>
+                  <div class="fw-bold">{{ $request->mahasiswa->nama ?? 'N/A' }}</div>
                   <div class="text-muted small">{{ $request->supervisor->nama_supervisor ?? 'N/A' }}</div>
                 </td>
                 <td>{{ $request->company->nama_perusahaan ?? 'N/A' }}</td>
                 <td class="text-truncate" style="max-width: 150px;">
                   {{ $request->company->alamat_perusahaan ?? 'N/A' }}
                 </td>
-                <td>
+                <td colspan="3" class="p-2">
                   @if($request->status == 'assigned')
-                    <span>{{ $request->divisi ?? 'N/A' }}</span>
+                    <div class="row">
+                      <div class="col-md-4">
+                        <span>{{ $request->divisi ?? 'N/A' }}</span>
+                      </div>
+                      <div class="col-md-5">
+                        <span class="fw-bold">{{ $request->dosen->nama ?? 'N/A' }}</span>
+                      </div>
+                      <div class="col-md-3 text-center">
+                        <span class="badge bg-success">Disimpan</span>
+                      </div>
+                    </div>
                   @else
-                    <input type="text" name="divisi" class="form-control form-control-sm" placeholder="Masukkan divisi" required>
+                    <form method="POST" action="{{ route('kerja-praktik-koordinator.assign-dosen') }}">
+                      @csrf
+                      <input type="hidden" name="request_id" value="{{ $request->id }}">
+                      <div class="row">
+                        <div class="col-md-4">
+                          <input type="text" name="divisi" class="form-control form-control-sm" placeholder="Masukkan divisi" required>
+                        </div>
+                        <div class="col-md-5">
+                          <select name="dosen_id" class="form-select form-select-sm" required>
+                            <option value="">Pilih Dosen</option>
+                            @foreach($lecturers as $lecturer)
+                              <option value="{{ $lecturer->id }}" {{ $request->dosen_id == $lecturer->id ? 'selected' : '' }}>
+                                {{ $lecturer->nama }}
+                              </option>
+                            @endforeach
+                          </select>
+                        </div>
+                        <div class="col-md-3 text-center">
+                          <button type="submit" class="btn btn-success btn-sm rounded-pill px-3">
+                            Simpan
+                          </button>
+                        </div>
+                      </div>
+                    </form>
                   @endif
-                </td>
-
-                <!-- Dosen Pembimbing + Aksi dalam 1 form, 2 kolom -->
-                <td colspan="2" class="p-2">
-                  <form method="POST" action="{{ route('kerja-praktik-koordinator.assign-dosen') }}" class="d-flex gap-2 align-items-center">
-                    @csrf
-                    <input type="hidden" name="request_id" value="{{ $request->id }}">
-
-                    <!-- Select di kolom Dosen Pembimbing -->
-                    <div class="flex-fill" style="min-width: 150px;">
-                      <select name="dosen_id" class="form-select form-select-sm" required>
-                        <option value="">Pilih Dosen</option>
-                        @foreach($lecturers as $lecturer)
-                          <option value="{{ $lecturer->id }}" {{ $request->dosen_id == $lecturer->id ? 'selected' : '' }}>
-                            {{ $lecturer->nama }}
-                          </option>
-                        @endforeach
-                      </select>
-                    </div>
-
-                    <!-- Tombol di kolom Aksi -->
-                    <div class="text-center" style="min-width: 70px;">
-                      <button type="submit" class="btn btn-success btn-sm rounded-pill px-3">
-                        Simpan
-                      </button>
-                    </div>
-                  </form>
                 </td>
               </tr>
               @empty

@@ -192,4 +192,23 @@ class ManageRoleController extends Controller
 
         return $filteredMahasiswa->merge($filteredDosen)->values()->toArray();
     }
+
+    public function getMahasiswaData()
+    {
+        try {
+            $mahasiswaData = FtiData::where('role', 'student')
+                ->select('nama', 'username', 'nim')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $mahasiswaData
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data mahasiswa: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

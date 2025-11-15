@@ -12333,7 +12333,8 @@ a.close.disabled {
   padding: 1rem 1rem;
   border-bottom: 1px solid #2c2e33;
   border-top-left-radius: calc(0.3rem - 1px);
-  border-top-right-radius: calc(0.3rem - 1px); }
+  border-top-right-radius: calc(0.3rem - 1px);
+  background:silver; }
   .modal-header .close {
     padding: 1rem 1rem;
     margin: -25px -26px -25px auto; }
@@ -12345,7 +12346,8 @@ a.close.disabled {
 .modal-body {
   position: relative;
   flex: 1 1 auto;
-  padding: 0.9375rem; }
+  padding: 0.9375rem;
+  background: silver; }
 
 .modal-footer {
   display: flex;
@@ -21156,26 +21158,11 @@ body.light-mode .input-group-text {
   color: #222 !important;
 }
 
-/* Konten utama tetap gelap saat dark mode */
-body.dark-mode .main-panel,
-body.dark-mode .content-wrapper,
-body.dark-mode .footer,
-body.dark-mode .table,
-body.dark-mode .dropdown-menu,
-body.dark-mode .form-control,
-body.dark-mode .input-group-text {
-  background: #23272f !important;
-  color: #e0e0e0 !important;
-}
 
 /* Body background mengikuti mode */
 body.light-mode {
   background: #fff !important;
   color: #222 !important;
-}
-body.dark-mode {
-  background: #181818 !important;
-  color: #e0e0e0 !important;
 }
 
 /* ===================== */
@@ -21193,11 +21180,6 @@ body.dark-mode {
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
-body.dark-mode .kp-stepper {
-  background: #23272f;
-  color: #e0e0e0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-}
 .kp-stepper .kp-step {
   text-align: center;
   flex: 1;
@@ -21214,11 +21196,6 @@ body.dark-mode .kp-stepper {
   color: #5E50F9;
   border: 2px solid #5E50F9;
 }
-body.dark-mode .kp-stepper .kp-step .kp-circle {
-  background: #23243a;
-  color: #5E50F9;
-  border-color: #5E50F9;
-}
 .kp-stepper .kp-step.active .kp-circle {
   background: #5E50F9;
   color: #fff;
@@ -21228,9 +21205,6 @@ body.dark-mode .kp-stepper .kp-step .kp-circle {
   margin-top: 8px;
   font-size: 0.95rem;
   color: #222;
-}
-body.dark-mode .kp-stepper .kp-step .kp-label {
-  color: #e0e0e0;
 }
 .kp-stepper .kp-step:not(:last-child)::after {
   content: '';
@@ -21244,9 +21218,6 @@ body.dark-mode .kp-stepper .kp-step .kp-label {
   margin: 0 auto;
   z-index: 0;
 }
-body.dark-mode .kp-stepper .kp-step:not(:last-child)::after {
-  background: #23243a;
-}
 
 /* Card KP Action */
 .kp-action-card {
@@ -21258,11 +21229,6 @@ body.dark-mode .kp-stepper .kp-step:not(:last-child)::after {
   padding: 18px 20px;
   margin-bottom: 18px;
 }
-body.dark-mode .kp-action-card {
-  background: #23272f;
-  color: #e0e0e0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-}
 .kp-action-card .kp-icon {
   font-size: 2.2rem;
   margin-right: 18px;
@@ -21272,15 +21238,9 @@ body.dark-mode .kp-action-card {
   color: #5E50F9;
   font-size: 1.05rem;
 }
-body.dark-mode .kp-action-card .kp-title {
-  color: #b6b6ff;
-}
 .kp-action-card .kp-desc {
   color: #888;
   font-size: 0.95rem;
-}
-body.dark-mode .kp-action-card .kp-desc {
-  color: #aaa;
 }
 
 /* Banner KP */
@@ -21289,9 +21249,6 @@ body.dark-mode .kp-action-card .kp-desc {
   overflow: hidden;
   margin-bottom: 18px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-body.dark-mode .kp-banner {
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
 }
 
 /* KP Tabs */
@@ -21315,16 +21272,6 @@ body.dark-mode .kp-banner {
   background: #5E50F9;
   color: #fff;
 }
-body.dark-mode .kp-tabs .kp-tab {
-  background: #23243a;
-  color: #e0e0e0;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.18);
-}
-body.dark-mode .kp-tabs .kp-tab.active,
-body.dark-mode .kp-tabs .kp-tab:focus {
-  background: #5E50F9;
-  color: #fff;
-}
 /* KP Form Card */
 .kp-form-card {
   background: #fff;
@@ -21333,11 +21280,6 @@ body.dark-mode .kp-tabs .kp-tab:focus {
   padding: 32px 24px;
   margin-bottom: 18px;
 }
-body.dark-mode .kp-form-card {
-  background: #23272f;
-  color: #e0e0e0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-}
 .kp-form-title {
   background: #23243a;
   color: #fff;
@@ -21345,10 +21287,6 @@ body.dark-mode .kp-form-card {
   border-radius: 6px;
   font-weight: bold;
   display: inline-block;
-}
-body.dark-mode .kp-form-title {
-  background: #5E50F9;
-  color: #fff;
 }
 
 /* KP List Card */
@@ -21359,11 +21297,6 @@ body.dark-mode .kp-form-title {
   padding: 18px 20px;
   margin-bottom: 18px;
 }
-body.dark-mode .kp-list-card {
-  background: #23272f;
-  color: #e0e0e0;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.18);
-}
 .kp-list-title {
   background: #23243a;
   color: #fff;
@@ -21372,10 +21305,6 @@ body.dark-mode .kp-list-card {
   font-weight: bold;
   display: inline-block;
   box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-}
-body.dark-mode .kp-list-title {
-  background: #5E50F9;
-  color: #fff;
 }
 .kp-list-item {
   display: flex;
@@ -21400,22 +21329,11 @@ body.dark-mode .kp-list-title {
   background: #ffdddd;
   color: #d32f2f;
 }
-body.dark-mode .kp-badge-unduh {
-  background: #a88b00;
-  color: #fff;
-}
-body.dark-mode .kp-badge-hapus {
-  background: #d32f2f;
-  color: #fff;
-}
 
 /* Border left for form */
 @media (min-width: 768px) {
   .kp-form-card .border-left {
     border-left: 1.5px solid #e0e0e0;
-  }
-  body.dark-mode .kp-form-card .border-left {
-    border-left: 1.5px solid #23243a;
   }
 }
 

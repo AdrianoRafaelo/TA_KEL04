@@ -40,21 +40,6 @@
       @include('layouts.footer')
     </div>
   </div>
-  <!-- Toggle mode button -->
-  <button id="toggle-mode" class="btn btn-outline-dark ml-2">🌙</button>
-  <script>
-    document.getElementById('toggle-mode').onclick = function () {
-      if (document.body.classList.contains('dark-mode')) {
-        document.body.classList.remove('dark-mode');
-        document.body.classList.add('light-mode');
-        this.innerHTML = '🌙';
-      } else {
-        document.body.classList.remove('light-mode');
-        document.body.classList.add('dark-mode');
-        this.innerHTML = '☀️';
-      }
-    };
-  </script>
   <!-- JS vendor & custom -->
   <script src="{{ asset('assets/vendors/js/vendor.bundle.base.js') }}"></script>
   <script src="{{ asset('assets/vendors/chart.js/Chart.min.js') }}"></script>
@@ -70,6 +55,8 @@
   <script src="{{ asset('assets/js/dashboard.js') }}"></script>
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   @yield('scripts')
 </body>
 

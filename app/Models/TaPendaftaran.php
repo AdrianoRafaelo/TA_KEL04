@@ -21,4 +21,9 @@ class TaPendaftaran extends Model
     {
         return $this->belongsTo(RefStatusTa::class, 'status_id');
     }
+
+    public function mahasiswaTugasAkhir()
+    {
+        return $this->hasOne(MahasiswaTugasAkhir::class, 'judul', 'judul');
+    }
 }

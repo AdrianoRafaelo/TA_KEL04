@@ -1,6 +1,22 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $pengaturanTa = \App\Models\PengaturanTa::first();
+    $pendaftaranDitutup = false;
+    $alasanPenutupan = '';
+
+    if ($pengaturanTa) {
+        if ($pengaturanTa->pendaftaran_ditutup) {
+            $pendaftaranDitutup = true;
+            $alasanPenutupan = $pengaturanTa->pesan_penutupan ?: 'Pendaftaran ditutup oleh koordinator';
+        } elseif ($pengaturanTa->batas_waktu_pendaftaran && now()->isAfter($pengaturanTa->batas_waktu_pendaftaran)) {
+            $pendaftaranDitutup = true;
+            $alasanPenutupan = 'Batas waktu pendaftaran telah berakhir pada ' . \Carbon\Carbon::parse($pengaturanTa->batas_waktu_pendaftaran)->format('d M Y H:i');
+        }
+    }
+@endphp
+
 <div class="row mb-3">
   <div class="col-12">
     <nav aria-label="breadcrumb">
@@ -11,6 +27,14 @@
       </ol>
     </nav>
     <h4 class="mb-2">Pendaftaran TA</h4>
+
+    @if($pendaftaranDitutup)
+      <div class="alert alert-warning" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Pendaftaran TA Ditutup</strong><br>
+        {{ $alasanPenutupan }}
+      </div>
+    @endif
   </div>
 </div>
 
@@ -52,19 +76,25 @@
             @foreach($judul_dosen as $no => $jd)
             <tr>
               <td>{{ $no+1 }}</td>
-              <td>{{ $jd->dosen }}</td>
+              <td>{{ $jd->dosen_nama }}</td>
               <td>{{ $jd->judul }}</td>
               <td>{{ $jd->deskripsi }}</td>
               <td>{{ $jd->deskripsi_syarat }}</td>
             <td>
-                <button type="button" class="btn btn-primary btn-sm btn-ambil-tawaran"
-                  data-id="{{ $jd->id }}"
-                  data-dosen="{{ $jd->dosen }}"
-                  data-judul="{{ $jd->judul }}"
-                  data-deskripsi="{{ $jd->deskripsi }}"
-                  data-syarat="{{ $jd->deskripsi_syarat }}">
-                  Ambil tawaran
-                </button>
+                @if($pendaftaranDitutup)
+                  <button type="button" class="btn btn-secondary btn-sm" disabled>
+                    Pendaftaran Ditutup
+                  </button>
+                @else
+                  <button type="button" class="btn btn-primary btn-sm btn-ambil-tawaran"
+                    data-id="{{ $jd->id }}"
+                    data-dosen="{{ $jd->dosen_nama }}"
+                    data-judul="{{ $jd->judul }}"
+                    data-deskripsi="{{ $jd->deskripsi }}"
+                    data-syarat="{{ $jd->deskripsi_syarat }}">
+                    Ambil tawaran
+                  </button>
+                @endif
               </td>
             </tr>
             @endforeach
@@ -83,9 +113,10 @@
         <form method="POST" action="{{ url('/ta/store') }}" enctype="multipart/form-data">
           @csrf
           <div class="form-group">
-            <label>Judul Penelitian</label>
-            <input type="text" name="judul" class="form-control" placeholder="Ketik judul penelitian">
+              <label>Judul Penelitian</label>
+              <textarea name="judul" class="form-control" rows="3" placeholder="Ketik judul penelitian"></textarea>
           </div>
+
           <div class="form-group">
             <label>Deskripsi Judul</label>
 <textarea name="deskripsi" class="form-control" placeholder="Ketik deskripsi" rows="5" maxlength="500"></textarea>          </div>
@@ -93,7 +124,11 @@
             <label>Unggah dokumen</label>
             <input type="file" name="file" class="form-control">
           </div>
-          <button type="submit" class="btn btn-primary">Kirim</button>
+          @if($pendaftaranDitutup)
+            <button type="submit" class="btn btn-secondary" disabled>Kirim</button>
+          @else
+            <button type="submit" class="btn btn-primary">Kirim</button>
+          @endif
         </form>
       </div>
     </div>

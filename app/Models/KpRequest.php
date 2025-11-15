@@ -32,7 +32,7 @@ class KpRequest extends Model
 
     public function mahasiswa()
     {
-        return $this->belongsTo(User::class, 'mahasiswa_id');
+        return $this->belongsTo(FtiData::class, 'mahasiswa_id', 'username');
     }
 
     public function dosen()

@@ -131,18 +131,18 @@
 {{-- =======================
 BREADCRUMB
 ======================= --}}
-<div class="row mb-3">
-  <div class="col-12">
-    <nav aria-label="breadcrumb">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="#">Page</a></li>
-        <li class="breadcrumb-item"><a href="#">Tugas Akhir</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Seminar Hasil</li>
-      </ol>
-    </nav>
-    <h4 class="mb-2">Seminar Hasil</h4>
+  <div class="row mb-3">
+    <div class="col-12">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="#">Page</a></li>
+          <li class="breadcrumb-item"><a href="#">Tugas Akhir</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Seminar Hasil</li>
+        </ol>
+      </nav>
+      <h4 class="mb-2">Seminar Hasil </h4>
+    </div>
   </div>
-</div>
 
 {{-- =======================
 NAV TABS
@@ -164,14 +164,34 @@ INFORMASI MAHASISWA
   <div class="row">
     <div class="col-md-6">
       <table class="table table-borderless mb-0">
-        <tr><th>Nama/NIM</th><td>Hansel Septiyan Pasaribu / 21S20023</td></tr>
-        <tr><th>Judul Penelitian</th><td>Desain Sistem Informasi Pengelolaan Informasi dan Administrasi Program Studi Manajemen Rekayasa</td></tr>
+        <tr>
+          <th>Nama/NIM</th>
+          <td>{{ $mahasiswaTa ? $mahasiswaTa->mahasiswa : 'Data tidak ditemukan' }}</td>
+        </tr>
+        <tr>
+          <th>Judul Penelitian</th>
+          <td>{{ $mahasiswaTa ? $mahasiswaTa->judul : 'Data tidak ditemukan' }}</td>
+        </tr>
       </table>
     </div>
     <div class="col-md-6">
       <table class="table table-borderless mb-0">
-        <tr><th>Pembimbing</th><td>Josua B. W. Jawak S.T., M.Ds.</td></tr>
-        <tr><th>Pendaftaran Semhas</th><td><span class="btn btn-warning btn-sm">Diterima</span></td></tr>
+        <tr>
+          <th>Pembimbing</th>
+          <td>{{ $mahasiswaTa ? $mahasiswaTa->pembimbing : 'Data tidak ditemukan' }}</td>
+        </tr>
+        <tr>
+          <th>Pendaftaran Semhas</th>
+          <td>
+            @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->status == 'approved')
+              <span class="btn btn-success btn-sm">Diterima</span>
+            @elseif($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->status == 'rejected')
+              <span class="btn btn-danger btn-sm">Ditolak</span>
+            @else
+              <span class="btn btn-warning btn-sm">Menunggu</span>
+            @endif
+          </td>
+        </tr>
       </table>
     </div>
   </div>
@@ -186,20 +206,45 @@ KONTEN DUA KOLOM
     <div class="card">
       <div class="card-body">
         <span class="kp-list-title">Unggah Hasil</span>
-        <form>
+        <form action="{{ route('seminar.hasil.mahasiswa.store') }}" method="POST" enctype="multipart/form-data">
+          @csrf
           <div class="mb-3">
             <label class="form-label">Unggah Dokumen TA</label>
-            <input type="file" class="form-control">
+            <input type="file" class="form-control" name="file_dokumen_ta" accept=".pdf,.doc,.docx">
+            @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->file_dokumen_ta)
+              <small class="text-success d-block mt-1">
+                <i class="bi bi-check-circle"></i>
+                <button class="btn btn-sm btn-outline-success view-file-btn ms-1" data-file-url="{{ route('storage.file', ['path' => $mahasiswaTa->seminarHasil->file_dokumen_ta]) }}" data-file-name="Dokumen TA">
+                  <i class="bi bi-eye"></i> Lihat
+                </button>
+              </small>
+            @endif
           </div>
           <div class="mb-3">
             <label class="form-label">Unggah Log-Activity</label>
-            <input type="file" class="form-control">
+            <input type="file" class="form-control" name="file_log_activity" accept=".pdf,.doc,.docx">
+            @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->file_log_activity)
+              <small class="text-success d-block mt-1">
+                <i class="bi bi-check-circle"></i>
+                <button class="btn btn-sm btn-outline-success view-file-btn ms-1" data-file-url="{{ route('storage.file', ['path' => $mahasiswaTa->seminarHasil->file_log_activity]) }}" data-file-name="Log Activity">
+                  <i class="bi bi-eye"></i> Lihat
+                </button>
+              </small>
+            @endif
           </div>
           <div class="mb-3">
             <label class="form-label">Unggah Form Persetujuan</label>
-            <input type="file" class="form-control">
+            <input type="file" class="form-control" name="file_persetujuan" accept=".pdf,.doc,.docx">
+            @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->file_persetujuan)
+              <small class="text-success d-block mt-1">
+                <i class="bi bi-check-circle"></i>
+                <button class="btn btn-sm btn-outline-success view-file-btn ms-1" data-file-url="{{ route('storage.file', ['path' => $mahasiswaTa->seminarHasil->file_persetujuan]) }}" data-file-name="Form Persetujuan">
+                  <i class="bi bi-eye"></i> Lihat
+                </button>
+              </small>
+            @endif
           </div>
-          <button class="btn btn-warning">Daftar</button>
+          <button type="submit" class="btn btn-warning">Daftar</button>
         </form>
       </div>
     </div>
@@ -209,13 +254,34 @@ KONTEN DUA KOLOM
         <span class="kp-list-title">Informasi Seminar</span>
         <ul class="list-group list-group-flush">
           <li class="list-group-item d-flex justify-content-between align-items-center">
-            Unduh Jadwal <a href="#" class="text-primary">.pdf</a>
+            <span>Unduh Jadwal</span>
+            @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->jadwal_seminar_file)
+              <button class="btn btn-sm btn-outline-primary view-file-btn" data-file-url="{{ route('storage.file', ['path' => $mahasiswaTa->seminarHasil->jadwal_seminar_file]) }}" data-file-name="Jadwal Seminar">
+                <i class="bi bi-file-pdf"></i> Lihat
+              </button>
+            @else
+              <span class="text-muted">Belum tersedia</span>
+            @endif
           </li>
           <li class="list-group-item d-flex justify-content-between align-items-center">
-            Rubrik Penilaian <a href="#" class="text-primary">.pdf</a>
+            <span>Rubrik Penilaian</span>
+            @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->rubrik_penilaian)
+              <button class="btn btn-sm btn-outline-primary view-file-btn" data-file-url="{{ route('storage.file', ['path' => $mahasiswaTa->seminarHasil->rubrik_penilaian]) }}" data-file-name="Rubrik Penilaian">
+                <i class="bi bi-file-pdf"></i> Lihat
+              </button>
+            @else
+              <span class="text-muted">Belum tersedia</span>
+            @endif
           </li>
           <li class="list-group-item d-flex justify-content-between align-items-center">
-            Form Review <a href="#" class="text-primary">.pdf</a>
+            <span>Form Review</span>
+            @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->form_review)
+              <button class="btn btn-sm btn-outline-primary view-file-btn" data-file-url="{{ route('storage.file', ['path' => $mahasiswaTa->seminarHasil->form_review]) }}" data-file-name="Form Review">
+                <i class="bi bi-file-pdf"></i> Lihat
+              </button>
+            @else
+              <span class="text-muted">Belum tersedia</span>
+            @endif
           </li>
         </ul>
       </div>
@@ -227,19 +293,91 @@ KONTEN DUA KOLOM
     <div class="card">
       <div class="card-body">
         <span class="kp-list-title">Unggah Perbaikan</span>
-        <form>
+        <form action="{{ route('seminar.hasil.mahasiswa.upload.revisi') }}" method="POST" enctype="multipart/form-data">
+          @csrf
           <div class="mb-3">
             <label class="form-label">Unggah Poin Perbaikan</label>
-            <input type="file" class="form-control">
+            <input type="file" class="form-control" name="form_revisi" required>
+            @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->form_revisi)
+              <small class="text-success d-block mt-1">
+                <i class="bi bi-check-circle"></i>
+                <button class="btn btn-sm btn-outline-success view-file-btn ms-1" data-file-url="{{ route('storage.file', ['path' => $mahasiswaTa->seminarHasil->form_revisi]) }}" data-file-name="Form Revisi">
+                  <i class="bi bi-eye"></i> Lihat
+                </button>
+              </small>
+            @endif
           </div>
           <div class="mb-3">
             <label class="form-label">Unggah Dokumen Perbaikan</label>
-            <input type="file" class="form-control">
+            <input type="file" class="form-control" name="revisi_dokumen" required>
+            @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->revisi_dokumen)
+              <small class="text-success d-block mt-1">
+                <i class="bi bi-check-circle"></i>
+                <button class="btn btn-sm btn-outline-success view-file-btn ms-1" data-file-url="{{ route('storage.file', ['path' => $mahasiswaTa->seminarHasil->revisi_dokumen]) }}" data-file-name="Dokumen Revisi">
+                  <i class="bi bi-eye"></i> Lihat
+                </button>
+              </small>
+            @endif
           </div>
-          <button class="btn btn-warning">Kirim</button>
+          <button type="submit" class="btn btn-warning">Kirim</button>
         </form>
       </div>
     </div>
   </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+$(document).ready(function() {
+$('.view-file-btn').click(function(e) {
+  e.preventDefault();
+  const fileUrl = $(this).data('file-url');
+  const fileName = $(this).data('file-name');
+
+  const modalHtml = '<div class="modal fade" id="filePreviewModal" tabindex="-1" role="dialog" aria-labelledby="filePreviewLabel" aria-hidden="true">' +
+    '<div class="modal-dialog modal-lg" role="document">' +
+    '<div class="modal-content">' +
+    '<div class="modal-header">' +
+    '<h5 class="modal-title" id="filePreviewLabel">' + fileName + '</h5>' +
+    '<button type="button" class="close" data-dismiss="modal" aria-label="Close">' +
+    '<span aria-hidden="true">&times;</span>' +
+    '</button>' +
+    '</div>' +
+    '<div class="modal-body" style="min-height: 600px;">' +
+    '<iframe src="' + fileUrl + '#toolbar=0" style="width: 100%; height: 600px; border: none;"></iframe>' +
+    '</div>' +
+    '<div class="modal-footer">' +
+    '<a href="' + fileUrl + '" download class="btn btn-primary">' +
+    '<i class="bi bi-download"></i> Unduh' +
+    '</a>' +
+    '<button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>' +
+    '</div>' +
+    '</div>' +
+    '</div>' +
+    '</div>';
+
+  const $modal = $(modalHtml);
+  $('body').append($modal);
+  $modal.modal('show');
+
+  // Handle close button click
+  $modal.find('.close, .btn-secondary').click(function() {
+    $modal.modal('hide');
+  });
+
+  // Handle modal hidden event
+  $modal.on('hidden.bs.modal', function() {
+    $modal.remove();
+  });
+
+  // Handle click outside modal
+  $modal.click(function(e) {
+    if (e.target === this) {
+      $modal.modal('hide');
+    }
+  });
+});
+});
+</script>
 @endsection

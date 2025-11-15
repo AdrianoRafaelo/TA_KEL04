@@ -2,6 +2,21 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    $pengaturanTa = \App\Models\PengaturanTa::first();
+    $pendaftaranDitutup = false;
+    $alasanPenutupan = '';
+
+    if ($pengaturanTa) {
+        if ($pengaturanTa->pendaftaran_ditutup) {
+            $pendaftaranDitutup = true;
+            $alasanPenutupan = $pengaturanTa->pesan_penutupan ?: 'Pendaftaran ditutup oleh koordinator';
+        } elseif ($pengaturanTa->batas_waktu_pendaftaran && now()->isAfter($pengaturanTa->batas_waktu_pendaftaran)) {
+            $pendaftaranDitutup = true;
+            $alasanPenutupan = 'Batas waktu pendaftaran telah berakhir pada ' . \Carbon\Carbon::parse($pengaturanTa->batas_waktu_pendaftaran)->format('d M Y H:i');
+        }
+    }
+@endphp
 <div class="row mb-3">
   <div class="col-12">
     <nav aria-label="breadcrumb">
@@ -12,6 +27,14 @@
       </ol>
     </nav>
     <h4 class="mb-2">Pendaftaran TA</h4>
+
+    @if($pendaftaranDitutup)
+      <div class="alert alert-warning" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <strong>Pendaftaran TA Ditutup</strong><br>
+        {{ $alasanPenutupan }}
+      </div>
+    @endif
   </div>
 </div>
 
@@ -41,15 +64,21 @@
         <form method="POST" action="{{ url('/ta/store') }}" enctype="multipart/form-data">
           @csrf
           <input type="hidden" name="is_dosen" value="1">
-          <div class="form-group">
-            <label>Judul penelitian</label>
-            <input type="text" name="judul" class="form-control" placeholder="Ketik judul penelitian">
-          </div>
-          <div class="form-group">
-            <label>Deskripsi judul</label>
-            <input type="text" name="deskripsi" class="form-control" placeholder="Ketik deskripsi">
-          </div>
-          <button type="submit" class="btn btn-warning">Kirim</button>
+            <div class="form-group">
+                <label>Judul penelitian</label>
+                <textarea name="judul" class="form-control" rows="3" placeholder="Ketik judul penelitian"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Deskripsi judul</label>
+                <textarea name="deskripsi" class="form-control" rows="4" placeholder="Ketik deskripsi"></textarea>
+            </div>
+
+          @if($pendaftaranDitutup)
+            <button type="submit" class="btn btn-secondary" disabled>Kirim</button>
+          @else
+            <button type="submit" class="btn btn-warning">Kirim</button>
+          @endif
         </form>
       </div>
     </div>
@@ -71,7 +100,7 @@
             @foreach($mahasiswa_mendaftar as $mm)
             <tr>
               <td>{{ $mm->pendaftaran->judul ?? 'N/A' }}</td>
-              <td>{{ $mm->username }}</td>
+              <td>{{ $mm->nama }} @if($mm->nim) ({{ $mm->nim }}) @endif</td>
               <td>
                 @if($mm->file_portofolio)
                   <a href="{{ asset('storage/' . $mm->file_portofolio) }}" download class="btn btn-link btn-sm">Download Portofolio</a>
@@ -85,10 +114,14 @@
                 @elseif($mm->status && $mm->status->name == 'ditolak')
                   <span class="btn btn-danger btn-sm">Ditolak</span>
                 @else
-                  <form method="POST" action="{{ route('ta.terimaTransaksi', ['id' => $mm->id]) }}">
-                    @csrf
-                    <button type="submit" class="btn btn-primary btn-sm">Terima</button>
-                  </form>
+                  @if($pendaftaranDitutup)
+                    <span class="btn btn-secondary btn-sm" disabled>Pendaftaran Ditutup</span>
+                  @else
+                    <form method="POST" action="{{ route('ta.terimaTransaksi', ['id' => $mm->id]) }}">
+                      @csrf
+                      <button type="submit" class="btn btn-primary btn-sm">Terima</button>
+                    </form>
+                  @endif
                 @endif
               </td>
             </tr>
@@ -109,7 +142,7 @@
           <thead>
             <tr>
               <th>No.</th>
-              <th>Mahasiswa</th>
+              <th>Nama (NIM)</th>
               <th>Judul</th>
               <th>Deskripsi</th>
               <th>Proposal</th>
@@ -120,7 +153,7 @@
             @foreach($judul_mahasiswa as $no => $jm)
             <tr>
               <td>{{ $no+1 }}</td>
-              <td>{{ $jm->created_by }}</td>
+              <td>{{ $jm->nama }} @if($jm->nim) ({{ $jm->nim }}) @endif</td>
               <td>{{ $jm->judul }}</td>
               <td>{{ $jm->deskripsi }}</td>
               <td>
@@ -137,12 +170,16 @@
                 @if($alreadyTaken)
                   <span class="btn btn-success btn-sm">Sudah Diambil</span>
                 @else
-                  <form method="POST" action="{{ url('/ta/store-transaksi') }}" style="display:inline;">
-                    @csrf
-                    <input type="hidden" name="ta_pendaftaran_id" value="{{ $jm->id }}">
-                    <input type="hidden" name="ref_status_ta_id" value="1"> <!-- Assuming 1 is some status -->
-                    <button type="submit" class="btn btn-primary btn-sm">Ambil Judul</button>
-                  </form>
+                  @if($pendaftaranDitutup)
+                    <span class="btn btn-secondary btn-sm" disabled>Pendaftaran Ditutup</span>
+                  @else
+                    <form method="POST" action="{{ url('/ta/store-transaksi') }}" style="display:inline;">
+                      @csrf
+                      <input type="hidden" name="ta_pendaftaran_id" value="{{ $jm->id }}">
+                      <input type="hidden" name="ref_status_ta_id" value="1"> <!-- Assuming 1 is some status -->
+                      <button type="submit" class="btn btn-primary btn-sm">Ambil Judul</button>
+                    </form>
+                  @endif
                 @endif
               </td>
             @endforeach

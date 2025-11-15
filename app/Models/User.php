@@ -19,8 +19,12 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'nim',
         'email',
         'password',
+        'created_by',
+        'updated_by',
+        'active',
     ];
 
     /**
@@ -44,5 +48,53 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Relationship to UserRole
+     */
+    public function userRoles()
+    {
+        return $this->hasMany(UserRole::class, 'username', 'name');
+    }
+
+    /**
+     * Check if user is Admin
+     */
+    public function isAdmin()
+    {
+        return $this->userRoles()->whereHas('role', function ($query) {
+            $query->where('name', 'Admin');
+        })->exists();
+    }
+
+    /**
+     * Check if user is Koordinator
+     */
+    public function isKoordinator()
+    {
+        return $this->userRoles()->whereHas('role', function ($query) {
+            $query->where('name', 'Koordinator');
+        })->exists();
+    }
+
+    /**
+     * Check if user is Dosen
+     */
+    public function isDosen()
+    {
+        return $this->userRoles()->whereHas('role', function ($query) {
+            $query->where('name', 'Dosen');
+        })->exists();
+    }
+
+    /**
+     * Check if user is Mahasiswa
+     */
+    public function isMahasiswa()
+    {
+        return $this->userRoles()->whereHas('role', function ($query) {
+            $query->where('name', 'Mahasiswa');
+        })->exists();
     }
 }
