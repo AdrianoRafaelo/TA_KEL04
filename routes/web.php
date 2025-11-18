@@ -25,7 +25,10 @@ Route::get('/kerja-praktik', [KerjaPraktikController::class, 'index'])->middlewa
 Route::get('/kerja-praktik-dosen', [KerjaPraktikController::class, 'dosen'])->middleware('auth.session');
 Route::get('/kerja-praktik-koordinator', [KerjaPraktikController::class, 'koordinator'])->middleware('auth.session');
 Route::get('/kerja-praktik-mahasiswa-pelaksanaan', [KerjaPraktikController::class, 'mahasiswaPelaksanaanKp'])->middleware('auth.session');
+route::get('/kerja-praktik-mahasiswa-seminar', [KerjaPraktikController::class, 'seminarmhs'])->middleware('auth.session');
 Route::get('/kerja-praktik-koordinator-pelaksanaan', [KerjaPraktikController::class, 'koordinatorPelaksanaanKp'])->middleware('auth.session');
+Route::get('/kerja-praktik-koordinator-seminar', [KerjaPraktikController::class, 'koordinatorSeminarKp'])->middleware('auth.session');
+Route::get('/kerja-praktik-dosen-seminar', [KerjaPraktikController::class, 'dosenSeminarKp'])->middleware('auth.session');
 
 Route::get('/informasi-umum', function () {return view('informasi_umum');})->middleware('auth.session');
 Route::get('/pendaftaran-kp', [KerjaPraktikController::class, 'pendaftaranKp'])->middleware('auth.session');
@@ -43,6 +46,27 @@ Route::get('/api/cv-kelompok/{groupId}', [KerjaPraktikController::class, 'getCvK
 Route::get('/api/user-group', [KerjaPraktikController::class, 'getUserGroup'])->name('api.user-group')->middleware('auth.session');
 Route::get('/api/perusahaans', [KerjaPraktikController::class, 'getPerusahaans'])->name('api.perusahaans')->middleware('auth.session');
 Route::post('/kerja-praktik/store-perusahaan', [KerjaPraktikController::class, 'storePerusahaan'])->name('kerja-praktik.store-perusahaan')->middleware('auth.session');
+Route::post('/kp/informasi/store', [KerjaPraktikController::class, 'storeInformasiKp'])->name('kp.informasi.store')->middleware('auth.session');
+Route::post('/kp/bimbingan/store', [KerjaPraktikController::class, 'storeBimbingan'])->name('kp.bimbingan.store')->middleware('auth.session');
+Route::post('/kp/topik-khusus/store', [KerjaPraktikController::class, 'storeTopikKhusus'])->name('kp.topik-khusus.store')->middleware('auth.session');
+Route::post('/kp/bimbingan/approve', [KerjaPraktikController::class, 'approveBimbingan'])->name('kp.bimbingan.approve')->middleware('auth.session');
+Route::post('/kp/topik-khusus/approve', [KerjaPraktikController::class, 'approveTopikKhusus'])->name('kp.topik-khusus.approve')->middleware('auth.session');
+Route::post('/kerja-praktik/store-log-activity', [KerjaPraktikController::class, 'storeLogActivity'])->name('kerja-praktik.store-log-activity')->middleware('auth.session');
+Route::get('/kerja-praktik/get-log-activities', [KerjaPraktikController::class, 'getLogActivities'])->name('kerja-praktik.get-log-activities')->middleware('auth.session');
+Route::get('/kerja-praktik/view-log-activity/{id}', [KerjaPraktikController::class, 'viewLogActivity'])->name('kerja-praktik.view-log-activity')->middleware('auth.session');
+Route::get('/kerja-praktik/download-log-activity/{id}', [KerjaPraktikController::class, 'downloadLogActivity'])->name('kerja-praktik.download-log-activity')->middleware('auth.session');
+Route::get('/kerja-praktik/preview-log-activity/{id}', [KerjaPraktikController::class, 'previewLogActivity'])->name('kerja-praktik.preview-log-activity')->middleware('auth.session');
+Route::get('/api/kp-student-log-activities/{username}', [KerjaPraktikController::class, 'getStudentLogActivities'])->middleware('auth.session');
+Route::post('/koordinator/update-seminar-penguji', [KerjaPraktikController::class, 'updateSeminarKpPenguji'])->name('koordinator.update.seminar.penguji')->middleware('auth.session');
+Route::post('/koordinator/upload-jadwal-seminar-kp', [KerjaPraktikController::class, 'uploadJadwalSeminarKp'])->name('koordinator.upload.jadwal.seminar.kp')->middleware('auth.session');
+Route::post('/koordinator/approve-seminar-kp', [KerjaPraktikController::class, 'approveSeminarKp'])->name('koordinator.approve.seminar.kp')->middleware('auth.session');
+Route::post('/koordinator/upload-seminar-dokumen', [KerjaPraktikController::class, 'uploadSeminarKpDokumen'])->name('koordinator.upload.seminar.dokumen')->middleware('auth.session');
+
+// Seminar KP routes
+Route::post('/kp/seminar/store', [KerjaPraktikController::class, 'storeSeminarKp'])->name('kp.seminar.store')->middleware('auth.session');
+Route::post('/kp/seminar/update-status', [KerjaPraktikController::class, 'updateSeminarKpStatus'])->name('kp.seminar.update-status')->middleware('auth.session');
+Route::get('/kp/seminar/download/{filename}', [KerjaPraktikController::class, 'downloadSeminarFile'])->name('kp.seminar.download')->middleware('auth.session');
+Route::delete('/kp/seminar/delete-file', [KerjaPraktikController::class, 'deleteSeminarFile'])->name('kp.seminar.delete-file')->middleware('auth.session');
 
 // Tugas Akhir
 Route::get('/ta-mahasiswa', [TugasAkhirController::class, 'indexMahasiswa'])->middleware('auth.session');

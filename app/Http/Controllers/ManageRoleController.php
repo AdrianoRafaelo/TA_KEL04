@@ -196,7 +196,7 @@ class ManageRoleController extends Controller
     public function getMahasiswaData()
     {
         try {
-            $mahasiswaData = FtiData::where('role', 'student')
+            $mahasiswaData = FtiData::whereIn('role', ['student', 'mahasiswa'])
                 ->select('nama', 'username', 'nim')
                 ->get();
 

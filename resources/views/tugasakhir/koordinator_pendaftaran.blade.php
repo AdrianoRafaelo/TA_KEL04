@@ -20,7 +20,7 @@
     <div class="row mb-4">
         <div class="col-12">
             <div class="kp-tabs d-flex flex-wrap gap-2">
-                <a href="{{ url('/koordinator-pendaftaran') }}" class="kp-tab">Pendaftaran Judul</a>
+                <a href="{{ url('/koordinator-pendaftaran') }}" class="kp-tab active">Pendaftaran Judul</a>
                 <a href="{{ route('koordinator.mahasiswa.ta') }}" class="kp-tab">Mahasiswa TA</a>
                 <a href="{{ route(name: 'koordinator.sempro') }}" class="kp-tab">Seminar Proposal</a>
                 <a href="{{ route('koordinator.semhas') }}" class="kp-tab">Seminar Hasil</a>
@@ -28,6 +28,25 @@
                 <a href="{{ url('/koordinator-skripsi') }}" class="kp-tab ">Unggah Skripsi</a>
             </div>
         </div>
+    </div>
+
+        <!-- Banner Section -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="gambar" style="background-image:url('/img/panel%20surya.jpeg')">
+          <div class="banner-text">Peran Manajemen Rekayasa Dalam Peningkatan Energi Terbarukan</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="gambar" style="background-image:url('/img/panel%20surya.jpeg')">
+          <div class="banner-text">Peraturan Pemerintah Melalui Gerakan Hijau</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="gambar" style="background-image:url('/img/wind turbine.jpg')">
+          <div class="banner-text">Peningkatan Kualitas Pendidikan Teknik Mesin</div>
+        </div>
+      </div>
     </div>
 
     <!-- INFORMASI UMUM — KOTAK KECIL + JARAK KE BAWAH -->
@@ -261,65 +280,6 @@
 </div>
 @endsection
 
-@section('styles')
-<style>
-    .kp-tabs .kp-tab {
-        padding: 8px 16px;
-        border: 1px solid #dee2e6;
-        background: #f8f9fa;
-        color: #495057;
-        font-size: 0.9rem;
-        border-radius: 6px;
-        text-decoration: none;
-        transition: all 0.2s;
-    }
-    .kp-tabs .kp-tab.active {
-        background: #6c5ce7;
-        color: white;
-        border-color: #6c5ce7;
-    }
-    .kp-tabs .kp-tab:hover:not(.active) {
-        background: #e9ecef;
-    }
-
-    .card {
-        border-radius: 12px;
-        overflow: hidden;
-    }
-
-    .table-sm td, .table-sm th {
-        padding: 0.4rem 0.5rem;
-        vertical-align: middle;
-    }
-
-    .btn-sm {
-        font-size: 0.765rem;
-        padding: 0.25rem 0.5rem;
-    }
-
-    .rounded-pill {
-        border-radius: 50rem !important;
-    }
-
-    .d-inline-flex {
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        border: 1px solid #e0e0e0;
-    }
-
-    @media (max-width: 992px) {
-        .pe-lg-3, .ps-lg-3 {
-            padding-left: 0.75rem !important;
-            padding-right: 0.75rem !important;
-        }
-        .d-inline-flex {
-            display: block;
-            width: fit-content;
-            margin: 0 auto 1.5rem;
-        }
-    }
-</style>
-@endsection
-
 @section('scripts')
 <script>
     // Select all checkboxes for Batch I
@@ -411,3 +371,84 @@
     });
 </script>
 @endsection
+
+<style>
+
+    .gambar {
+    height: 200px !important;
+    background-size: cover !important;
+    background-position: center !important;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .banner-text {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        color: #ffff;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 10px;
+        border-radius: 8px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    }
+    
+    .kp-tabs .kp-tab {
+        padding: 8px 16px;
+        border: 1px solid #dee2e6;
+        background: #f8f9fa;
+        color: #495057;
+        font-size: 0.9rem;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    .kp-tabs .kp-tab.active {
+        background: #6c5ce7;
+        color: white;
+        border-color: #6c5ce7;
+    }
+    .kp-tabs .kp-tab:hover:not(.active) {
+        background: #e9ecef;
+    }
+
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .table-sm td, .table-sm th {
+        padding: 0.4rem 0.5rem;
+        vertical-align: middle;
+    }
+
+    .btn-sm {
+        font-size: 0.765rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .rounded-pill {
+        border-radius: 50rem !important;
+    }
+
+    .d-inline-flex {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        border: 1px solid #e0e0e0;
+    }
+
+    @media (max-width: 992px) {
+        .pe-lg-3, .ps-lg-3 {
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+        }
+        .d-inline-flex {
+            display: block;
+            width: fit-content;
+            margin: 0 auto 1.5rem;
+        }
+    }
+</style>
+

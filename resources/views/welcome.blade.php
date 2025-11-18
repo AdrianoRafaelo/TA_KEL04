@@ -11,34 +11,24 @@
                     <li class="breadcrumb-item active" aria-current="page">Beranda</li>
                 </ol>
             </nav>
-            <h4 class="mb-0">Beranda</h4>
         </div>
-    </div>
-
-    <!-- Content -->
-    <div class="row mb-3">
-        <div class="col-12">
-
-  <div class="container-fluid py-4">
-    <div class="mb-2">
-      <small>Page / <b><a href="{{ route('welcome') }}" class="text-decoration-none text-black">Beranda</a></b></small>
     </div>
 
     <!-- Banner Section -->
     <div class="row g-3 mb-4">
       <div class="col-md-4">
-        <div class="banner-card" style="background-image:url('/assets/images/solar.jpg')">
+        <div class="gambar" style="background-image:url('/img/panel%20surya.jpeg')">
           <div class="banner-text">Peran Manajemen Rekayasa Dalam Peningkatan Energi Terbarukan</div>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="banner-card" style="background-image:url('/assets/images/wind.jpg')">
+        <div class="gambar" style="background-image:url('/img/panel%20surya.jpeg')">
           <div class="banner-text">Peraturan Pemerintah Melalui Gerakan Hijau</div>
         </div>
       </div>
       <div class="col-md-4">
-        <div class="banner-card" style="background-image:url('/assets/images/solar2.jpg')">
-          <div class="banner-text">Peran Manajemen Rekayasa Dalam Peningkatan Energi Terbarukan</div>
+        <div class="gambar" style="background-image:url('/img/wind turbine.jpg')">
+          <div class="banner-text">Peningkatan Kualitas Pendidikan Teknik Mesin</div>
         </div>
       </div>
     </div>
@@ -101,40 +91,36 @@
             </div>
         </div>
 
-        <!-- KOLOM KANAN: Ikon + Chart DIPISAH -->
+         @if (session('role') === 'Koordinator')
         <div class="col-lg-8">
-            <!-- BARIS ATAS: 2 IKON BERDAMPINGAN -->
             <div class="row mb-4">
                 <div class="col-md-6">
                     <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-radius: 12px; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#kpGroupsModal">
-                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 48px; height: 48px;">
-                            <i class="fas fa-users"></i>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
+                            <i class="mdi mdi-account-group" style="font-size: 2rem; color: #007bff;"></i>
+                            <h6 class="fw-bold mb-0">Kelompok Kerja Praktik Mahasiswa</h6>
                         </div>
-                        <h6 class="fw-bold mb-1">Kelompok Kerja Praktik Mahasiswa</h6>
                         <p class="small text-muted">Mahasiswa mendaftar pada perusahaan KP</p>
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="card border-0 shadow-sm h-100 text-center p-3" style="border-radius: 12px; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#perusahaanModal">
-                        <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width: 48px; height: 48px;">
-                            <i class="fas fa-building"></i>
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
+                            <i class="mdi mdi-office-building" style="font-size: 2rem; color: #007bff;"></i>
+                            <h6 class="fw-bold mb-0">Perusahaan Kerja Praktik Mahasiswa</h6>
                         </div>
-                        <h6 class="fw-bold mb-1">Perusahaan Kerja Praktik Mahasiswa</h6>
                         <p class="small text-muted">Daftar perusahaan KP mahasiswa</p>
                     </div>
                 </div>
             </div>
 
-            <!-- BARIS BAWAH: CHART + STATISTIK -->
+
             <div class="row">
                 <div class="col-12">
                     <div class="card border-0 shadow-sm" style="border-radius: 12px;">
                         <div class="card-body">
                             <h6 class="fw-bold text-primary mb-4">Pendaftaran Mahasiswa Kerja Praktik</h6>
-
-                            <!-- Chart & Angka Tengah -->
                             <div class="row align-items-center text-center">
-                                <!-- Chart Kiri -->
                                 <div class="col-md-4">
                                     <div class="position-relative d-inline-block" style="width: 130px; height: 130px;">
                                         <canvas id="chart-kp"></canvas>
@@ -146,7 +132,6 @@
                                     <p class="small text-muted mt-2">CV Mahasiswa</p>
                                 </div>
 
-                                <!-- Chart Kanan -->
                                 <div class="col-md-4">
                                     <div class="position-relative d-inline-block" style="width: 130px; height: 130px;">
                                         <canvas id="chart-perusahaan"></canvas>
@@ -157,7 +142,6 @@
                                     <p class="small text-muted mt-2">Pendaftaran Perusahaan</p>
                                 </div>
 
-                                <!-- Statistik Kanan -->
                                 <div class="col-md-4 d-flex align-items-center justify-content-center">
                                     <div class="text-center">
                                         <div class="fw-bold fs-3 text-info">100%</div>
@@ -171,6 +155,7 @@
             </div>
         </div>
     </div>
+    @endif
 
     <!-- Modal for KP Groups -->
     <div class="modal fade" id="kpGroupsModal" tabindex="-1" aria-labelledby="kpGroupsModalLabel" aria-hidden="true">
@@ -372,33 +357,31 @@
 </script>
 @endsection
 
-@section('styles')
+
 <style>
     /* ========================================================================= */
     /* 1. BANNER SECTION */
     /* ========================================================================= */
-    .banner-card {
-      height: 150px;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      border-radius: 8px;
-      overflow: hidden;
-      position: relative;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    .gambar {
+    height: 200px !important;
+    background-size: cover !important;
+    background-position: center !important;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     }
 
     .banner-text {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 10px;
-      background: linear-gradient(to top, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.4));
-      color: black;
-      font-weight: bold;
-      font-size: 14px;
-      line-height: 1.2;
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        color: #ffff;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 10px;
+        border-radius: 8px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
     }
 
     /* ========================================================================= */
@@ -750,4 +733,4 @@
         }
     }
 </style>
-@endsection
+

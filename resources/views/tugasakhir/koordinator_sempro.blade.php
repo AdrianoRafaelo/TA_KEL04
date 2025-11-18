@@ -369,21 +369,11 @@ $(document).ready(function() {
             let html = '<div id="tab-' + tabId + '" class="tab-content">';
             html += '<div class="doc-grid">';
             keys.forEach((key, i) => {
-                const path = data[key] || '';
-                const fullName = path ? path.split('/').pop() : '';
-                const shortName = fullName.length > 25 ? fullName.substring(0, 22) + '...' : fullName;
                 html += '<div class="upload-item" data-field="' + key + '" data-proposal-id="' + proposalId + '">' +
                     '<div class="upload-label">' + labels[i] + '</div>' +
-                    (path ? '<div class="file-info">' +
-                        '<button class="btn-download btn-sm me-2" onclick="window.open(\'' + path + '\', \'_blank\')" title="Unduh ' + fullName + '">' +
-                            '<i class="bi bi-download me-1"></i>Unduh' +
-                        '</button>' +
-                        '<button class="btn-replace btn-sm ms-2">' +
-                            '<i class="bi bi-arrow-repeat"></i> Ganti' +
-                        '</button>' +
-                    '</div>' : '<button class="btn-upload btn-sm">' +
+                    '<button class="btn-upload btn-sm">' +
                         '<i class="bi bi-cloud-upload me-1"></i>Upload' +
-                    '</button>') +
+                    '</button>' +
                     '<input type="file" class="file-input" accept=".pdf,.doc,.docx" style="display:none;">' +
                     '<div class="upload-status text-success small mt-1" style="display:none;"></div>' +
                 '</div>';
@@ -435,21 +425,11 @@ $(document).ready(function() {
                 .then(r => r.json())
                 .then(res => {
                     if (res.success) {
-                        const newPath = res.file_path;
-                        const newName = newPath.split('/').pop();
-                        item.html('<div class="upload-label">' + item.find('.upload-label').text() + '</div>' +
-                            '<div class="file-info">' +
-                                '<button class="btn-download btn-sm me-2" onclick="window.open(\'' + newPath + '\', \'_blank\')" title="Unduh ' + newName + '">' +
-                                    '<i class="bi bi-download me-1"></i>Unduh' +
-                                '</button>' +
-                                '<button class="btn-replace btn-sm">Ganti</button>' +
-                            '</div>' +
-                            '<input type="file" class="file-input" accept=".pdf,.doc,.docx" style="display:none;">' +
-                            '<div class="upload-status text-success small mt-1">Berhasil!</div>');
-                        item.find('.btn-replace').click(() => item.find('.file-input').click());
-                        item.find('.file-input').change(function() { input.change.call(this); });
+                        status.text('Berhasil!').show();
+                        // Reset input file
+                        input.val('');
                     } else {
-                        status.text('Gagal: ' + res.message).css('color', 'red');
+                        status.text('Gagal: ' + res.message).css('color', 'red').show();
                     }
                 });
             });

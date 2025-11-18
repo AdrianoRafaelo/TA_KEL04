@@ -15,31 +15,39 @@
     </div>
 </div>
 
+
 <div class="row mb-3">
     <div class="col-12">
         <div class="kp-tabs">
             <button class="kp-tab active">Informasi Umum</button>
             <a href="{{ url('/pendaftaran-kp') }}" class="kp-tab">Pendaftaran KP</a>
-            <button class="kp-tab">Pelaksanaan KP</button>
-            <button class="kp-tab">Seminar KP</button>
+            <a href="{{ url('/kerja-praktik-mahasiswa-pelaksanaan')}}" class="kp-tab">Pelaksanaan KP</a>
+            <a href="{{ url('/kerja-praktik-mahasiswa-seminar')}}" class="kp-tab">Seminar KP</a>
         </div>
     </div>
 </div>
 
-<div class="row mb-3">
-    <div class="col-12">
-        <img src="{{ asset('assets/images/banner-kp.jpg') }}" class="kp-banner img-fluid" alt="Banner KP">
-        <div class="card">
-            <div class="card-body p-3">
-                <p>
-                    <strong>Kerja Praktik</strong> - Merupakan matakuliah wajib di MR. Matakuliah ini akan memberikan kesempatan bagi setiap mahasiswa untuk mengasah kemampuan pembelajaran selama ini melalui kegiatan aktual di lapangan.
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="row mb-3">
+     <!-- Banner Section -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="gambar" style="background-image:url('/img/panel%20surya.jpeg')">
+          <div class="banner-text">Peran Manajemen Rekayasa Dalam Peningkatan Energi Terbarukan</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="gambar" style="background-image:url('/img/panel%20surya.jpeg')">
+          <div class="banner-text">Peraturan Pemerintah Melalui Gerakan Hijau</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="gambar" style="background-image:url('/img/wind turbine.jpg')">
+          <div class="banner-text">Peningkatan Kualitas Pendidikan Teknik Mesin</div>
+        </div>
+      </div>
+    </div>
+
+<div class="row mb-4">
     <div class="col-md-8">
         <div class="card">
             <div class="card-body">
@@ -67,30 +75,53 @@
     </div>
     <div class="col-md-4">
         <!-- DAFTAR KELOMPOK -->
-        <div class="kp-action-card mb-3">
+        <div class="kp-action-card mb-3" id="openKelompokModal" style="cursor: pointer;">
             <span class="kp-icon" style="color:#f9b115;"><i class="mdi mdi-account-multiple-plus"></i></span>
             <div>
-                <div class="kp-title"><a href="#" class="text-primary" id="openKelompokModal">Daftar Kelompok KP</a></div>
-                <div class="kp-desc">
-                    <a href="#" class="text-decoration-none" id="openKelompokModalLink">+ Kelompok KP</a>
-                </div>
+                <div class="kp-title">Daftar Kelompok KP</div>
+                <div class="kp-desc">+ Kelompok KP</div>
             </div>
         </div>
 
         <!-- UNGGAH CV (STATIS) -->
-        <div class="kp-action-card">
+        <div class="kp-action-card" id="openUnggahCVModal" style="cursor: pointer;">
             <span class="kp-icon" style="color:#b16cf9;"><i class="mdi mdi-fingerprint"></i></span>
             <div>
-                <div class="kp-title"><a href="#" class="text-primary" id="openUnggahCVModal">Unggah CV Kelompok</a></div>
+                <div class="kp-title">Unggah CV Kelompok</div>
                 <div class="kp-desc">+Unggah CV</div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Empty space below -->
+<div style="height: 100px;"></div>
 @endsection
 
-@section('styles')
 <style>
+
+    .gambar {
+    height: 200px !important;
+    background-size: cover !important;
+    background-position: center !important;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .banner-text {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        color: #ffff;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 10px;
+        border-radius: 8px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    }
+
 /* === MODAL STYLES (SHARED) === */
 #kelompokModalOverlay,
 #cvModalOverlay {
@@ -103,6 +134,9 @@
     z-index: 99999999 !important;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
     padding: 20px;
     overflow-y: auto;
 }
@@ -111,16 +145,12 @@
 #cvModalContainer {
     background: white;
     border-radius: 16px;
-    width: 100%;
+    width: 90%;
     max-width: 600px;
     max-height: 90vh;
     overflow: hidden;
     box-shadow: 0 25px 70px rgba(0, 0, 0, 0.5);
     animation: modalPop 0.3s ease-out;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
 }
 
 @keyframes modalPop {
@@ -320,8 +350,18 @@
     max-width: 150px;
     cursor: pointer;
 }
+
+/* Hover effect for action cards */
+.kp-action-card {
+    transition: all 0.2s ease;
+}
+
+.kp-action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
 </style>
-@endsection
+
 
 @section('scripts')
 <script>
@@ -330,7 +370,7 @@ $(document).ready(function() {
     // ========================================
     // 1. MODAL DAFTAR KELOMPOK (DENGAN AJAX)
     // ========================================
-    $('#openKelompokModal, #openKelompokModalLink').on('click', function(e) {
+    $('#openKelompokModal').on('click', function(e) {
         e.preventDefault();
         openKelompokModal();
     });
@@ -360,7 +400,7 @@ $(document).ready(function() {
             </div>
         </div>`;
 
-        $('body').append(modalHtml);
+        $('body').prepend(modalHtml);
 
         $.get('{{ route("api.mahasiswa") }}')
             .done(function(res) {

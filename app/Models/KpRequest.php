@@ -39,4 +39,14 @@ class KpRequest extends Model
     {
         return $this->belongsTo(FtiData::class, 'dosen_id');
     }
+
+    public function seminar()
+    {
+        return $this->hasOne(KpSeminar::class, 'kp_request_id');
+    }
+
+    public function topikKhusus()
+    {
+        return $this->hasMany(KpTopikKhusus::class, 'kp_request_id');
+    }
 }

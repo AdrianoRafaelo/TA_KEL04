@@ -1,74 +1,76 @@
 \@extends('layouts.app')
 
 @section('content')
-<div class="row mb-3">
-  <div class="col-12">
-    <nav aria-label="breadcrumb">
-      <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="#">Page</a></li>
-        <li class="breadcrumb-item"><a href="{{ url('/kerja-praktik') }}">Kerja Praktik</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Mahasiswa KP</li>
-      </ol>
-    </nav>
-    <h4 class="mb-2">Mahasiswa KP</h4>
-  </div>
-</div>
-
-<!-- Tabs -->
-<div class="row mb-3">
-  <div class="col-12">
-    <div class="kp-tabs">
-      <a href="{{ url('/kerja-praktik-koordinator') }}" class="kp-tab {{ request()->routeIs('kerja-praktik-koordinator') ? 'active' : '' }}">Mahasiswa KP</a>
-      <a href="{{ url('/kerja-praktik-koordinator-pelaksanaan') }}" class="kp-tab {{ request()->routeIs('kerja-praktik.index') ? 'active' : '' }}">Pelaksanaan KP</a>
-      <a href="{{ url('/kerja-praktik/seminar') }}" class="kp-tab {{ request()->routeIs('kerja-praktik.seminar') ? 'active' : '' }}">Seminar KP</a>
+<div class="container-fluid py-3">
+    <!-- Breadcrumb & Title -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#">Page</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url('/kerja-praktik') }}">Kerja Praktik</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Mahasiswa KP</li>
+                </ol>
+            </nav>
+        </div>
     </div>
-  </div>
-</div>
 
-<!-- Banner dengan 3 Gambar -->
-<div class="row mb-3">
-  <div class="col-12">
-    <div class="d-flex overflow-auto gap-3 p-2" style="scrollbar-width: none; -ms-overflow-style: none;">
-      <div class="flex-shrink-0 position-relative" style="width: 320px;">
-        <img src="{{ asset('assets/images/kp-banner-1.jpg') }}" class="img-fluid rounded" alt="Banner 1">
+    <!-- Tabs -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="kp-tabs d-flex flex-wrap gap-2">
+                <a href="{{ url('/kerja-praktik-koordinator') }}" class="kp-tab active {{ request()->routeIs('kerja-praktik-koordinator') ? 'active' : '' }}">Mahasiswa KP</a>
+                <a href="{{ url('/kerja-praktik-koordinator-pelaksanaan') }}" class="kp-tab {{ request()->routeIs('kerja-praktik.index') ? 'active' : '' }}">Pelaksanaan KP</a>
+                <a href="{{ url('/kerja-praktik-koordinator-seminar') }}" class="kp-tab {{ request()->routeIs('kerja-praktik.seminar') ? 'active' : '' }}">Seminar KP</a>
+            </div>
+        </div>
+    </div>
 
+            <!-- Banner Section -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="gambar" style="background-image:url('/img/panel%20surya.jpeg')">
+          <div class="banner-text">Peran Manajemen Rekayasa Dalam Peningkatan Energi Terbarukan</div>
+        </div>
       </div>
-      <div class="flex-shrink-0 position-relative" style="width: 320px;">
-        <img src="{{ asset('assets/images/kp-banner-2.jpg') }}" class="img-fluid rounded" alt="Banner 2">
-
+      <div class="col-md-4">
+        <div class="gambar" style="background-image:url('/img/panel%20surya.jpeg')">
+          <div class="banner-text">Peraturan Pemerintah Melalui Gerakan Hijau</div>
+        </div>
       </div>
-      <div class="flex-shrink-0 position-relative" style="width: 320px;">
-        <img src="{{ asset('assets/images/kp-banner-3.jpg') }}" class="img-fluid rounded" alt="Banner 3">
-
+      <div class="col-md-4">
+        <div class="gambar" style="background-image:url('/img/wind turbine.jpg')">
+          <div class="banner-text">Peningkatan Kualitas Pendidikan Teknik Mesin</div>
+        </div>
       </div>
     </div>
-  </div>
-</div>
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <button class="btn btn-sm btn-primary" style="background-color:#1E3A8A;border:none;">
+                Kerja Praktik
+            </button>
+        </div>
+    </div>
 
 <!-- Tabel Permohonan KP -->
 @if($permohonan_requests->count() > 0)
-<div class="row mb-4">
-  <div class="col-12">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body p-0">
-        <div class="p-3 border-bottom">
-          <h6 class="kp-list-title mb-0 text-primary fw-bold">Permohonan KP</h6>
-        </div>
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
+    <!-- Table -->
+    <div class="table-responsive bg-white shadow-sm rounded p-3 mb-4">
+        <table class="table align-middle mb-0">
+            <thead style="background-color:#f8f9fa; color:#555; font-size:12px; text-transform:uppercase; border-bottom: 2px solid #b3743b;">
               <tr>
-                <th width="5%" class="text-center">No.</th>
-                <th>Mahasiswa</th>
-                <th>Perusahaan KP</th>
-                <th width="15%">Alamat</th>
-                <th width="15%">Waktu KP</th>
-                <th width="10%" class="text-center">Aksi</th>
+                <th style="width: 80px;" class="text-center">No.</th>
+                <th style="width: 200px;">Mahasiswa</th>
+                <th style="width: 250px;">Perusahaan KP</th>
+                <th style="width: 150px;">Alamat</th>
+                <th style="width: 150px;">Waktu KP</th>
+                <th style="width: 100px;" class="text-center">Aksi</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody style="font-size:14px;">
               @forelse($permohonan_requests as $index => $request)
-              <tr>
+              <tr class="hover-row">
                 <td class="text-center">{{ $loop->iteration }}.</td>
                 <td>
                   <div class="fw-bold">{{ $request->mahasiswa->nama ?? 'N/A' }}</div>
@@ -112,38 +114,27 @@
               </tr>
               @endforelse
             </tbody>
-          </table>
-        </div>
-      </div>
+        </table>
     </div>
-  </div>
-</div>
 @endif
 
 <!-- Tabel Mahasiswa Kerja Praktik -->
-<div class="row">
-  <div class="col-12">
-    <div class="card border-0 shadow-sm">
-      <div class="card-body p-0">
-        <div class="p-3 border-bottom">
-          <h6 class="kp-list-title mb-0 text-primary fw-bold">Mahasiswa Kerja Praktik</h6>
-        </div>
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-              <tr>
-                <th width="5%" class="text-center">No.</th>
-                <th>Mahasiswa</th>
-                <th>Perusahaan KP</th>
-                <th width="15%">Alamat</th>
-                <th width="12%">Divisi</th>
-                <th width="18%">Dosen Pembimbing</th>
-                <th width="10%" class="text-center">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
+<div class="table-responsive bg-white shadow-sm rounded p-3">
+    <table class="table align-middle mb-0">
+            <thead style="background-color:#f8f9fa; color:#555; font-size:12px; text-transform:uppercase; border-bottom: 2px solid #b3743b;">
+             <tr>
+               <th style="width: 80px;" class="text-center">No.</th>
+               <th style="width: 180px;">Mahasiswa</th>
+               <th style="width: 200px;">Perusahaan KP</th>
+               <th style="width: 150px;">Alamat</th>
+               <th style="width: 120px;">Divisi</th>
+               <th style="width: 180px;">Dosen Pembimbing</th>
+               <th style="width: 100px;" class="text-center">Aksi</th>
+             </tr>
+           </thead>
+            <tbody style="font-size:14px;">
               @forelse($pengantar_requests as $index => $request)
-              <tr>
+              <tr class="hover-row">
                 <td class="text-center">{{ $loop->iteration }}.</td>
                 <td>
                   <div class="fw-bold">{{ $request->mahasiswa->nama ?? 'N/A' }}</div>
@@ -202,57 +193,82 @@
               </tr>
               @endforelse
             </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </div>
+    </table>
 </div>
-
-<!-- Custom CSS untuk kesempurnaan -->
-<style>
-  .kp-tabs {
-    display: flex;
-    gap: 0.5rem;
-    border-bottom: 2px solid #e9ecef;
-    margin-bottom: 1rem;
-  }
-  .kp-tab {
-    padding: 0.5rem 1rem;
-    text-decoration: none;
-    color: #6c757d;
-    font-weight: 500;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s;
-  }
-  .kp-tab.active,
-  .kp-tab:hover {
-    color: #0d6efd;
-    border-bottom-color: #0d6efd;
-  }
-
-  .table .form-select-sm {
-    font-size: 0.85rem;
-    padding: 0.25rem 0.5rem;
-    height: auto;
-  }
-  .table .btn-sm {
-    font-size: 0.775rem;
-    padding: 0.25rem 0.75rem;
-  }
-  .table th, .table td {
-    vertical-align: middle !important;
-  }
-  .table .text-truncate {
-    max-width: 150px;
-  }
-  .d-flex.gap-2 {
-    gap: 0.5rem;
-  }
-  .flex-fill {
-    flex: 1;
-  }
-</style>
-
-
 @endsection
+
+<style>
+    .gambar {
+    height: 200px !important;
+    background-size: cover !important;
+    background-position: center !important;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .banner-text {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        color: #ffff;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 10px;
+        border-radius: 8px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    }
+
+.table th,
+.table td {
+    vertical-align: middle !important;
+    text-align: left !important;
+    padding: 8px 12px !important;
+}
+
+/* Kolom checkbox rata tengah */
+.table th:first-child,
+.table td:first-child {
+    text-align: center !important;
+    width: 50px !important;
+}
+
+/* Kolom nomor rata tengah */
+.table th:nth-child(2),
+.table td:nth-child(2) {
+    text-align: center !important;
+    width: 80px !important;
+}
+
+/* Hover efek lembut dan sedikit mengangkat */
+.hover-row {
+    transition: all 0.25s ease;
+}
+
+.hover-row:hover {
+    background-color: #f9fafb !important;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(30, 58, 138, 0.3);
+}
+</style>

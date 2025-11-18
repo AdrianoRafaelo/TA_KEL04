@@ -27,6 +27,8 @@
   <!-- End layout styles -->
   <link rel="shortcut icon" href="{{ asset('assets/images/favicon.png') }}" />
   <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
 </head>
 
 <body class="light-mode">
