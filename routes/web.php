@@ -9,6 +9,7 @@ use App\Http\Controllers\ManageRoleController;
 use App\Http\Controllers\FtiRoleController;
 use App\Http\Controllers\PengumumanController;
 use App\Http\Controllers\KerjaPraktikController;
+use App\Http\Controllers\MbkmController;
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
@@ -136,3 +137,18 @@ Route::delete('/pengumuman/{pengumuman}', [PengumumanController::class, 'destroy
 
 Route::get('/ta/pendaftaran', [TugasAkhirController::class, 'pendaftaran'])->name('pendaftaran.ta');
 Route::get('/ta/seminar-proposal', [TugasAkhirController::class, 'seminarProposal'])->name('seminar.proposal');
+
+
+//MBKM
+Route::get('/mbkm/informasi-mhs', [MbkmController::class, 'index'])->name('mbkm.informasi-mhs')->middleware('auth.session');
+Route::get('/mbkm/pendaftaran-mhs', [MbkmController::class, 'pendaftaran'])->name('mbkm.pendaftaran-mhs')->middleware('auth.session');
+Route::post('/mbkm/pendaftaran-mhs/store', [MbkmController::class, 'storePendaftaranMbkm'])->name('mbkm.pendaftaran-mhs.store')->middleware('auth.session');
+Route::get('/mbkm/pelaksanaan-mhs', [MbkmController::class, 'pelaksanaan'])->name('mbkm.pelaksanaan-mhs')->middleware('auth.session');
+Route::get('/mbkm/seminar-mhs', [MbkmController::class, 'seminar'])->name('mbkm.seminar-mhs')->middleware('auth.session');
+route::get('/mbkm/pendaftaran-nonmitra-mhs', [MbkmController::class, 'pendaftaranNonMitra'])->name('mbkm.pendaftaran-nonmitra-mhs')->middleware('auth.session');
+Route::get('/mbkm/pendaftaran-koordinator', [MbkmController::class, 'pendaftarankoordinator'])->name('mbkm.pendaftaran-koordinator')->middleware('auth.session');
+Route::get('/mbkm/pelaksanaan-koordinator', [MbkmController::class, 'pelaksanaankoordinator'])->name('mbkm.pelaksanaan-koordinator')->middleware('auth.session');
+Route::get('/mbkm/seminar-koordinator', [MbkmController::class, 'seminarkoordinator'])->name('mbkm.seminar-koordinator')->middleware('auth.session');
+Route::post('/mbkm/tambah-mitra', [MbkmController::class, 'storeTambahMitra'])->name('mbkm.store.tambah.mitra')->middleware('auth.session');
+Route::put('/mbkm/tambah-mitra/{id}', [MbkmController::class, 'updateTambahMitra'])->name('mbkm.update.tambah.mitra')->middleware('auth.session');
+Route::delete('/mbkm/tambah-mitra/{id}', [MbkmController::class, 'deleteTambahMitra'])->name('mbkm.delete.tambah.mitra')->middleware('auth.session');

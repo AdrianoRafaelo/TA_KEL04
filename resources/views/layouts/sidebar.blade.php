@@ -85,23 +85,27 @@
         </a>
       </li>
     @endif
-    @if (session('role') !== 'Admin')
-      <li class="nav-item menu-items">
-        <a class="nav-link" data-toggle="collapse" href="#auth" aria-expanded="false" aria-controls="auth">
-          <span class="menu-icon">
-            <i class="mdi mdi-security"></i>
-          </span>
-          <span class="menu-medal">MBKM</span>
-          <i class="menu-arrow"></i>
-        </a>
-        <div class="collapse" id="auth">
-          <ul class="nav flex-column sub-menu">
-            <li class="nav-item"> <a class="nav-link" href="pages/samples/blank-page.html"> Mitra </a></li>
-            <li class="nav-item"> <a class="nav-link" href="pages/samples/error-404.html"> Non-Mitra </a></li>
-          </ul>
-        </div>
-      </li>
       @if (session('role') === 'Mahasiswa')
+<li class="nav-item menu-items">
+  <a class="nav-link" data-toggle="collapse" href="#mbkmCollapse" aria-expanded="false" aria-controls="mbkmCollapse">
+    <span class="menu-icon">
+      <i class="mdi mdi-security"></i>
+    </span>
+    <span class="menu-medal">MBKM</span>
+    <i class="menu-arrow"></i>
+  </a>
+  <div class="collapse" id="mbkmCollapse">
+    <ul class="nav flex-column sub-menu">
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url('/mbkm/informasi-mhs') }}">Mitra</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url('/mbkm/pendaftaran-nonmitra-mhs') }}">Non-Mitra</a>
+      </li>
+    </ul>
+  </div>
+</li>
+
         <li class="nav-item menu-items">
           <a class="nav-link" href="{{ url('/kerja-praktik') }}">
             <span class="menu-icon">
@@ -131,6 +135,7 @@
             <span class="menu-title">Tugas Akhir M</span>
           </a>
         </li>
+
       @endif
 
       <!-- Menu untuk Admin -->
@@ -165,6 +170,25 @@
           </a>
         </li>
         <li class="nav-item menu-items">
+  <a class="nav-link" data-toggle="collapse" href="#mbkmCollapse" aria-expanded="false" aria-controls="mbkmCollapse">
+    <span class="menu-icon">
+      <i class="mdi mdi-security"></i>
+    </span>
+    <span class="menu-medal">MBKM</span>
+    <i class="menu-arrow"></i>
+  </a>
+  <div class="collapse" id="mbkmCollapse">
+    <ul class="nav flex-column sub-menu">
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url('/mbkm/pendaftaran-koordinator') }}">Mitra</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ url('/mbkm/pendaftaran-nonmitra-mhs') }}">Non-Mitra</a>
+      </li>
+    </ul>
+  </div>
+</li>
+        <li class="nav-item menu-items">
           <a class="nav-link" href="{{ url('/koordinator-pendaftaran') }}">
             <span class="menu-icon">
               <i class="mdi mdi-file-document"></i>
@@ -181,6 +205,34 @@
           <span class="menu-title">Akun</span>
         </a>
       </li>
-    @endif
   </ul>
 </nav>
+
+<style>
+  /* Tampilkan dropdown saat hover */
+.nav-item.dropdown:hover .dropdown-menu {
+  display: block !important;
+  margin-top: 0; /* supaya tidak loncat */
+}
+
+</style>
+
+
+@section('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const dropdown = document.querySelector('.nav-item.dropdown');
+    const dropdownMenu = document.querySelector('.dropdown-menu');
+
+    if (dropdown && dropdownMenu) {
+      dropdown.addEventListener('mouseenter', function() {
+        dropdownMenu.style.display = 'block';
+      });
+
+      dropdown.addEventListener('mouseleave', function() {
+        dropdownMenu.style.display = 'none';
+      });
+    }
+  });
+</script>
+@endsection
