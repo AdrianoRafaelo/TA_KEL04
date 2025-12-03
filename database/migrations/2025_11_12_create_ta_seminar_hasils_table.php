@@ -9,6 +9,7 @@ return new class extends Migration {
         Schema::create('ta_seminar_hasils', function (Blueprint $table) {
             $table->id();
             $table->string('mahasiswa');
+            $table->foreign('mahasiswa')->references('nim')->on('users');
             $table->string('judul');
             $table->string('pembimbing');
             $table->string('pengulas_1')->nullable();
@@ -26,6 +27,9 @@ return new class extends Migration {
     }
 
     public function down() {
+        Schema::table('ta_seminar_hasils', function (Blueprint $table) {
+            $table->dropForeign(['mahasiswa']);
+        });
         Schema::dropIfExists('ta_seminar_hasils');
     }
 };

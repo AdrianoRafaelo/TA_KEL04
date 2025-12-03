@@ -171,7 +171,6 @@
                                         <th><input type="checkbox" id="select-all-batch1"></th>
                                         <th>Dosen</th>
                                         <th>Judul</th>
-                                        <th>Status</th>
                                         <th style="width: 100px;"></th>
                                     </tr>
                                 </thead>
@@ -192,15 +191,12 @@
                                         <td class="small text-muted">
                                             {{ $jd->judul }}
                                         </td>
-                                        <td class="small">
-                                            @if($jd->status_id == \App\Models\RefStatusTa::where('name', 'disetujui')->first()->id)
-                                                <span class="badge bg-success">Diterima</span>
-                                            @else
-                                                <span class="badge bg-warning">Menunggu</span>
-                                            @endif
-                                        </td>
                                         <td>
-                                            <button class="btn btn-success btn-sm w-100 rounded-pill" style="font-size: 0.765rem; padding: 0.25rem 0;">Selengkapnya</button>
+                                            <button type="button" class="btn btn-success btn-sm w-100 rounded-pill btn-selengkapnya" style="font-size: 0.765rem; padding: 0.25rem 0;"
+                                                    data-id="{{ $jd->id }}"
+                                                    data-judul="{{ $jd->judul }}"
+                                                    data-dosen="{{ $jd->dosen }}"
+                                                    data-students='@json($jd->interested_students)'>Selengkapnya</button>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -232,7 +228,6 @@
                                         <th>Judul</th>
                                         <th>Dokumen</th>
                                         <th>Pendaftar</th>
-                                        <th>Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -260,13 +255,6 @@
                                         <td class="small">
                                             {{ $jm->transaksi->count() }} Dosen
                                         </td>
-                                        <td class="small">
-                                            @if($jm->status_id == \App\Models\RefStatusTa::where('name', 'disetujui')->first()->id)
-                                                <span class="badge bg-success">Diterima</span>
-                                            @else
-                                                <span class="badge bg-warning">Menunggu</span>
-                                            @endif
-                                        </td>
                                     </tr>
                                     @endforeach
                                 </tbody>
@@ -274,6 +262,35 @@
                         </div>
                     </form>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Selengkapnya -->
+<div class="modal fade" id="modalSelengkapnya" tabindex="-1" aria-labelledby="modalSelengkapnyaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalSelengkapnyaLabel">Detail Judul TA</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>Judul:</strong> <span id="modal-judul"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Dosen:</strong> <span id="modal-dosen"></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Mahasiswa yang Mengambil:</strong>
+                    <ul id="modal-students" class="list-group mt-2">
+                        <!-- Students will be populated here -->
+                    </ul>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
             </div>
         </div>
     </div>
@@ -367,6 +384,37 @@
             modal.remove();
             const form = document.querySelector('form[action*="batch2"]');
             form.submit();
+        });
+    });
+
+    // Handle Selengkapnya button
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = new bootstrap.Modal(document.getElementById('modalSelengkapnya'));
+        document.querySelectorAll('.btn-selengkapnya').forEach(button => {
+            button.addEventListener('click', function() {
+                const judul = this.dataset.judul;
+                const dosen = this.dataset.dosen;
+                const students = JSON.parse(this.dataset.students);
+
+                document.getElementById('modal-judul').textContent = judul;
+                document.getElementById('modal-dosen').textContent = dosen;
+
+                const studentsList = document.getElementById('modal-students');
+                studentsList.innerHTML = '';
+
+                if (students.length === 0) {
+                    studentsList.innerHTML = '<li class="list-group-item">Belum ada mahasiswa yang mengambil judul ini.</li>';
+                } else {
+                    students.forEach(student => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item';
+                        li.textContent = student.nama + ' (' + student.username + ')';
+                        studentsList.appendChild(li);
+                    });
+                }
+
+                modal.show();
+            });
         });
     });
 </script>

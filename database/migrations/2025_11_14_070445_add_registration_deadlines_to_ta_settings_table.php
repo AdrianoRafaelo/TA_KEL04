@@ -16,6 +16,10 @@ return new class extends Migration
             $table->datetime('batas_waktu_pendaftaran')->nullable();
             $table->boolean('pendaftaran_ditutup')->default(false);
             $table->text('pesan_penutupan')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->foreign('created_by')->references('id')->on('users');
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->foreign('updated_by')->references('id')->on('users');
             $table->timestamps();
         });
     }
@@ -25,6 +29,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('pengaturan_tas', function (Blueprint $table) {
+            $table->dropForeign(['created_by']);
+            $table->dropForeign(['updated_by']);
+        });
         Schema::dropIfExists('pengaturan_tas');
     }
 };

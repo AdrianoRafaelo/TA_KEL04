@@ -24,4 +24,24 @@ class PendaftaranMbkm extends Model
         'updated_by',
         'active',
     ];
+
+    public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function mahasiswa()
+    {
+        return $this->belongsTo(FtiData::class, 'mahasiswa_id');
+    }
+
+    public function mitra()
+    {
+        return $this->belongsTo(\App\Models\MbkmMitra::class, 'mitra_id');
+    }
 }

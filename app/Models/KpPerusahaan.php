@@ -14,4 +14,9 @@ class KpPerusahaan extends Model
         'updated_by',
         'active',
     ];
+
+    public function kpCompanies()
+    {
+        return $this->hasMany(KpCompany::class, 'kp_perusahaan_id');
+    }
 }

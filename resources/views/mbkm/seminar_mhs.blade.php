@@ -80,30 +80,31 @@
 
                 <div class="mb-4">
                     <label class="fw-bold">Apakah kegiatan termasuk magang?</label><br>
-                    <label class="me-3"><input type="radio" name="magang"> Ya</label>
-                    <label><input type="radio" name="magang"> Tidak</label>
+                    <label class="me-3"><input type="radio" name="is_magang_ekotek" value="1" {{ old('is_magang', $seminar->is_magang ?? false) ? 'checked' : '' }}> Ya</label>
+                    <label><input type="radio" name="is_magang_ekotek" value="0" {{ !old('is_magang', $seminar->is_magang ?? false) ? 'checked' : '' }}> Tidak</label>
                 </div>
+
+                <form id="ekotek-form" action="{{ route('mbkm.seminar-ekotek.store') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="is_magang" value="{{ old('is_magang_ekotek', $seminar->is_magang ?? 0) }}">
 
                 <!-- ===================== -->
                 <!-- Laporan EKOTEK -->
                 <!-- ===================== -->
                 <div class="mb-5">
                     <h6 class="fw-bold">Laporan EKOTEK</h6>
-                    <small class="text-muted d-block mb-2">CPMK</small>
-
-                    <textarea class="form-control mb-3" rows="4" disabled>
-Perhitungan biaya aset produk dengan metode Job Analysis
-                    </textarea>
+                    <label class="fw-bold d-block mb-1">CPMK</label>
+                    <textarea class="form-control mb-3" rows="4" name="cpmk_ekotek" placeholder="Masukkan Capaian Pembelajaran Mata Kuliah (CPMK) untuk laporan EKOTEK">{{ old('cpmk_ekotek', $seminar->cpmk_ekotek ?? '') }}</textarea>
 
                     <label class="fw-bold d-block mb-1">Unggah laporan MK 1</label>
                     <div class="input-group mb-2" style="max-width: 350px;">
-                        <input type="text" class="form-control" placeholder="Pilih laporan anda" disabled>
-                        <span class="input-group-text">Browse</span>
+                        <input type="file" class="form-control" name="laporan_ekotek_file" accept=".pdf,.doc,.docx">
                     </div>
 
                     <a href="#" class="small text-primary d-block mb-3">Template laporan</a>
 
-                    <button class="btn btn-dark px-4">Submit</button>
+                    <button type="submit" class="btn btn-dark px-4">Submit</button>
+                </form>
                 </div>
 
                 <hr>
@@ -112,22 +113,28 @@ Perhitungan biaya aset produk dengan metode Job Analysis
                 <!-- Laporan PMB -->
                 <!-- ===================== -->
                 <div class="mt-4 mb-5">
-                    <h6 class="fw-bold">Laporan PMB</h6>
-                    <small class="text-muted d-block mb-2">CPMK</small>
-
-                    <textarea class="form-control mb-3" rows="4" disabled>
-Perhitungan biaya aset produk dengan metode Job Analysis
-                    </textarea>
-
-                    <label class="fw-bold d-block mb-1">Unggah laporan MK 2</label>
-                    <div class="input-group mb-2" style="max-width: 350px;">
-                        <input type="text" class="form-control" placeholder="Pilih laporan anda" disabled>
-                        <span class="input-group-text">Browse</span>
+                    <div class="mb-4">
+                        <label class="fw-bold">Apakah kegiatan termasuk magang?</label><br>
+                        <label class="me-3"><input type="radio" name="is_magang_pmb" value="1" {{ old('is_magang', $seminar->is_magang ?? false) ? 'checked' : '' }}> Ya</label>
+                        <label><input type="radio" name="is_magang_pmb" value="0" {{ !old('is_magang', $seminar->is_magang ?? false) ? 'checked' : '' }}> Tidak</label>
                     </div>
 
-                    <a href="#" class="small text-primary d-block mb-3">Template laporan</a>
+                    <form id="pmb-form" action="{{ route('mbkm.seminar-pmb.store') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
+                        <input type="hidden" name="is_magang" value="{{ old('is_magang_pmb', $seminar->is_magang ?? 0) }}">
+                        <h6 class="fw-bold">Laporan PMB</h6>
+                        <label class="fw-bold d-block mb-1">CPMK</label>
+                        <textarea class="form-control mb-3" rows="4" name="cpmk_pmb" placeholder="Masukkan Capaian Pembelajaran Mata Kuliah (CPMK) untuk laporan PMB">{{ old('cpmk_pmb', $seminar->cpmk_pmb ?? '') }}</textarea>
 
-                    <button class="btn btn-dark px-4">Submit</button>
+                        <label class="fw-bold d-block mb-1">Unggah laporan MK 2</label>
+                        <div class="input-group mb-2" style="max-width: 350px;">
+                            <input type="file" class="form-control" name="laporan_pmb_file" accept=".pdf,.doc,.docx">
+                        </div>
+
+                        <a href="#" class="small text-primary d-block mb-3">Template laporan</a>
+
+                        <button type="submit" class="btn btn-dark px-4">Submit</button>
+                    </form>
                 </div>
 
                 <div class="text-end">
@@ -150,7 +157,7 @@ Perhitungan biaya aset produk dengan metode Job Analysis
 
                 <div class="d-flex justify-content-between align-items-center">
                     <span class="fw-bold">Unduh Jadwal</span>
-                    <a href="#" class="text-primary">Doc</a>
+                    <a href="{{ route('mbkm.download.jadwal.seminar') }}" class="text-primary">Doc</a>
                 </div>
             </div>
         </div>
@@ -158,6 +165,66 @@ Perhitungan biaya aset produk dengan metode Job Analysis
 </div>
 
 
+@endsection
+
+@section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+@if(session('success'))
+<script>
+Swal.fire({
+  title: 'Berhasil!',
+  text: '{{ session('success') }}',
+  icon: 'success',
+  toast: true,
+  position: 'top-end',
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true
+});
+</script>
+@endif
+@if(session('error'))
+<script>
+Swal.fire({
+  title: 'Error!',
+  text: '{{ session('error') }}',
+  icon: 'error',
+  toast: true,
+  position: 'top-end',
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true
+});
+</script>
+@endif
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle radio button changes for EKOTEK form
+    const ekotekRadios = document.querySelectorAll('input[name="is_magang_ekotek"]');
+    const ekotekHidden = document.querySelector('#ekotek-form input[name="is_magang"]');
+
+    ekotekRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (ekotekHidden) {
+                ekotekHidden.value = this.value;
+            }
+        });
+    });
+
+    // Handle radio button changes for PMB form
+    const pmbRadios = document.querySelectorAll('input[name="is_magang_pmb"]');
+    const pmbHidden = document.querySelector('#pmb-form input[name="is_magang"]');
+
+    pmbRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (pmbHidden) {
+                pmbHidden.value = this.value;
+            }
+        });
+    });
+});
+</script>
 @endsection
 
 

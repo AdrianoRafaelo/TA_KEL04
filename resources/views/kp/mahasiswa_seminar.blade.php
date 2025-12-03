@@ -31,43 +31,57 @@
     </div>
 </div>
 
-    <!-- CARD INFO MAHASISWA -->
-    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+    <!-- INFO MAHASISWA FULL WIDTH -->
+    <div class="cardd border-0 shadow-sm mb-4" style="border-radius: 16px;">
         <div class="card-body p-4">
-            <div class="row g-4 text-center text-md-start">
-                <div class="col-md-3">
-                    <div class="d-block" style="color: black; font-weight: 600;">Kelompok</div>
-                    <small class="text-muted text-start">
-                        @if($group)
-                            {{ $student->nama }} ({{ $student->nim }})
-                            @if($groupMembers->count() > 0)
-                                @foreach($groupMembers as $member)
-                                    <br>{{ $member->nama }} ({{ $member->nim }})
-                                @endforeach
+            <div class="row g-4">
+                <!-- Info Kiri -->
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+
+                        <div>
+                            <small class="text-muted">Nama/NIM</small>
+                            <h6 class="fw-bold mb-0">{{ $student->nama ?? 'N/A' }}</h6>
+                            <small class="text-muted">{{ $student->fakultas ?? 'Universitas' }} / {{ $student->nim ?? $user['username'] }}</small>
+                            @if(isset($groupMembers) && $groupMembers->count() > 0)
+                                <small class="text-muted d-block mt-1">
+                                    Anggota Kelompok: {{ $groupMembers->pluck('nama')->join(', ') }}
+                                </small>
                             @endif
-                        @else
-                            Belum ada kelompok
-                        @endif
-                    </small>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+
+                        <div>
+                            <small class="text-muted">Posisi (Divisi)</small>
+                            <h6 class="fw-bold mb-0">{{ $kpRequest->divisi ?? 'Belum ditentukan' }}</h6>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="d-block" style="color: black; font-weight: 600;">Posisi</div>
-                    <small class="text-muted text-start">{{ $kpRequest->divisi ?? 'Belum ditentukan' }}</small>
-                </div>
-                <div class="col-md-3">
-                    <div class="d-block" style="color: black; font-weight: 600;">Perusahaan</div>
-                    <small class="text-muted text-start">{{ $kpRequest->company->nama_perusahaan ?? 'N/A' }}</small>
-                </div>
-                <div class="col-md-3">
-                    <div class="d-block" style="color: black; font-weight: 600;">Pembimbing</div>
-                    <small class="text-muted text-start">{{ $kpRequest->dosen->nama ?? 'Belum ditentukan' }}</small>
-                </div>
-            </div>
-            <hr class="my-3">
-            <div class="row">
-                <div class="col-12">
-                    <div class="d-block" style="color: black; font-weight: 600;">Topik Khusus</div>
-                    <small class="text-muted text-start">{{ $topikKhusus->topik ?? 'Belum ada topik khusus' }}</small>
+
+                <!-- Info Kanan -->
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center mb-3">
+
+                        <div>
+                            <small class="text-muted">Perusahaan</small>
+                            <h6 class="fw-bold mb-0">{{ $kpRequest->company->nama_perusahaan ?? 'Belum ditentukan' }}</h6>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center mb-3">
+
+                        <div>
+                            <small class="text-muted">Pembimbing</small>
+                            <h6 class="fw-bold mb-0">{{ $kpRequest->dosen->nama ?? 'Belum ditentukan' }}</h6>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center">
+
+                        <div>
+                            <small class="text-muted">Topik Khusus</small>
+                            <h6 class="fw-bold mb-0">{{ $topikKhusus->topik ?? 'Belum ada topik khusus' }}</h6>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -81,7 +95,7 @@
                 <div class="card-header bg-white border-0 py-3">
                     <h6 class="fw-bold mb-0 text-primary">Daftar Seminar</h6>
                 </div>
-                <div class="card-body p-4">
+                <div class="cardd body p-4">
                     <div class="mb-3">
                         <h6 class="fw-bold">Total Bimbingan : {{ $totalBimbingan }}</h6>
                         <ul class="list-unstyled small text-muted mb-0">
@@ -93,16 +107,18 @@
                     <hr class="my-4">
 
                     <!-- Upload Laporan Kerja Praktik -->
-                    <div class="mb-4">
+                    <div class="upload-section mb-4">
                         <h6 class="fw-bold mb-3">Laporan Kerja Praktik</h6>
                         <div id="laporanKpUploaded" style="{{ $seminar && $seminar->file_laporan_kp ? '' : 'display: none;' }}">
                             <div class="alert alert-success py-2 d-flex justify-content-between align-items-center">
                                 <span><i class="fas fa-check-circle me-2"></i> File sudah diunggah</span>
                                 <div>
-                                    <a href="{{ route('kp.seminar.download', basename($seminar->file_laporan_kp ?? '')) }}"
-                                       class="btn btn-sm btn-outline-primary me-2" target="_blank">
-                                        <i class="fas fa-eye"></i> Lihat
-                                    </a>
+                                    @if($seminar && $seminar->file_laporan_kp)
+                                        <a href="{{ route('kp.seminar.download', basename($seminar->file_laporan_kp)) }}"
+                                           class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                                            <i class="fas fa-eye"></i> Lihat
+                                        </a>
+                                    @endif
                                     <button class="btn btn-sm btn-warning me-2" onclick="editFile('laporanKp')">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
@@ -113,26 +129,33 @@
                             </div>
                         </div>
                         <div id="laporanKpForm" style="{{ $seminar && $seminar->file_laporan_kp ? 'display: none;' : '' }}">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="flex-grow-1">
-                                    <input type="file" class="form-control form-control-sm" id="laporanKp" accept=".pdf,.doc,.docx">
+                            <div class="upload-area" id="laporanKpDropArea">
+                                <div class="upload-content">
+                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                    <p>Drag & drop file Laporan KP here or <span class="upload-link">browse</span></p>
+                                    <small class="text-muted">Format: PDF, DOC, DOCX. Maksimal 5MB</small>
+                                    <input type="file" id="laporanKp" accept=".pdf,.doc,.docx" style="display: none;">
                                 </div>
-                                <button class="btn btn-primary btn-sm px-4" id="submitLaporanKp">Submit</button>
+                            </div>
+                            <div class="text-center mt-3">
+                                <button class="btn-submit" id="submitLaporanKp">Submit</button>
                             </div>
                         </div>
                     </div>
 
                     <!-- Upload Penilaian Perusahaan -->
-                    <div class="mb-4">
+                    <div class="upload-section mb-4">
                         <h6 class="fw-bold mb-3">Unggah Penilaian Perusahaan</h6>
                         <div id="penilaianPerusahaanUploaded" style="{{ $seminar && $seminar->file_penilaian_perusahaan ? '' : 'display: none;' }}">
                             <div class="alert alert-success py-2 d-flex justify-content-between align-items-center">
                                 <span><i class="fas fa-check-circle me-2"></i> File sudah diunggah</span>
                                 <div>
-                                    <a href="{{ route('kp.seminar.download', basename($seminar->file_penilaian_perusahaan ?? '')) }}"
-                                       class="btn btn-sm btn-outline-primary me-2" target="_blank">
-                                        <i class="fas fa-eye"></i> Lihat
-                                    </a>
+                                    @if($seminar && $seminar->file_penilaian_perusahaan)
+                                        <a href="{{ route('kp.seminar.download', basename($seminar->file_penilaian_perusahaan)) }}"
+                                           class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                                            <i class="fas fa-eye"></i> Lihat
+                                        </a>
+                                    @endif
                                     <button class="btn btn-sm btn-warning me-2" onclick="editFile('penilaianPerusahaan')">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
@@ -143,26 +166,33 @@
                             </div>
                         </div>
                         <div id="penilaianPerusahaanForm" style="{{ $seminar && $seminar->file_penilaian_perusahaan ? 'display: none;' : '' }}">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="flex-grow-1">
-                                    <input type="file" class="form-control form-control-sm" id="penilaianPerusahaan" accept=".pdf,.doc,.docx">
+                            <div class="upload-area" id="penilaianPerusahaanDropArea">
+                                <div class="upload-content">
+                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                    <p>Drag & drop file Penilaian Perusahaan here or <span class="upload-link">browse</span></p>
+                                    <small class="text-muted">Format: PDF, DOC, DOCX. Maksimal 5MB</small>
+                                    <input type="file" id="penilaianPerusahaan" accept=".pdf,.doc,.docx" style="display: none;">
                                 </div>
-                                <button class="btn btn-primary btn-sm px-4" id="submitPenilaianPerusahaan">Submit</button>
+                            </div>
+                            <div class="text-center mt-3">
+                                <button class="btn-submit" id="submitPenilaianPerusahaan">Submit</button>
                             </div>
                         </div>
                     </div>
 
                     <!-- Upload Surat KP -->
-                    <div class="mb-4">
+                    <div class="upload-section mb-4">
                         <h6 class="fw-bold mb-3">Unggah Surat KP</h6>
                         <div id="suratKpUploaded" style="{{ $seminar && $seminar->file_surat_kp ? '' : 'display: none;' }}">
                             <div class="alert alert-success py-2 d-flex justify-content-between align-items-center">
                                 <span><i class="fas fa-check-circle me-2"></i> File sudah diunggah</span>
                                 <div>
-                                    <a href="{{ route('kp.seminar.download', basename($seminar->file_surat_kp ?? '')) }}"
-                                       class="btn btn-sm btn-outline-primary me-2" target="_blank">
-                                        <i class="fas fa-eye"></i> Lihat
-                                    </a>
+                                    @if($seminar && $seminar->file_surat_kp)
+                                        <a href="{{ route('kp.seminar.download', basename($seminar->file_surat_kp)) }}"
+                                           class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                                            <i class="fas fa-eye"></i> Lihat
+                                        </a>
+                                    @endif
                                     <button class="btn btn-sm btn-warning me-2" onclick="editFile('suratKp')">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
@@ -173,17 +203,22 @@
                             </div>
                         </div>
                         <div id="suratKpForm" style="{{ $seminar && $seminar->file_surat_kp ? 'display: none;' : '' }}">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="flex-grow-1">
-                                    <input type="file" class="form-control form-control-sm" id="suratKp" accept=".pdf,.doc,.docx">
+                            <div class="upload-area" id="suratKpDropArea">
+                                <div class="upload-content">
+                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                    <p>Drag & drop file Surat KP here or <span class="upload-link">browse</span></p>
+                                    <small class="text-muted">Format: PDF, DOC, DOCX. Maksimal 5MB</small>
+                                    <input type="file" id="suratKp" accept=".pdf,.doc,.docx" style="display: none;">
                                 </div>
-                                <button class="btn btn-primary btn-sm px-4" id="submitSuratKp">Submit</button>
+                            </div>
+                            <div class="text-center mt-3">
+                                <button class="btn-submit" id="submitSuratKp">Submit</button>
                             </div>
                         </div>
                     </div>
 
                     <div class="text-center">
-                        <button class="btn btn-primary btn-lg px-5 rounded-pill">Kirim</button>
+                        <button class="btn-kirim">Kirim</button>
                     </div>
                 </div>
             </div>
@@ -194,7 +229,7 @@
             <!-- Status Pendaftaran -->
             <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                 <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="fw-bold mb-0">Status Pendaftaran</h6>
+                    <h6 class="fw-bold mb-0 text-primary">Status Pendaftaran</h6>
                     <i class="fas fa-sync-alt text-muted"></i>
                 </div>
                 <div class="card-body p-4 text-center">
@@ -218,11 +253,18 @@
             <!-- Jadwal Seminar -->
             <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
                 <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="fw-bold mb-0">Jadwal Seminar</h6>
+                    <h6 class="fw-bold mb-0 text-primary">Jadwal Seminar</h6>
                     <i class="fas fa-calendar-alt text-muted"></i>
                 </div>
                 <div class="card-body p-4 text-center">
-                    <button class="btn btn-outline-primary btn-sm mb-2">Unduh Jadwal</button>
+                    @if($seminar && $seminar->jadwal_seminar_file)
+                        <a href="{{ route('kp.seminar.download', basename($seminar->jadwal_seminar_file)) }}"
+                           class="btn btn-outline-primary btn-sm mb-2" target="_blank">
+                            <i class="fas fa-download"></i> Unduh Jadwal
+                        </a>
+                    @else
+                        <button class="btn btn-outline-primary btn-sm mb-2" disabled>Unduh Jadwal</button>
+                    @endif
                     <button class="btn btn-outline-secondary btn-sm">Doc</button>
                 </div>
             </div>
@@ -230,7 +272,7 @@
             <!-- Nilai KP -->
             <div class="card border-0 shadow-sm" style="border-radius: 16px;">
                 <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="fw-bold mb-0">Nilai KP</h6>
+                    <h6 class="fw-bold mb-0 text-primary">Nilai KP</h6>
                     <i class="fas fa-chart-line text-muted"></i>
                 </div>
                 <div class="card-body p-4 text-center">
@@ -244,17 +286,93 @@
 </div>
 @endsection
 
-@section('styles')
+
 <style>
+    /* Import Modern Font */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    /* Global Typography */
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+        font-size: 14px;
+        line-height: 1.6;
+        color: #374151;
+    }
+
+    /* Typography Hierarchy */
+    h4, h5, h6 {
+        font-weight: 600 !important;
+        color: #1f2937 !important;
+        letter-spacing: -0.025em !important;
+    }
+
+    h4 {
+        font-size: 2rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    h5 {
+        font-size: 1.5rem !important;
+        margin-bottom: 1rem !important;
+    }
+
+    h6 {
+        font-size: 1.125rem !important;
+        margin-bottom: 0.75rem !important;
+    }
+
+    p, .form-group label, .kp-list-item {
+        font-size: 0.875rem !important;
+        line-height: 1.5 !important;
+        color: #6b7280 !important;
+    }
+
+    .form-control, .form-select {
+        font-size: 0.875rem !important;
+        font-weight: 400 !important;
+    }
+
+    .btn {
+        font-size: 0.875rem !important;
+        font-weight: 500 !important;
+        letter-spacing: 0.025em !important;
+    }
+
+    /* Glassmorphism Card Styles */
     .card {
-        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.9) !important;
+        backdrop-filter: blur(10px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+        transition: all 0.3s ease !important;
         overflow: hidden;
-        transition: all 0.3s ease;
     }
 
     .card:hover {
-        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12) !important;
-        transform: translateY(-6px);
+        transform: translateY(-2px) !important;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 6px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    /* Form Controls with Rounded Corners */
+    .form-control, .form-select {
+        border-radius: 12px !important;
+        border: none !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+        background: rgba(255, 255, 255, 0.8) !important;
+        backdrop-filter: blur(5px) !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #007bff !important;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25) !important;
+        background: rgba(255, 255, 255, 0.95) !important;
+    }
+
+    /* Buttons with Rounded Corners */
+    .btn {
+        border-radius: 12px !important;
     }
 
     .badge {
@@ -281,11 +399,161 @@
     .btn-primary:hover {
         background-color: #2c3e50 !important;
         border-color: #2c3e50 !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
     }
 
     .btn-outline-primary:hover {
         background-color: #5a67d8 !important;
         color: white !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(90, 103, 216, 0.3) !important;
+    }
+
+    .btn-warning:hover, .btn-danger:hover, .btn-success:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+    }
+
+    /* Upload Area Styles */
+    .upload-area {
+        border: 2px dashed #d1d5db;
+        border-radius: 12px;
+        padding: 40px 20px;
+        text-align: center;
+        background: rgba(255, 255, 255, 0.8);
+        backdrop-filter: blur(5px);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .upload-area:hover {
+        border-color: #3b82f6;
+        background: rgba(59, 130, 246, 0.05);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+    }
+
+    .upload-area.dragover {
+        border-color: #10b981;
+        background: rgba(16, 185, 129, 0.1);
+        transform: scale(1.02);
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: #9ca3af;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .upload-area:hover .upload-icon {
+        color: #3b82f6;
+        transform: scale(1.1);
+    }
+
+    .upload-area.dragover .upload-icon {
+        color: #10b981;
+    }
+
+    .upload-content p {
+        margin: 0 0 10px 0;
+        color: #6b7280;
+        font-size: 1rem;
+    }
+
+    .upload-link {
+        color: #3b82f6;
+        text-decoration: underline;
+        cursor: pointer;
+        font-weight: 500;
+    }
+
+    .upload-link:hover {
+        color: #1d4ed8;
+    }
+
+    /* Upload Section Borders */
+    .upload-section {
+        border: 3px solid #64748b;
+        border-radius: 12px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(5px);
+        margin-bottom: 20px;
+        position: relative;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .upload-section:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #d1d5db, transparent);
+    }
+
+    /* Modern Gradient Buttons */
+    .btn-submit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+    }
+
+    .btn-submit:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-kirim {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        box-shadow: 0 8px 25px rgba(245, 87, 108, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .btn-kirim:hover {
+        transform: translateY(-3px) scale(1.05);
+        box-shadow: 0 12px 35px rgba(245, 87, 108, 0.6);
+        background: linear-gradient(135deg, #e785f0 0%, #e54a5f 100%);
+    }
+
+    .btn-kirim:active {
+        transform: translateY(-1px) scale(1.02);
+        box-shadow: 0 6px 20px rgba(245, 87, 108, 0.5);
     }
 
     /* Input file placeholder */
@@ -312,7 +580,7 @@
         }
     }
 </style>
-@endsection
+
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -380,20 +648,65 @@ function deleteFile(fieldName) {
 
 document.addEventListener('DOMContentLoaded', function() {
 
-// Handle Laporan KP upload
-document.getElementById('submitLaporanKp')?.addEventListener('click', function() {
-    uploadFile('laporanKp', 'file_laporan_kp', 'submitLaporanKp');
-});
+    // Initialize drag and drop for each upload area
+    initializeDragDrop('laporanKpDropArea', 'laporanKp');
+    initializeDragDrop('penilaianPerusahaanDropArea', 'penilaianPerusahaan');
+    initializeDragDrop('suratKpDropArea', 'suratKp');
 
-// Handle Penilaian Perusahaan upload
-document.getElementById('submitPenilaianPerusahaan')?.addEventListener('click', function() {
-    uploadFile('penilaianPerusahaan', 'file_penilaian_perusahaan', 'submitPenilaianPerusahaan');
-});
+    // Handle Laporan KP upload
+    document.getElementById('submitLaporanKp')?.addEventListener('click', function() {
+        uploadFile('laporanKp', 'file_laporan_kp', 'submitLaporanKp');
+    });
 
-// Handle Surat KP upload
-document.getElementById('submitSuratKp')?.addEventListener('click', function() {
-    uploadFile('suratKp', 'file_surat_kp', 'submitSuratKp');
-});
+    // Handle Penilaian Perusahaan upload
+    document.getElementById('submitPenilaianPerusahaan')?.addEventListener('click', function() {
+        uploadFile('penilaianPerusahaan', 'file_penilaian_perusahaan', 'submitPenilaianPerusahaan');
+    });
+
+    // Handle Surat KP upload
+    document.getElementById('submitSuratKp')?.addEventListener('click', function() {
+        uploadFile('suratKp', 'file_surat_kp', 'submitSuratKp');
+    });
+
+function initializeDragDrop(dropAreaId, inputId) {
+    const dropArea = document.getElementById(dropAreaId);
+    const fileInput = document.getElementById(inputId);
+
+    if (!dropArea || !fileInput) return;
+
+    // Click to browse
+    dropArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // Drag over
+    dropArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropArea.classList.add('dragover');
+    });
+
+    // Drag leave
+    dropArea.addEventListener('dragleave', () => {
+        dropArea.classList.remove('dragover');
+    });
+
+    // Drop
+    dropArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropArea.classList.remove('dragover');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            fileInput.files = files;
+            // Optionally show file name or something
+        }
+    });
+
+    // File input change
+    fileInput.addEventListener('change', () => {
+        // Optional: show selected file name
+    });
+}
 
 function uploadFile(inputId, fieldName, buttonId) {
     if (!kpRequestId) {

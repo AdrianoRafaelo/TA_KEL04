@@ -24,7 +24,7 @@ Route::get('/mahasiswa', [LoginController::class, 'home'])->name('mahasiswa.home
 Route::get('/', function () { if (Session::has('api_token')) { return redirect()->route('welcome');} else {return redirect('/login');}});
 Route::get('/kerja-praktik', [KerjaPraktikController::class, 'index'])->middleware('auth.session');
 Route::get('/kerja-praktik-dosen', [KerjaPraktikController::class, 'dosen'])->middleware('auth.session');
-Route::get('/kerja-praktik-koordinator', [KerjaPraktikController::class, 'koordinator'])->middleware('auth.session');
+Route::get('/kerja-praktik-koordinator', [KerjaPraktikController::class, 'koordinator'])->name('kerja-praktik-koordinator')->middleware('auth.session');
 Route::get('/kerja-praktik-mahasiswa-pelaksanaan', [KerjaPraktikController::class, 'mahasiswaPelaksanaanKp'])->middleware('auth.session');
 route::get('/kerja-praktik-mahasiswa-seminar', [KerjaPraktikController::class, 'seminarmhs'])->middleware('auth.session');
 Route::get('/kerja-praktik-koordinator-pelaksanaan', [KerjaPraktikController::class, 'koordinatorPelaksanaanKp'])->middleware('auth.session');
@@ -32,14 +32,25 @@ Route::get('/kerja-praktik-koordinator-seminar', [KerjaPraktikController::class,
 Route::get('/kerja-praktik-dosen-seminar', [KerjaPraktikController::class, 'dosenSeminarKp'])->middleware('auth.session');
 
 Route::get('/informasi-umum', function () {return view('informasi_umum');})->middleware('auth.session');
-Route::get('/pendaftaran-kp', [KerjaPraktikController::class, 'pendaftaranKp'])->middleware('auth.session');
+Route::get('/pendaftaran-kp', [KerjaPraktikController::class, 'pendaftaranKp'])->name('pendaftaran-kp')->middleware('auth.session');
 Route::post('/pendaftaran-kp/permohonan', [KerjaPraktikController::class, 'storePermohonan'])->name('pendaftaran-kp.permohonan')->middleware('auth.session');
 Route::post('/pendaftaran-kp/pengantar', [KerjaPraktikController::class, 'storePengantar'])->name('pendaftaran-kp.pengantar')->middleware('auth.session');
+
+
+Route::delete('/pendaftaran-kp/delete-permohonan/{id}', [KerjaPraktikController::class, 'deletePermohonan'])->name('pendaftaran-kp.delete-permohonan')->middleware('auth.session');
+Route::get('/pendaftaran-kp/get-permohonan/{id}', [KerjaPraktikController::class, 'getPermohonan'])->name('pendaftaran-kp.get-permohonan')->middleware('auth.session');
+Route::post('/pendaftaran-kp/update-permohonan/{id}', [KerjaPraktikController::class, 'updatePermohonan'])->name('pendaftaran-kp.update-permohonan')->middleware('auth.session');
+
+Route::get('/pendaftaran-kp/get-pengantar/{id}', [KerjaPraktikController::class, 'getPengantar'])->name('pendaftaran-kp.get-pengantar')->middleware('auth.session');
+Route::put('/pendaftaran-kp/update-pengantar/{id}', [KerjaPraktikController::class, 'updatePengantar'])->name('pendaftaran-kp.update-pengantar')->middleware('auth.session');
+Route::delete('/pendaftaran-kp/delete-pengantar/{id}', [KerjaPraktikController::class, 'deletePengantar'])->name('pendaftaran-kp.delete-pengantar')->middleware('auth.session');
 Route::get('/download-permohonan/{id}', [KerjaPraktikController::class, 'downloadPermohonan'])->name('download.permohonan')->middleware('auth.session');
 Route::get('/download-pengantar/{id}', [KerjaPraktikController::class, 'downloadPengantar'])->name('download.pengantar')->middleware('auth.session');
 Route::post('/kerja-praktik-koordinator/assign-dosen', [KerjaPraktikController::class, 'assignDosen'])->name('kerja-praktik-koordinator.assign-dosen')->middleware('auth.session');
+Route::post('/kerja-praktik-koordinator/approve-pengantar', [KerjaPraktikController::class, 'approvePengantar'])->name('kerja-praktik-koordinator.approve-pengantar')->middleware('auth.session');
 Route::post('/kerja-praktik-koordinator/approve-permohonan', [KerjaPraktikController::class, 'approvePermohonan'])->name('kerja-praktik-koordinator.approve-permohonan')->middleware('auth.session');
 Route::post('/kerja-praktik-koordinator/reject-permohonan', [KerjaPraktikController::class, 'rejectPermohonan'])->name('kerja-praktik-koordinator.reject-permohonan')->middleware('auth.session');
+Route::delete('/kerja-praktik-koordinator/delete-permohonan/{id}', [KerjaPraktikController::class, 'deletePermohonanKoordinator'])->name('kerja-praktik-koordinator.delete-permohonan')->middleware('auth.session');
 Route::post('/kerja-praktik/daftar-kelompok', [KerjaPraktikController::class, 'daftarKelompok'])->name('kerja-praktik.daftar-kelompok')->middleware('auth.session');
 Route::get('/api/kp-groups', [KerjaPraktikController::class, 'getKpGroups'])->middleware('auth.session');
 Route::post('/kerja-praktik/upload-cv', [KerjaPraktikController::class, 'uploadCv'])->name('kerja-praktik.upload-cv')->middleware('auth.session');
@@ -71,9 +82,16 @@ Route::delete('/kp/seminar/delete-file', [KerjaPraktikController::class, 'delete
 
 // Tugas Akhir
 Route::get('/ta-mahasiswa', [TugasAkhirController::class, 'indexMahasiswa'])->middleware('auth.session');
-Route::get('/matakuliah', [MatakuliahController::class, 'index'])->middleware('auth.session');
+Route::get('/matakuliah', [MatakuliahController::class, 'index'])->name('matakuliah.index')->middleware('auth.session');
+Route::get('/matakuliah/create', [MatakuliahController::class, 'create'])->name('matakuliah.create')->middleware('auth.session');
+Route::post('/matakuliah', [MatakuliahController::class, 'store'])->name('matakuliah.store')->middleware('auth.session');
+Route::get('/matakuliah/{id}/edit', [MatakuliahController::class, 'edit'])->name('matakuliah.edit')->middleware('auth.session');
+Route::put('/matakuliah/{id}', [MatakuliahController::class, 'update'])->name('matakuliah.update')->middleware('auth.session');
+Route::delete('/matakuliah/{id}', [MatakuliahController::class, 'destroy'])->name('matakuliah.destroy')->middleware('auth.session');
 Route::get('/ta-dosen', [TugasAkhirController::class, 'indexDosen'])->name('ta-dosen')->middleware('auth.session');
 Route::post('/ta/store', [TugasAkhirController::class, 'store'])->middleware('auth.session');
+Route::put('/ta/{id}', [TugasAkhirController::class, 'update'])->middleware('auth.session');
+Route::delete('/ta/{id}', [TugasAkhirController::class, 'destroy'])->middleware('auth.session');
 Route::post('/ta/store-transaksi', [TugasAkhirController::class, 'storeTransaksi'])->middleware('auth.session');
 Route::post('/ta/terima-transaksi/{id}', [TugasAkhirController::class, 'terimaTransaksi'])->name('ta.terimaTransaksi')->middleware('auth.session');
 Route::delete('/ta/cancel-transaksi/{id}', [TugasAkhirController::class, 'cancelTransaksi'])->name('ta.cancel-transaksi')->middleware('auth.session');
@@ -84,15 +102,23 @@ Route::get('/sidang-akhir-dosen', [TugasAkhirController::class, 'sidangAkhirDose
 Route::get('/bimbingan-dosen', [TugasAkhirController::class, 'bimbinganDosen'])->name('bimbingan.dosen')->middleware('auth.session');
 Route::get('/seminar-proposal-mahasiswa', [TugasAkhirController::class, 'seminarProposalMahasiswa'])->name('seminar.proposal.mahasiswa')->middleware('auth.session');
 Route::post('/seminar-proposal-mahasiswa/store', [TugasAkhirController::class, 'storeSeminarProposal'])->name('seminar.proposal.mahasiswa.store')->middleware('auth.session');
+Route::put('/seminar-proposal-mahasiswa/update-file/{field}', [TugasAkhirController::class, 'updateSeminarProposalFile'])->name('seminar.proposal.mahasiswa.update.file')->middleware('auth.session');
+Route::delete('/seminar-proposal-mahasiswa/delete-file/{field}', [TugasAkhirController::class, 'deleteSeminarProposalFile'])->name('seminar.proposal.mahasiswa.delete.file')->middleware('auth.session');
 Route::post('/seminar-proposal-mahasiswa/upload-revisi', [TugasAkhirController::class, 'uploadRevisiSeminarProposal'])->name('seminar.proposal.mahasiswa.upload.revisi')->middleware('auth.session');
 Route::get('/seminar-hasil-mahasiswa', [TugasAkhirController::class, 'seminarHasilMahasiswa'])->name('seminar.hasil.mahasiswa')->middleware('auth.session');
 Route::post('/seminar-hasil-mahasiswa/store', [TugasAkhirController::class, 'storeSeminarHasil'])->name('seminar.hasil.mahasiswa.store')->middleware('auth.session');
+Route::put('/seminar-hasil-mahasiswa/update-file/{field}', [TugasAkhirController::class, 'updateSeminarHasilFile'])->name('seminar.hasil.mahasiswa.update.file')->middleware('auth.session');
+Route::delete('/seminar-hasil-mahasiswa/delete-file/{field}', [TugasAkhirController::class, 'deleteSeminarHasilFile'])->name('seminar.hasil.mahasiswa.delete.file')->middleware('auth.session');
 Route::post('/seminar-hasil-mahasiswa/upload-revisi', [TugasAkhirController::class, 'uploadRevisiSeminarHasil'])->name('seminar.hasil.mahasiswa.upload.revisi')->middleware('auth.session');
 Route::get('/sidang-akhir-mahasiswa', [TugasAkhirController::class, 'sidangAkhirMahasiswa'])->name('sidang.akhir.mahasiswa')->middleware('auth.session');
 Route::post('/sidang-akhir-mahasiswa/store', [TugasAkhirController::class, 'storeSidangAkhir'])->name('sidang.akhir.mahasiswa.store')->middleware('auth.session');
+Route::put('/sidang-akhir-mahasiswa/update-file/{field}', [TugasAkhirController::class, 'updateSidangAkhirFile'])->name('sidang.akhir.mahasiswa.update.file')->middleware('auth.session');
+Route::delete('/sidang-akhir-mahasiswa/delete-file/{field}', [TugasAkhirController::class, 'deleteSidangAkhirFile'])->name('sidang.akhir.mahasiswa.delete.file')->middleware('auth.session');
 Route::post('/sidang-akhir-mahasiswa/upload-revisi', [TugasAkhirController::class, 'uploadRevisiSidangAkhir'])->name('sidang.akhir.mahasiswa.upload.revisi')->middleware('auth.session');
 Route::get('/bimbingan-mahasiswa', [TugasAkhirController::class, 'bimbinganMahasiswa'])->name('bimbingan.mahasiswa')->middleware('auth.session');
 Route::post('/bimbingan-mahasiswa/store', [TugasAkhirController::class, 'storeBimbingan'])->name('bimbingan.mahasiswa.store')->middleware('auth.session');
+Route::put('/bimbingan-mahasiswa/update-file/{field}', [TugasAkhirController::class, 'updateSkripsiFile'])->name('bimbingan.mahasiswa.update.file')->middleware('auth.session');
+Route::delete('/bimbingan-mahasiswa/delete-file/{field}', [TugasAkhirController::class, 'deleteSkripsiFile'])->name('bimbingan.mahasiswa.delete.file')->middleware('auth.session');
 Route::post('/bimbingan-mahasiswa/upload-skripsi', [TugasAkhirController::class, 'uploadSkripsiMahasiswa'])->name('bimbingan.mahasiswa.upload.skripsi')->middleware('auth.session');
 Route::get('/koordinator-pendaftaran', [TugasAkhirController::class, 'koordinatorPendaftaran'])->name('koordinator.pendaftaran')->middleware('auth.session');
 Route::post('/koordinator/terima-judul-batch1', [TugasAkhirController::class, 'terimaJudulBatch1'])->name('koordinator.terima.judul.batch1')->middleware('auth.session');
@@ -143,12 +169,37 @@ Route::get('/ta/seminar-proposal', [TugasAkhirController::class, 'seminarProposa
 Route::get('/mbkm/informasi-mhs', [MbkmController::class, 'index'])->name('mbkm.informasi-mhs')->middleware('auth.session');
 Route::get('/mbkm/pendaftaran-mhs', [MbkmController::class, 'pendaftaran'])->name('mbkm.pendaftaran-mhs')->middleware('auth.session');
 Route::post('/mbkm/pendaftaran-mhs/store', [MbkmController::class, 'storePendaftaranMbkm'])->name('mbkm.pendaftaran-mhs.store')->middleware('auth.session');
+Route::get('/mbkm/pendaftaran-mhs/get/{id}', [MbkmController::class, 'getPendaftaranMbkm'])->name('mbkm.pendaftaran-mhs.get')->middleware('auth.session');
+Route::delete('/mbkm/pendaftaran-mhs/delete/{id}', [MbkmController::class, 'deletePendaftaranMbkm'])->name('mbkm.pendaftaran-mhs.delete')->middleware('auth.session');
 Route::get('/mbkm/pelaksanaan-mhs', [MbkmController::class, 'pelaksanaan'])->name('mbkm.pelaksanaan-mhs')->middleware('auth.session');
+Route::post('/mbkm/pelaksanaan-mhs/store', [MbkmController::class, 'storePelaksanaan'])->name('mbkm.store.pelaksanaan')->middleware('auth.session');
 Route::get('/mbkm/seminar-mhs', [MbkmController::class, 'seminar'])->name('mbkm.seminar-mhs')->middleware('auth.session');
+Route::post('/mbkm/seminar-ekotek/store', [MbkmController::class, 'storeSeminarEkotek'])->name('mbkm.seminar-ekotek.store')->middleware('auth.session');
+Route::post('/mbkm/seminar-pmb/store', [MbkmController::class, 'storeSeminarPmb'])->name('mbkm.seminar-pmb.store')->middleware('auth.session');
+Route::get('/mbkm/download-jadwal-seminar', [MbkmController::class, 'downloadJadwalSeminar'])->name('mbkm.download.jadwal.seminar')->middleware('auth.session');
 route::get('/mbkm/pendaftaran-nonmitra-mhs', [MbkmController::class, 'pendaftaranNonMitra'])->name('mbkm.pendaftaran-nonmitra-mhs')->middleware('auth.session');
+Route::post('/mbkm/pendaftaran-nonmitra-mhs/store', [MbkmController::class, 'storePendaftaranMbkmNonmitra'])->name('mbkm.pendaftaran-nonmitra-mhs.store')->middleware('auth.session');
 Route::get('/mbkm/pendaftaran-koordinator', [MbkmController::class, 'pendaftarankoordinator'])->name('mbkm.pendaftaran-koordinator')->middleware('auth.session');
 Route::get('/mbkm/pelaksanaan-koordinator', [MbkmController::class, 'pelaksanaankoordinator'])->name('mbkm.pelaksanaan-koordinator')->middleware('auth.session');
 Route::get('/mbkm/seminar-koordinator', [MbkmController::class, 'seminarkoordinator'])->name('mbkm.seminar-koordinator')->middleware('auth.session');
 Route::post('/mbkm/tambah-mitra', [MbkmController::class, 'storeTambahMitra'])->name('mbkm.store.tambah.mitra')->middleware('auth.session');
 Route::put('/mbkm/tambah-mitra/{id}', [MbkmController::class, 'updateTambahMitra'])->name('mbkm.update.tambah.mitra')->middleware('auth.session');
 Route::delete('/mbkm/tambah-mitra/{id}', [MbkmController::class, 'deleteTambahMitra'])->name('mbkm.delete.tambah.mitra')->middleware('auth.session');
+Route::post('/mbkm/pendaftaran/approve/{id}', [MbkmController::class, 'approvePendaftaranMbkm'])->name('mbkm.approve.pendaftaran')->middleware('auth.session');
+Route::post('/mbkm/pendaftaran/reject/{id}', [MbkmController::class, 'rejectPendaftaranMbkm'])->name('mbkm.reject.pendaftaran')->middleware('auth.session');
+Route::get('/mbkm/pendaftaran/edit/{id}', [MbkmController::class, 'editPendaftaranMbkm'])->name('mbkm.edit.pendaftaran')->middleware('auth.session');
+Route::put('/mbkm/pendaftaran/update/{id}', [MbkmController::class, 'updatePendaftaranMbkm'])->name('mbkm.update.pendaftaran')->middleware('auth.session');
+Route::post('/mbkm/pendaftaran-nonmitra/approve/{id}', [MbkmController::class, 'approvePendaftaranMbkmNonmitra'])->name('mbkm.approve.pendaftaran.nonmitra')->middleware('auth.session');
+Route::post('/mbkm/pendaftaran-nonmitra/reject/{id}', [MbkmController::class, 'rejectPendaftaranMbkmNonmitra'])->name('mbkm.reject.pendaftaran.nonmitra')->middleware('auth.session');
+Route::get('/mbkm/pendaftaran-nonmitra/edit/{id}', [MbkmController::class, 'editPendaftaranMbkmNonmitra'])->name('mbkm.edit.pendaftaran.nonmitra')->middleware('auth.session');
+Route::post('/mbkm/konversi-mk/store', [MbkmController::class, 'storeKonversiMk'])->name('mbkm.konversi-mk.store')->middleware('auth.session');
+route::get('/mbkm/informasi-nonmitra', [MbkmController::class, 'informasinonmitra'])->name('mbkm.informasi-nonmitra-mhs')->middleware('auth.session');
+route::get('/mbkm/seminar-nonmitra', [MbkmController::class, 'seminarnonmitra'])->name('mbkm.seminar-nonmitra-mhs')->middleware('auth.session');
+Route::get('/mbkm/dosen-konversi-matkul', [MbkmController::class, 'konversimatkul'])->name('mbkm.dosen.konversi-matkul')->middleware('auth.session');
+Route::get('/mbkm/dosen-konversi-matkul/{courseId}/pendaftar', [MbkmController::class, 'getPendaftarKonversi'])->name('mbkm.dosen.get-pendaftar')->middleware('auth.session');
+Route::put('/mbkm/dosen-konversi-matkul/{courseId}/cpmk', [MbkmController::class, 'updateCpmk'])->name('mbkm.dosen.update-cpmk')->middleware('auth.session');
+route::get('/mbkm/dosen-pelaksanaan', [MbkmController::class, 'pelaksanaandosen'])->name('mbkm.dosen-pelaksanaan')->middleware('auth.session');
+route::get('/mbkm/dosen-seminar', [MbkmController::class,    'seminardosen'])->name('mbkm.dosen-seminar')->middleware('auth.session');
+Route::post('/mbkm/store-program-nonmitra', [MbkmController::class, 'storeProgramNonmitra'])->name('mbkm.store.program-nonmitra')->middleware('auth.session');
+Route::put('/mbkm/program-nonmitra/{id}', [MbkmController::class, 'updateProgramNonmitra'])->name('mbkm.update.program-nonmitra')->middleware('auth.session');
+Route::delete('/mbkm/program-nonmitra/{id}', [MbkmController::class, 'deleteProgramNonmitra'])->name('mbkm.delete.program-nonmitra')->middleware('auth.session');

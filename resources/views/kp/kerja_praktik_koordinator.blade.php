@@ -1,4 +1,22 @@
-\@extends('layouts.app')
+<?php
+
+use App\Models\KpRequest;
+use App\Models\KpGroup;
+
+$permohonan_requests = KpRequest::with(['company', 'mahasiswa'])->where('type', 'permohonan')->get();
+
+// Load groups for each request
+$permohonan_requests->each(function ($request) {
+    $request->group = KpGroup::where('active', true)->whereJsonContains('mahasiswa', $request->mahasiswa_id)->first();
+});
+
+// Load groups for pengantar requests
+$pengantar_requests->each(function ($request) {
+    $request->group = KpGroup::where('active', true)->whereJsonContains('mahasiswa', $request->mahasiswa_id)->first();
+});
+?>
+
+@extends('layouts.app')
 
 @section('content')
 <div class="container-fluid py-3">
@@ -24,25 +42,6 @@
                 <a href="{{ url('/kerja-praktik-koordinator-seminar') }}" class="kp-tab {{ request()->routeIs('kerja-praktik.seminar') ? 'active' : '' }}">Seminar KP</a>
             </div>
         </div>
-    </div>
-
-            <!-- Banner Section -->
-    <div class="row g-3 mb-4">
-      <div class="col-md-4">
-        <div class="gambar" style="background-image:url('/img/panel%20surya.jpeg')">
-          <div class="banner-text">Peran Manajemen Rekayasa Dalam Peningkatan Energi Terbarukan</div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="gambar" style="background-image:url('/img/panel%20surya.jpeg')">
-          <div class="banner-text">Peraturan Pemerintah Melalui Gerakan Hijau</div>
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="gambar" style="background-image:url('/img/wind turbine.jpg')">
-          <div class="banner-text">Peningkatan Kualitas Pendidikan Teknik Mesin</div>
-        </div>
-      </div>
     </div>
 
     <div class="d-flex justify-content-between align-items-center mb-3">
@@ -73,8 +72,13 @@
               <tr class="hover-row">
                 <td class="text-center">{{ $loop->iteration }}.</td>
                 <td>
-                  <div class="fw-bold">{{ $request->mahasiswa->nama ?? 'N/A' }}</div>
-                  <div class="text-muted small">{{ $request->company->tahun_ajaran ?? 'N/A' }}</div>
+                    @if($request->group && $request->group->mahasiswa() && $request->group->mahasiswa()->count() > 0)
+                        @foreach($request->group->mahasiswa() as $anggota)
+                            <div>{{ $anggota->nama }} ({{ $anggota->nim }})</div>
+                        @endforeach
+                    @else
+                        <div class="text-muted">Belum ada anggota</div>
+                    @endif
                 </td>
                 <td>{{ $request->company->nama_perusahaan ?? 'N/A' }}</td>
                 <td class="text-truncate" style="max-width: 150px;">
@@ -98,7 +102,7 @@
                       <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3">
                         Tolak
                       </button>
-                    </form>
+                    </form>                      
                   @elseif($request->status == 'approved')
                     <span class="badge bg-success">Disetujui</span>
                   @elseif($request->status == 'rejected')
@@ -109,7 +113,7 @@
               @empty
               <tr>
                 <td colspan="6" class="text-center py-5 text-muted">
-                  Belum ada permintaan surat permohonan KP.
+                    Belum ada permintaan surat permohonan KP.
                 </td>
               </tr>
               @endforelse
@@ -117,84 +121,133 @@
         </table>
     </div>
 @endif
-
 <!-- Tabel Mahasiswa Kerja Praktik -->
 <div class="table-responsive bg-white shadow-sm rounded p-3">
     <table class="table align-middle mb-0">
-            <thead style="background-color:#f8f9fa; color:#555; font-size:12px; text-transform:uppercase; border-bottom: 2px solid #b3743b;">
-             <tr>
-               <th style="width: 80px;" class="text-center">No.</th>
-               <th style="width: 180px;">Mahasiswa</th>
-               <th style="width: 200px;">Perusahaan KP</th>
-               <th style="width: 150px;">Alamat</th>
-               <th style="width: 120px;">Divisi</th>
-               <th style="width: 180px;">Dosen Pembimbing</th>
-               <th style="width: 100px;" class="text-center">Aksi</th>
-             </tr>
-           </thead>
-            <tbody style="font-size:14px;">
-              @forelse($pengantar_requests as $index => $request)
-              <tr class="hover-row">
+        <thead style="background-color:#f8f9fa; color:#555; font-size:12px; text-transform:uppercase; border-bottom: 2px solid #b3743b;">
+            <tr>
+                <th class="text-center" style="width: 60px;">No.</th>
+                <th style="width: 180px;">Mahasiswa</th>
+                <th style="width: 200px;">Perusahaan KP</th>
+                <th style="width: 150px;">Alamat</th>
+                <th style="width: 140px;">Divisi</th>
+                <th style="width: 200px;">Dosen Pembimbing</th>
+                <th class="text-center" style="width: 100px;">Aksi</th>
+            </tr>
+        </thead>
+
+        <tbody style="font-size:14px;">
+            @forelse($pengantar_requests as $index => $request)
+            <tr class="hover-row">
                 <td class="text-center">{{ $loop->iteration }}.</td>
+
                 <td>
-                  <div class="fw-bold">{{ $request->mahasiswa->nama ?? 'N/A' }}</div>
-                  <div class="text-muted small">{{ $request->supervisor->nama_supervisor ?? 'N/A' }}</div>
+                    @if($request->group && $request->group->mahasiswa() && $request->group->mahasiswa()->count() > 0)
+                        @foreach($request->group->mahasiswa() as $anggota)
+                            <div>{{ $anggota->nama }} ({{ $anggota->nim }})</div>
+                        @endforeach
+                    @else
+                        <div class="text-muted">Belum ada anggota</div>
+                    @endif
                 </td>
+
                 <td>{{ $request->company->nama_perusahaan ?? 'N/A' }}</td>
+
                 <td class="text-truncate" style="max-width: 150px;">
-                  {{ $request->company->alamat_perusahaan ?? 'N/A' }}
+                    {{ $request->company->alamat_perusahaan ?? 'N/A' }}
                 </td>
-                <td colspan="3" class="p-2">
-                  @if($request->status == 'assigned')
-                    <div class="row">
-                      <div class="col-md-4">
-                        <span>{{ $request->divisi ?? 'N/A' }}</span>
-                      </div>
-                      <div class="col-md-5">
-                        <span class="fw-bold">{{ $request->dosen->nama ?? 'N/A' }}</span>
-                      </div>
-                      <div class="col-md-3 text-center">
-                        <span class="badge bg-success">Disimpan</span>
-                      </div>
-                    </div>
-                  @else
-                    <form method="POST" action="{{ route('kerja-praktik-koordinator.assign-dosen') }}">
-                      @csrf
-                      <input type="hidden" name="request_id" value="{{ $request->id }}">
-                      <div class="row">
-                        <div class="col-md-4">
-                          <input type="text" name="divisi" class="form-control form-control-sm" placeholder="Masukkan divisi" required>
-                        </div>
-                        <div class="col-md-5">
-                          <select name="dosen_id" class="form-select form-select-sm" required>
+
+                <!-- Kolom Divisi -->
+                <td>
+                    @if($request->status == 'assigned' || $request->status == 'approved')
+                        {{ $request->divisi ?? 'N/A' }}
+                    @else
+                        <input 
+                            type="text" 
+                            name="divisi" 
+                            class="form-control form-control-sm" 
+                            placeholder="Divisi"
+                            form="form-assign-{{ $request->id }}"
+                            required
+                        >
+                    @endif
+                </td>
+
+                <!-- Kolom Dosen -->
+                <td>
+                    @if($request->status == 'assigned' || $request->status == 'approved')
+                        <span>{{ $request->dosen->nama ?? 'N/A' }}</span>
+                    @else
+                        <select 
+                            name="dosen_id" 
+                            class="form-select form-select-sm"
+                            form="form-assign-{{ $request->id }}"
+                            required>
                             <option value="">Pilih Dosen</option>
                             @foreach($lecturers as $lecturer)
-                              <option value="{{ $lecturer->id }}" {{ $request->dosen_id == $lecturer->id ? 'selected' : '' }}>
-                                {{ $lecturer->nama }}
-                              </option>
+                                <option value="{{ $lecturer->id }}">{{ $lecturer->nama }}</option>
                             @endforeach
-                          </select>
-                        </div>
-                        <div class="col-md-3 text-center">
-                          <button type="submit" class="btn btn-success btn-sm rounded-pill px-3">
-                            Simpan
-                          </button>
-                        </div>
-                      </div>
-                    </form>
-                  @endif
+                        </select>
+                    @endif
                 </td>
-              </tr>
-              @empty
-              <tr>
+
+                <!-- Kolom Aksi -->
+                <td class="text-center">
+
+                    @if($request->status == 'assigned')
+                        <form method="POST" action="{{ route('kerja-praktik-koordinator.approve-pengantar') }}">
+                            @csrf
+                            <input type="hidden" name="request_id" value="{{ $request->id }}">
+                            <button class="btn btn-success btn-sm rounded-pill px-3">Approve</button>
+                        </form>
+
+                    @elseif($request->status == 'approved')
+                        <span class="badge bg-success">Disetujui</span>
+
+                    @else
+                        <form 
+                            id="form-assign-{{ $request->id }}" 
+                            method="POST" 
+                            action="{{ route('kerja-praktik-koordinator.assign-dosen') }}">
+                            @csrf
+                            <input type="hidden" name="request_id" value="{{ $request->id }}">
+                            <button class="btn btn-success btn-sm rounded-pill px-3 mt-2">Simpan</button>
+                        </form>
+                    @endif
+                </td>
+
+            </tr>
+            @empty
+            <tr>
                 <td colspan="7" class="text-center py-5 text-muted">
-                  Belum ada permintaan surat pengantar KP.
+                    Belum ada permintaan surat pengantar KP.
                 </td>
-              </tr>
-              @endforelse
-            </tbody>
+            </tr>
+            @endforelse
+        </tbody>
     </table>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+function editPermohonan(id) {
+    // Implement edit functionality, e.g., redirect to edit page or open modal
+    window.location.href = '{{ url("/kerja-praktik-koordinator/edit-permohonan") }}/' + id;
+}
+
+function deletePermohonan(id) {
+    if (confirm('Apakah Anda yakin ingin menghapus permintaan ini?')) {
+        // Implement delete functionality, e.g., AJAX call or form submission
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{{ url("/kerja-praktik-koordinator/delete-permohonan") }}/' + id;
+        form.innerHTML = '@csrf @method("DELETE")';
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
 @endsection
 
 <style>

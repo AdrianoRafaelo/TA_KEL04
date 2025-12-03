@@ -57,7 +57,7 @@ class TugasAkhirController extends Controller
         $data = [
             'judul' => $request->judul,
             'deskripsi' => $request->deskripsi,
-            'file' => $request->file('file') ? $request->file('file')->store('ta_files') : null,
+            'file' => $request->file('file') ? $request->file('file')->store('ta_files', 'public') : null,
             'deskripsi_syarat' => $deskripsiSyarat,
             'status_id' => $statusId,
             'created_by' => $username,
@@ -94,7 +94,42 @@ class TugasAkhirController extends Controller
      */
     public function update(Request $request, TaPendaftaran $taPendaftaran)
     {
-        //
+        $username = Session::get('username') ?? 'system';
+
+        // Check if the user owns the record
+        if ($taPendaftaran->created_by !== $username) {
+            return redirect()->back()->with('error', 'Unauthorized');
+        }
+
+        // Check if registration is closed
+        $pengaturanTa = \App\Models\PengaturanTa::first();
+        $pendaftaranDitutup = false;
+        if ($pengaturanTa) {
+            if ($pengaturanTa->pendaftaran_ditutup) {
+                $pendaftaranDitutup = true;
+            } elseif ($pengaturanTa->batas_waktu_pendaftaran && now()->isAfter($pengaturanTa->batas_waktu_pendaftaran)) {
+                $pendaftaranDitutup = true;
+            }
+        }
+        if ($pendaftaranDitutup) {
+            return redirect()->back()->with('error', 'Pendaftaran TA sudah ditutup, tidak dapat mengedit.');
+        }
+
+        $data = [
+            'judul' => $request->judul,
+            'deskripsi' => $request->deskripsi,
+        ];
+
+        if ($request->hasFile('file')) {
+            // Delete old file if exists
+            if ($taPendaftaran->file) {
+                \Storage::delete('public/' . $taPendaftaran->file);
+            }
+            $data['file'] = $request->file('file')->store('ta_files', 'public');
+        }
+
+        $taPendaftaran->update($data);
+        return redirect()->back()->with('success', 'Judul berhasil diupdate');
     }
 
     /**
@@ -102,7 +137,31 @@ class TugasAkhirController extends Controller
      */
     public function destroy(TaPendaftaran $taPendaftaran)
     {
-        //
+        $username = Session::get('username') ?? 'system';
+
+        if ($taPendaftaran->created_by !== $username) {
+            return redirect()->back()->with('error', 'Unauthorized');
+        }
+
+        // Check if registration is closed
+        $pengaturanTa = \App\Models\PengaturanTa::first();
+        $pendaftaranDitutup = false;
+        if ($pengaturanTa) {
+            if ($pengaturanTa->pendaftaran_ditutup) {
+                $pendaftaranDitutup = true;
+            } elseif ($pengaturanTa->batas_waktu_pendaftaran && now()->isAfter($pengaturanTa->batas_waktu_pendaftaran)) {
+                $pendaftaranDitutup = true;
+            }
+        }
+        if ($pendaftaranDitutup) {
+            return redirect()->back()->with('error', 'Pendaftaran TA sudah ditutup, tidak dapat menghapus.');
+        }
+
+        // Soft delete
+        $taPendaftaran->active = 0;
+        $taPendaftaran->save();
+
+        return redirect()->back()->with('success', 'Judul berhasil dihapus');
     }
 
     public function indexMahasiswa()
@@ -180,12 +239,22 @@ class TugasAkhirController extends Controller
     {
         $username = Session::get('username') ?? $request->username ?? 'system';
 
+        // Check if student has already taken this offer
+        $existingTransaction = TaPendaftaranTransaksi::where('ta_pendaftaran_id', $request->ta_pendaftaran_id)
+            ->where('username', $username)
+            ->where('active', 1)
+            ->first();
+
+        if ($existingTransaction) {
+            return redirect()->back()->with('error', 'Anda sudah mengambil tawaran judul ini sebelumnya.');
+        }
+
         $pendaftaran = TaPendaftaran::find($request->ta_pendaftaran_id);
         $deskripsiSyarat = $pendaftaran ? $pendaftaran->deskripsi_syarat : null;
 
         TaPendaftaranTransaksi::create([
             'ta_pendaftaran_id' => $request->ta_pendaftaran_id,
-            'file_portofolio' => $request->file('file_portofolio') ? $request->file('file_portofolio')->store('ta_portofolio') : null,
+            'file_portofolio' => $request->file('file_portofolio') ? $request->file('file_portofolio')->store('ta_portofolio', 'public') : null,
             'ref_status_ta_id' => $request->ref_status_ta_id,
             'username' => $username,
             'catatan' => $request->catatan,
@@ -364,35 +433,81 @@ class TugasAkhirController extends Controller
 
     public function storeSeminarProposal(Request $request)
     {
-        $request->validate([
-            'file_proposal' => 'required|file|mimes:pdf,doc,docx|max:2048',
-            'file_persetujuan' => 'required|file|mimes:pdf,doc,docx|max:2048',
-        ]);
+        try {
+            \Log::info('storeSeminarProposal called', ['username' => Session::get('username'), 'request' => $request->all()]);
+            $username = Session::get('username') ?? null;
+            \Log::info('Username: ' . $username);
+            $mahasiswaTa = MahasiswaTugasAkhir::where('mahasiswa', $username)->where('active', true)->first();
+            \Log::info('MahasiswaTa found: ' . ($mahasiswaTa ? 'yes' : 'no'), ['mahasiswaTa' => $mahasiswaTa]);
 
-        $username = Session::get('username') ?? null;
-        $mahasiswaTa = MahasiswaTugasAkhir::where('mahasiswa', $username)->where('active', true)->first();
+            if (!$mahasiswaTa) {
+                \Log::info('MahasiswaTa not found, redirecting with error');
+                return redirect()->back()->with('error', 'Data mahasiswa tidak ditemukan.');
+            }
 
-        if (!$mahasiswaTa) {
-            return redirect()->back()->with('error', 'Data mahasiswa tidak ditemukan.');
+            // Check if seminar proposal already exists
+            $seminarProposal = TaSeminarProposal::where('mahasiswa', $username)->first();
+            \Log::info('SeminarProposal query result: ' . ($seminarProposal ? 'found' : 'not found'), ['existing' => $seminarProposal]);
+
+            if (!$seminarProposal) {
+                $seminarProposal = new TaSeminarProposal();
+                $seminarProposal->mahasiswa = $mahasiswaTa->mahasiswa;
+                $seminarProposal->judul = $mahasiswaTa->judul;
+                $seminarProposal->pembimbing = $mahasiswaTa->pembimbing;
+                $seminarProposal->status = 'pending';
+                \Log::info('Created new SeminarProposal');
+            } else {
+                \Log::info('Using existing SeminarProposal', ['id' => $seminarProposal->id]);
+            }
+
+            // Handle file uploads
+            \Log::info('Handling file uploads');
+            if ($request->hasFile('file_proposal')) {
+                \Log::info('Validating file_proposal');
+                $request->validate([
+                    'file_proposal' => 'file|mimes:pdf,doc,docx|max:2048',
+                ]);
+                \Log::info('Validation passed for file_proposal');
+                if ($seminarProposal->file_proposal) {
+                    \Storage::delete('public/' . $seminarProposal->file_proposal);
+                }
+                $path = $request->file('file_proposal')->store('seminar_proposals', 'public');
+                \Log::info('File stored at: ' . $path);
+                $seminarProposal->file_proposal = $path;
+            }
+
+            if ($request->hasFile('file_persetujuan')) {
+                \Log::info('Validating file_persetujuan');
+                $request->validate([
+                    'file_persetujuan' => 'file|mimes:pdf,doc,docx|max:2048',
+                ]);
+                \Log::info('Validation passed for file_persetujuan');
+                if ($seminarProposal->file_persetujuan) {
+                    \Storage::delete('public/' . $seminarProposal->file_persetujuan);
+                }
+                $path = $request->file('file_persetujuan')->store('seminar_proposals', 'public');
+                \Log::info('File stored at: ' . $path);
+                $seminarProposal->file_persetujuan = $path;
+            }
+            \Log::info('File handling done');
+
+            \Log::info('About to save seminar proposal', ['data' => $seminarProposal->toArray()]);
+            $result = $seminarProposal->save();
+            \Log::info('Seminar proposal save result: ' . ($result ? 'true' : 'false'), ['id' => $seminarProposal->id ?? 'null']);
+            if ($result) {
+                \Log::info('Seminar proposal saved successfully', ['id' => $seminarProposal->id]);
+                return redirect()->back()->with('success', 'Proposal seminar berhasil disimpan.');
+            } else {
+                \Log::error('Seminar proposal save returned false');
+                return redirect()->back()->with('error', 'Gagal menyimpan proposal.');
+            }
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            \Log::error('Validation failed', ['errors' => $e->errors()]);
+            return redirect()->back()->withErrors($e->errors())->with('error', 'Validasi gagal: ' . implode(', ', \Illuminate\Support\Arr::flatten($e->errors())));
+        } catch (\Exception $e) {
+            \Log::error('Error in storeSeminarProposal', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return redirect()->back()->with('error', 'Gagal menyimpan proposal: ' . $e->getMessage());
         }
-
-        // Simpan file proposal
-        $fileProposalPath = $request->file('file_proposal')->store('seminar_proposals', 'public');
-
-        // Simpan file persetujuan
-        $filePersetujuanPath = $request->file('file_persetujuan')->store('seminar_proposals', 'public');
-
-        // Simpan data ke database
-        TaSeminarProposal::create([
-            'mahasiswa' => $mahasiswaTa->mahasiswa,
-            'judul' => $mahasiswaTa->judul,
-            'pembimbing' => $mahasiswaTa->pembimbing,
-            'file_proposal' => $fileProposalPath,
-            'file_persetujuan' => $filePersetujuanPath,
-            'status' => 'pending',
-        ]);
-
-        return redirect()->back()->with('success', 'Proposal seminar berhasil diunggah.');
     }
 
     public function uploadRevisiSeminarProposal(Request $request)
@@ -449,6 +564,61 @@ class TugasAkhirController extends Controller
             ]);
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    public function updateSeminarProposalFile(Request $request, $field)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:pdf,doc,docx|max:2048',
+        ]);
+
+        $username = Session::get('username') ?? null;
+        $seminarProposal = TaSeminarProposal::where('mahasiswa', $username)->first();
+
+        if (!$seminarProposal) {
+            return redirect()->back()->with('error', 'Data seminar proposal tidak ditemukan.');
+        }
+
+        $allowedFields = ['file_proposal', 'file_persetujuan', 'form_revisi', 'revisi_dokumen'];
+        if (!in_array($field, $allowedFields)) {
+            return redirect()->back()->with('error', 'Field tidak valid.');
+        }
+
+        // Delete old file if exists
+        if ($seminarProposal->$field) {
+            \Storage::delete('public/' . $seminarProposal->$field);
+        }
+
+        // Store new file
+        $path = $request->file('file')->store('dokumen/sempro', 'public');
+        $seminarProposal->$field = $path;
+        $seminarProposal->save();
+
+        return redirect()->back()->with('success', 'File berhasil diupdate.');
+    }
+
+    public function deleteSeminarProposalFile($field)
+    {
+        $username = Session::get('username') ?? null;
+        $seminarProposal = TaSeminarProposal::where('mahasiswa', $username)->first();
+
+        if (!$seminarProposal) {
+            return redirect()->back()->with('error', 'Data seminar proposal tidak ditemukan.');
+        }
+
+        $allowedFields = ['file_proposal', 'file_persetujuan', 'form_revisi', 'revisi_dokumen'];
+        if (!in_array($field, $allowedFields)) {
+            return redirect()->back()->with('error', 'Field tidak valid.');
+        }
+
+        // Delete file if exists
+        if ($seminarProposal->$field) {
+            \Storage::delete('public/' . $seminarProposal->$field);
+            $seminarProposal->$field = null;
+            $seminarProposal->save();
+        }
+
+        return redirect()->back()->with('success', 'File berhasil dihapus.');
     }
 
     public function seminarHasilMahasiswa()
@@ -561,14 +731,73 @@ class TugasAkhirController extends Controller
         return redirect()->back()->with('success', 'Revisi sidang akhir berhasil diunggah.');
     }
 
+    public function updateSidangAkhirFile(Request $request, $field)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:pdf,doc,docx|max:2048',
+        ]);
+
+        $username = Session::get('username') ?? null;
+        $sidangAkhir = TaSidangAkhir::where('mahasiswa', $username)->first();
+
+        if (!$sidangAkhir) {
+            return redirect()->back()->with('error', 'Data sidang akhir tidak ditemukan.');
+        }
+
+        $allowedFields = ['file_dokumen_ta', 'file_log_activity', 'file_persetujuan', 'form_revisi', 'revisi_dokumen'];
+        if (!in_array($field, $allowedFields)) {
+            return redirect()->back()->with('error', 'Field tidak valid.');
+        }
+
+        // Delete old file if exists
+        if ($sidangAkhir->$field) {
+            \Storage::delete('public/' . $sidangAkhir->$field);
+        }
+
+        // Store new file
+        $path = $request->file('file')->store('dokumen/sidang', 'public');
+        $sidangAkhir->$field = $path;
+        $sidangAkhir->save();
+
+        return redirect()->back()->with('success', 'File berhasil diupdate.');
+    }
+
+    public function deleteSidangAkhirFile($field)
+    {
+        $username = Session::get('username') ?? null;
+        $sidangAkhir = TaSidangAkhir::where('mahasiswa', $username)->first();
+
+        if (!$sidangAkhir) {
+            return redirect()->back()->with('error', 'Data sidang akhir tidak ditemukan.');
+        }
+
+        $allowedFields = ['file_dokumen_ta', 'file_log_activity', 'file_persetujuan', 'form_revisi', 'revisi_dokumen'];
+        if (!in_array($field, $allowedFields)) {
+            return redirect()->back()->with('error', 'Field tidak valid.');
+        }
+
+        // Delete file if exists
+        if ($sidangAkhir->$field) {
+            \Storage::delete('public/' . $sidangAkhir->$field);
+            $sidangAkhir->$field = null;
+            $sidangAkhir->save();
+        }
+
+        return redirect()->back()->with('success', 'File berhasil dihapus.');
+    }
+
     public function bimbinganMahasiswa()
     {
         $username = Session::get('username') ?? null;
 
+        // Get mahasiswa id from fti_datas
+        $mahasiswa = FtiData::where('username', $username)->first();
+        $mahasiswaId = $mahasiswa ? $mahasiswa->id : null;
+
         // Ambil data bimbingan mahasiswa dari database
-        $bimbingans = TaBimbingan::where('mahasiswa', $username)
+        $bimbingans = $mahasiswaId ? TaBimbingan::where('mahasiswa_id', $mahasiswaId)
             ->orderBy('tanggal', 'desc')
-            ->get();
+            ->get() : collect();
 
         // Ambil data skripsi mahasiswa
         $skripsi = TaSkripsi::where('mahasiswa', $username)->first();
@@ -586,8 +815,16 @@ class TugasAkhirController extends Controller
 
         $username = Session::get('username') ?? null;
 
+        // Get mahasiswa id from fti_datas
+        $mahasiswa = FtiData::where('username', $username)->first();
+        $mahasiswaId = $mahasiswa ? $mahasiswa->id : null;
+
+        if (!$mahasiswaId) {
+            return response()->json(['success' => false, 'message' => 'Data mahasiswa tidak ditemukan.']);
+        }
+
         TaBimbingan::create([
-            'mahasiswa' => $username,
+            'mahasiswa_id' => $mahasiswaId,
             'tanggal' => $request->tanggal,
             'topik_pembahasan' => $request->topik_pembahasan,
             'tugas_selanjutnya' => $request->tugas_selanjutnya,
@@ -599,7 +836,7 @@ class TugasAkhirController extends Controller
 
     public function terimaJudulBatch1(Request $request)
     {
-        $ids = $request->input('ids');
+        $ids = $request->input('ids', []);
         foreach ($ids as $id) {
             $pendaftaran = TaPendaftaran::find($id);
             if ($pendaftaran) {
@@ -615,7 +852,7 @@ class TugasAkhirController extends Controller
 
     public function terimaJudulBatch2(Request $request)
     {
-        $ids = $request->input('ids');
+        $ids = $request->input('ids', []);
         foreach ($ids as $id) {
             $pendaftaran = TaPendaftaran::find($id);
             if ($pendaftaran) {
@@ -635,7 +872,14 @@ class TugasAkhirController extends Controller
         $judul_dosen = TaPendaftaran::where('active', 1)->whereNotNull('dosen')->with(['transaksi' => function($q) {
             $q->where('active', 1);
         }])->get()->map(function($jd) {
-            $jd->interested_students = $jd->transaksi->pluck('username')->toArray();
+            $usernames = $jd->transaksi->pluck('username');
+            $namaMap = \App\Models\FtiData::whereIn('username', $usernames)->pluck('nama', 'username');
+            $jd->interested_students = $jd->transaksi->map(function($transaksi) use ($namaMap) {
+                return [
+                    'username' => $transaksi->username,
+                    'nama' => $namaMap[$transaksi->username] ?? $transaksi->username
+                ];
+            })->toArray();
             return $jd;
         });
 
@@ -660,14 +904,58 @@ class TugasAkhirController extends Controller
     public function koordinatorMahasiswaTa()
     {
         $statusDisetujui = \App\Models\RefStatusTa::where('name', 'disetujui')->first();
-        $accepted_titles = TaPendaftaran::leftJoin('fti_datas', 'ta_pendaftaran.created_by', '=', 'fti_datas.username')
+        $accepted_titles = TaPendaftaran::leftJoin('fti_datas as creator', 'ta_pendaftaran.created_by', '=', 'creator.username')
+            ->leftJoin('ta_pendaftaran_transaksi', 'ta_pendaftaran.id', '=', 'ta_pendaftaran_transaksi.ta_pendaftaran_id')
+            ->leftJoin('fti_datas as student', 'ta_pendaftaran_transaksi.username', '=', 'student.username')
             ->select(
-                'ta_pendaftaran.*',
-                \DB::raw('COALESCE(fti_datas.nama, ta_pendaftaran.created_by) as nama'),
-                \DB::raw('COALESCE(fti_datas.nim, "") as nim')
+                'ta_pendaftaran.id',
+                'ta_pendaftaran.judul',
+                'ta_pendaftaran.deskripsi',
+                'ta_pendaftaran.file',
+                'ta_pendaftaran.deskripsi_syarat',
+                'ta_pendaftaran.dosen',
+                'ta_pendaftaran.created_by',
+                'ta_pendaftaran.updated_by',
+                'ta_pendaftaran.active',
+                'ta_pendaftaran.status_id',
+                'ta_pendaftaran.user_id',
+                'ta_pendaftaran.created_at',
+                'ta_pendaftaran.updated_at',
+                \DB::raw('COALESCE(creator.nama, ta_pendaftaran.created_by) as creator_nama'),
+                \DB::raw('COALESCE(creator.nim, "") as creator_nim'),
+                \DB::raw('COALESCE(student.nama, creator.nama, ta_pendaftaran.created_by) as nama'),
+                \DB::raw('COALESCE(student.nim, creator.nim, "") as nim'),
+                \DB::raw('ta_pendaftaran_transaksi.username as student_username')
             )
             ->where('ta_pendaftaran.status_id', $statusDisetujui->id)
-            ->with(['transaksi'])
+            ->where('ta_pendaftaran.active', 1)
+            ->where(function($query) {
+                $query->whereNull('ta_pendaftaran_transaksi.id')
+                      ->orWhere('ta_pendaftaran_transaksi.active', 1);
+            })
+            ->groupBy(
+                'ta_pendaftaran.id',
+                'ta_pendaftaran.judul',
+                'ta_pendaftaran.deskripsi',
+                'ta_pendaftaran.file',
+                'ta_pendaftaran.deskripsi_syarat',
+                'ta_pendaftaran.dosen',
+                'ta_pendaftaran.created_by',
+                'ta_pendaftaran.updated_by',
+                'ta_pendaftaran.active',
+                'ta_pendaftaran.status_id',
+                'ta_pendaftaran.user_id',
+                'ta_pendaftaran.created_at',
+                'ta_pendaftaran.updated_at',
+                'creator.nama',
+                'creator.nim',
+                'student.nama',
+                'student.nim',
+                'ta_pendaftaran_transaksi.username'
+            )
+            ->with(['transaksi' => function($q) {
+                $q->where('active', 1);
+            }])
             ->get();
 
         // Fetch lecturers from fti_datas where role is 'lecturer'
@@ -739,11 +1027,15 @@ class TugasAkhirController extends Controller
             return response()->json(['success' => false, 'message' => 'Tidak ada proposal yang dipilih.']);
         }
 
-        // Validate that all ids are integers
-        $validatedIds = array_filter($ids, 'is_int');
+        // Validate that all ids are numeric
+        $validatedIds = array_filter($ids, function($id) {
+            return is_numeric($id) && (int)$id > 0;
+        });
         if (count($validatedIds) !== count($ids)) {
             return response()->json(['success' => false, 'message' => 'ID tidak valid.']);
         }
+        // Cast to integers
+        $ids = array_map('intval', $ids);
 
         TaSeminarProposal::whereIn('id', $ids)->update(['status' => 'approved']);
 
@@ -793,25 +1085,36 @@ class TugasAkhirController extends Controller
 
     public function uploadJadwalSeminarDokumen(Request $request)
     {
-        $request->validate([
-            'jadwal_seminar_file' => 'required|file|mimes:pdf,doc,docx',
-            'proposal_id' => 'required|integer',
-        ]);
+        try {
+            \Log::info('uploadJadwalSeminarDokumen called', ['request' => $request->all()]);
 
-        $proposal = TaSeminarProposal::find($request->proposal_id);
-        if (!$proposal) {
-            return response()->json(['success' => false, 'message' => 'Proposal tidak ditemukan.']);
+            $request->validate([
+                'jadwal_seminar_file' => 'required|file|mimes:pdf,doc,docx',
+                'proposal_id' => 'required|integer',
+            ]);
+
+            $proposal = TaSeminarProposal::find($request->proposal_id);
+            if (!$proposal) {
+                \Log::error('Proposal not found', ['proposal_id' => $request->proposal_id]);
+                return response()->json(['success' => false, 'message' => 'Proposal tidak ditemukan.']);
+            }
+
+            $file = $request->file('jadwal_seminar_file');
+            $path = $file->store('jadwal_seminar', 'public');
+            \Log::info('File stored at: ' . $path);
+
+            $proposal->jadwal_seminar_file = $path;
+            $result = $proposal->save();
+            \Log::info('Save result: ' . ($result ? 'true' : 'false'), ['proposal_id' => $proposal->id]);
+
+            return response()->json([
+                'success' => true,
+                'file_path' => asset('storage/' . $path),
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error in uploadJadwalSeminarDokumen', ['error' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Gagal mengunggah file.']);
         }
-
-        $file = $request->file('jadwal_seminar_file');
-        $path = $file->store('jadwal_seminar', 'public');
-        $proposal->jadwal_seminar_file = $path;
-        $proposal->save();
-
-        return response()->json([
-            'success' => true,
-            'file_path' => asset('storage/' . $path),
-        ]);
     }
 
     public function serveStorageFile($path)
@@ -914,12 +1217,12 @@ class TugasAkhirController extends Controller
     {
         $ids = $request->input('ids', []);
         if (empty($ids)) {
-            return response()->json(['success' => false, 'message' => 'Tidak ada sidang akhir yang dipilih.']);
+            return redirect('/koordinator-sidang')->with('error', 'Tidak ada sidang akhir yang dipilih.');
         }
 
         TaSidangAkhir::whereIn('id', $ids)->update(['status' => 'approved']);
 
-        return response()->json(['success' => true, 'message' => count($ids) . ' sidang akhir berhasil diterima.']);
+        return redirect('/koordinator-sidang')->with('success', count($ids) . ' sidang akhir berhasil diterima.');
     }
 
     public function uploadJadwalSidangDokumen(Request $request)
@@ -1123,70 +1426,133 @@ class TugasAkhirController extends Controller
 
         return redirect()->back()->with('success', 'Revisi seminar hasil berhasil diunggah.');
     }
-    public function uploadSkripsiMahasiswa(Request $request)
+
+    public function updateSeminarHasilFile(Request $request, $field)
     {
         $request->validate([
-            'file_skripsi_word' => 'nullable|file|mimes:doc,docx|max:10240',
-            'file_skripsi_pdf' => 'nullable|file|mimes:pdf|max:10240',
-            'form_bimbingan' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+            'file' => 'required|file|mimes:pdf,doc,docx|max:2048',
         ]);
 
         $username = Session::get('username') ?? null;
+        $seminarHasil = TaSeminarHasil::where('mahasiswa', $username)->first();
 
-        // Cari data mahasiswa tugas akhir
-        $mahasiswaTa = MahasiswaTugasAkhir::where('mahasiswa', $username)->where('active', true)->first();
-
-        if (!$mahasiswaTa) {
-            return redirect()->back()->with('error', 'Data mahasiswa tugas akhir tidak ditemukan.');
+        if (!$seminarHasil) {
+            return redirect()->back()->with('error', 'Data seminar hasil tidak ditemukan.');
         }
 
-        // Cari atau buat record skripsi
-        $skripsi = TaSkripsi::where('mahasiswa_tugas_akhir_id', $mahasiswaTa->id)->first();
-
-        if (!$skripsi) {
-            $skripsi = new TaSkripsi();
-            $skripsi->mahasiswa_tugas_akhir_id = $mahasiswaTa->id;
-            $skripsi->mahasiswa = $mahasiswaTa->mahasiswa;
-            $skripsi->status = 'draft';
+        $allowedFields = ['file_dokumen_ta', 'file_log_activity', 'file_persetujuan', 'form_revisi', 'revisi_dokumen'];
+        if (!in_array($field, $allowedFields)) {
+            return redirect()->back()->with('error', 'Field tidak valid.');
         }
 
-        $message = '';
+        // Delete old file if exists
+        if ($seminarHasil->$field) {
+            \Storage::delete('public/' . $seminarHasil->$field);
+        }
 
-        // Handle upload file Word
-        if ($request->hasFile('file_skripsi_word')) {
-            // Hapus file lama jika ada
-            if ($skripsi->file_skripsi_word) {
-                \Illuminate\Support\Facades\Storage::delete('public/' . $skripsi->file_skripsi_word);
+        // Store new file
+        $path = $request->file('file')->store('dokumen/semhas', 'public');
+        $seminarHasil->$field = $path;
+        $seminarHasil->save();
+
+        return redirect()->back()->with('success', 'File berhasil diupdate.');
+    }
+
+    public function deleteSeminarHasilFile($field)
+    {
+        $username = Session::get('username') ?? null;
+        $seminarHasil = TaSeminarHasil::where('mahasiswa', $username)->first();
+
+        if (!$seminarHasil) {
+            return redirect()->back()->with('error', 'Data seminar hasil tidak ditemukan.');
+        }
+
+        $allowedFields = ['file_dokumen_ta', 'file_log_activity', 'file_persetujuan', 'form_revisi', 'revisi_dokumen'];
+        if (!in_array($field, $allowedFields)) {
+            return redirect()->back()->with('error', 'Field tidak valid.');
+        }
+
+        // Delete file if exists
+        if ($seminarHasil->$field) {
+            \Storage::delete('public/' . $seminarHasil->$field);
+            $seminarHasil->$field = null;
+            $seminarHasil->save();
+        }
+
+        return redirect()->back()->with('success', 'File berhasil dihapus.');
+    }
+    public function uploadSkripsiMahasiswa(Request $request)
+    {
+        try {
+            $request->validate([
+                'file_skripsi_word' => 'nullable|file|mimes:doc,docx|max:10240',
+                'file_skripsi_pdf' => 'nullable|file|mimes:pdf|max:10240',
+                'form_bimbingan' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+            ]);
+
+            $username = Session::get('username') ?? null;
+
+            // Cari data mahasiswa tugas akhir
+            $mahasiswaTa = MahasiswaTugasAkhir::where('mahasiswa', $username)->where('active', true)->first();
+
+            if (!$mahasiswaTa) {
+                return redirect()->back()->with('error', 'Data mahasiswa tugas akhir tidak ditemukan.');
             }
-            $skripsi->file_skripsi_word = $request->file('file_skripsi_word')->store('skripsi/word', 'public');
-            $message .= 'File skripsi Word berhasil diunggah. ';
-        }
 
-        // Handle upload file PDF
-        if ($request->hasFile('file_skripsi_pdf')) {
-            // Hapus file lama jika ada
-            if ($skripsi->file_skripsi_pdf) {
-                \Illuminate\Support\Facades\Storage::delete('public/' . $skripsi->file_skripsi_pdf);
+            // Cari atau buat record skripsi
+            $skripsi = TaSkripsi::where('mahasiswa_tugas_akhir_id', $mahasiswaTa->id)->first();
+
+            if (!$skripsi) {
+                $skripsi = new TaSkripsi();
+                $skripsi->mahasiswa_tugas_akhir_id = $mahasiswaTa->id;
+                $skripsi->mahasiswa = $mahasiswaTa->mahasiswa;
+                $skripsi->status = 'draft';
             }
-            $skripsi->file_skripsi_pdf = $request->file('file_skripsi_pdf')->store('skripsi/pdf', 'public');
-            $message .= 'File skripsi PDF berhasil diunggah. ';
-        }
 
-        // Handle upload form bimbingan
-        if ($request->hasFile('form_bimbingan')) {
-            // Hapus file lama jika ada
-            if ($skripsi->file_form_bimbingan) {
-                \Illuminate\Support\Facades\Storage::delete('public/' . $skripsi->file_form_bimbingan);
+            $message = '';
+
+            // Handle upload file Word
+            if ($request->hasFile('file_skripsi_word')) {
+                // Hapus file lama jika ada
+                if ($skripsi->file_skripsi_word) {
+                    \Illuminate\Support\Facades\Storage::delete('public/' . $skripsi->file_skripsi_word);
+                }
+                $skripsi->file_skripsi_word = $request->file('file_skripsi_word')->store('skripsi/word', 'public');
+                $message .= 'File skripsi Word berhasil diunggah. ';
             }
-            $skripsi->file_form_bimbingan = $request->file('form_bimbingan')->store('bimbingan/form', 'public');
-            $message .= 'Form bimbingan berhasil diunggah. ';
-        }
 
-        if (!empty($message)) {
-            $skripsi->save();
-            return redirect()->back()->with('success', trim($message));
-        } else {
-            return redirect()->back()->with('warning', 'Tidak ada file yang dipilih untuk diunggah.');
+            // Handle upload file PDF
+            if ($request->hasFile('file_skripsi_pdf')) {
+                // Hapus file lama jika ada
+                if ($skripsi->file_skripsi_pdf) {
+                    \Illuminate\Support\Facades\Storage::delete('public/' . $skripsi->file_skripsi_pdf);
+                }
+                $skripsi->file_skripsi_pdf = $request->file('file_skripsi_pdf')->store('skripsi/pdf', 'public');
+                $message .= 'File skripsi PDF berhasil diunggah. ';
+            }
+
+            // Handle upload form bimbingan
+            if ($request->hasFile('form_bimbingan')) {
+                // Hapus file lama jika ada
+                if ($skripsi->file_form_bimbingan) {
+                    \Illuminate\Support\Facades\Storage::delete('public/' . $skripsi->file_form_bimbingan);
+                }
+                $skripsi->file_form_bimbingan = $request->file('form_bimbingan')->store('bimbingan/form', 'public');
+                $message .= 'Form bimbingan berhasil diunggah. ';
+            }
+
+            if (!empty($message)) {
+                $result = $skripsi->save();
+                if ($result) {
+                    return redirect()->back()->with('success', trim($message));
+                } else {
+                    return redirect()->back()->with('error', 'Gagal menyimpan data skripsi.');
+                }
+            } else {
+                return redirect()->back()->with('warning', 'Tidak ada file yang dipilih untuk diunggah.');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 
@@ -1227,6 +1593,61 @@ class TugasAkhirController extends Controller
         $pengaturanTa->save();
 
         return redirect()->back()->with('success', 'Pengaturan pendaftaran TA berhasil disimpan');
+    }
+
+    public function updateSkripsiFile(Request $request, $field)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:pdf,doc,docx|max:2048',
+        ]);
+
+        $username = Session::get('username') ?? null;
+        $skripsi = TaSkripsi::where('mahasiswa', $username)->first();
+
+        if (!$skripsi) {
+            return redirect()->back()->with('error', 'Data skripsi tidak ditemukan.');
+        }
+
+        $allowedFields = ['file_skripsi_word', 'file_skripsi_pdf', 'file_form_bimbingan'];
+        if (!in_array($field, $allowedFields)) {
+            return redirect()->back()->with('error', 'Field tidak valid.');
+        }
+
+        // Delete old file if exists
+        if ($skripsi->$field) {
+            \Storage::delete('public/' . $skripsi->$field);
+        }
+
+        // Store new file
+        $path = $request->file('file')->store('skripsi', 'public');
+        $skripsi->$field = $path;
+        $skripsi->save();
+
+        return redirect()->back()->with('success', 'File berhasil diupdate.');
+    }
+
+    public function deleteSkripsiFile($field)
+    {
+        $username = Session::get('username') ?? null;
+        $skripsi = TaSkripsi::where('mahasiswa', $username)->first();
+
+        if (!$skripsi) {
+            return redirect()->back()->with('error', 'Data skripsi tidak ditemukan.');
+        }
+
+        $allowedFields = ['file_skripsi_word', 'file_skripsi_pdf', 'file_form_bimbingan'];
+        if (!in_array($field, $allowedFields)) {
+            return redirect()->back()->with('error', 'Field tidak valid.');
+        }
+
+        // Delete file if exists
+        if ($skripsi->$field) {
+            \Storage::delete('public/' . $skripsi->$field);
+            $skripsi->$field = null;
+            $skripsi->save();
+        }
+
+        return redirect()->back()->with('success', 'File berhasil dihapus.');
     }
 
 }

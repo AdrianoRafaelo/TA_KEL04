@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class KpCompany extends Model
 {
     protected $fillable = [
+        'kp_perusahaan_id',
         'nama_perusahaan',
         'alamat_perusahaan',
         'waktu_awal_kp',
@@ -32,5 +33,10 @@ class KpCompany extends Model
     public function supervisors()
     {
         return $this->hasMany(KpSupervisor::class, 'company_id');
+    }
+
+    public function kpPerusahaan()
+    {
+        return $this->belongsTo(KpPerusahaan::class, 'kp_perusahaan_id');
     }
 }

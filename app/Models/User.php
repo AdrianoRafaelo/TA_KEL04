@@ -51,6 +51,110 @@ class User extends Authenticatable
     }
 
     /**
+     * Relationship to the user who created this user
+     */
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Relationship to the user who updated this user
+     */
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    /**
+     * Relationship to FtiData
+     */
+    public function ftiData()
+    {
+        return $this->hasMany(FtiData::class, 'user_id', 'nim');
+    }
+
+    /**
+     * Relationship to Tugas Akhir
+     */
+    public function tugasAkhirs()
+    {
+        return $this->hasMany(MahasiswaTugasAkhir::class, 'mahasiswa', 'nim');
+    }
+
+    /**
+     * Relationship to KP Requests
+     */
+    public function kpRequests()
+    {
+        return $this->hasMany(KpRequest::class, 'mahasiswa_id', 'nim');
+    }
+
+    /**
+     * Relationship to MBKM Registrations
+     */
+    public function mbkmRegistrations()
+    {
+        return $this->hasMany(PendaftaranMbkm::class, 'mahasiswa_id', 'nim');
+    }
+
+    /**
+     * Relationship to TA Sidang Akhirs
+     */
+    public function taSidangAkhirs()
+    {
+        return $this->hasMany(TaSidangAkhir::class, 'mahasiswa', 'nim');
+    }
+
+    /**
+     * Relationship to MBKM Mitras
+     */
+    public function mbkmMitras()
+    {
+        return $this->hasMany(MbkmMitra::class, 'created_by', 'id');
+    }
+
+    /**
+     * Relationship to TA Seminar Proposals
+     */
+    public function taSeminarProposals()
+    {
+        return $this->hasMany(TaSeminarProposal::class, 'mahasiswa', 'nim');
+    }
+
+    /**
+     * Relationship to TA Seminar Hasils
+     */
+    public function taSeminarHasils()
+    {
+        return $this->hasMany(TaSeminarHasil::class, 'mahasiswa', 'nim');
+    }
+
+    /**
+     * Relationship to MK Konversis
+     */
+    public function mkKonversis()
+    {
+        return $this->hasMany(MkKonversi::class, 'created_by', 'id');
+    }
+
+    /**
+     * Relationship to Pendaftaran MBKM Nonmitra
+     */
+    public function mbkmNonmitraRegistrations()
+    {
+        return $this->hasMany(PendaftaranMbkmNonmitra::class, 'created_by', 'id');
+    }
+
+    /**
+     * Relationship to KP Aktivitas
+     */
+    public function kpAktivitas()
+    {
+        return $this->hasMany(KpAktivitas::class, 'mahasiswa_id', 'nim');
+    }
+
+    /**
      * Relationship to UserRole
      */
     public function userRoles()

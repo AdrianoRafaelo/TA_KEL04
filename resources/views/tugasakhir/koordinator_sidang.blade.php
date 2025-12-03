@@ -25,7 +25,7 @@
                 <a href="{{ route('koordinator.sempro') }}" class="kp-tab">Seminar Proposal</a>
                 <a href="{{ route('koordinator.semhas') }}" class="kp-tab">Seminar Hasil</a>
                 <a href="{{ route('koordinator.sidang') }}" class="kp-tab active">Sidang Akhir</a>
-                <a href="{{ route('koordinator.skripsi') }}" class="kp-tab">Unggah Skripsi</button>
+                <a href="{{ route('koordinator.skripsi') }}" class="kp-tab">Unggah Skripsi</a>
             </div>
         </div>
     </div>
@@ -122,6 +122,9 @@
 
     <!-- Footer Button -->
     <div class="d-flex justify-content-end mt-3">
+        <form id="approveForm" method="POST" action="{{ route('koordinator.approve.sidang') }}" style="display:inline;">
+            @csrf
+        </form>
         <button type="button" class="btn btn-success me-2" id="approveSelected">Terima Sidang Akhir</button>
         <button class="btn btn-success" id="saveSimpan">Simpan</button>
     </div>
@@ -184,7 +187,7 @@ $(document).ready(function() {
 
             if (allOk) {
                 alert('File jadwal berhasil disimpan!');
-                location.reload();
+                window.location.href = '/koordinator-sidang';
             } else {
                 alert('Beberapa file gagal diunggah. Periksa kembali.');
             }
@@ -218,16 +221,15 @@ $(document).ready(function() {
         modal.find('#cancelBtn').click(() => modal.remove());
         modal.find('#confirmBtn').click(() => {
             modal.remove();
-            fetch('{{ route("koordinator.approve.sidang") }}', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                body: JSON.stringify({ ids })
-            })
-            .then(r => r.json())
-            .then(data => {
-                alert(data.message || 'Sukses!');
-                location.reload();
+            const form = document.getElementById('approveForm');
+            ids.forEach(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'ids[]';
+                input.value = id;
+                form.appendChild(input);
             });
+            form.submit();
         });
     });
 

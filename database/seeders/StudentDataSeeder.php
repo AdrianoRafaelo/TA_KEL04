@@ -18,12 +18,26 @@ class StudentDataSeeder extends Seeder
             [
                 'nama' => 'Theresya Gurning',
                 'nim' => '11420086',
-                'role' => 'mahasiswa',
+                'role' => 'student',
                 'prodi' => 'DIV Teknologi Rekayasa Perangkat Lunak',
                 'fakultas' => 'Vokasi',
                 'status' => 'Aktif',
                 'user_id' => 5082,
-                'role_id' => 3, // Assuming mahasiswa role_id
+                'role_id' => 3, // Mahasiswa role_id (from database)
+            ]
+        );
+
+        FtiData::updateOrCreate(
+            ['username' => 'if321002'],
+            [
+                'nama' => 'Samuel Sibuea',
+                'nim' => '11321002',
+                'role' => 'student',
+                'prodi' => 'DIII Teknologi Informasi',
+                'fakultas' => 'Vokasi',
+                'status' => 'Aktif',
+                'user_id' => 5118,
+                'role_id' => 3, // Mahasiswa role_id (from database)
             ]
         );
     }

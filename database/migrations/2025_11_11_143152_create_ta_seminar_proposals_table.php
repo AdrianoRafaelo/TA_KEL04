@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('ta_seminar_proposals', function (Blueprint $table) {
             $table->id();
             $table->string('mahasiswa'); // NIM atau username mahasiswa
+            $table->foreign('mahasiswa')->references('nim')->on('users');
             $table->string('judul'); // Judul TA
             $table->string('pembimbing'); // Pembimbing
             $table->string('file_proposal')->nullable(); // File proposal yang diunggah
@@ -29,6 +30,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('ta_seminar_proposals', function (Blueprint $table) {
+            $table->dropForeign(['mahasiswa']);
+        });
         Schema::dropIfExists('ta_seminar_proposals');
     }
 };

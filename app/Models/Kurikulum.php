@@ -16,6 +16,8 @@ class Kurikulum extends Model
         'nama_singkat_mk',
         'sks',
         'deskripsi_mk',
+        'cpmk',
+        'dosen_id',
         'created_by',
         'updated_by',
         'active'
@@ -23,5 +25,27 @@ class Kurikulum extends Model
 
     protected $casts = [
         'active' => 'boolean',
+        'cpmk' => 'array',
     ];
+
+    // Relationships
+    public function dosen()
+    {
+        return $this->belongsTo(FtiData::class, 'dosen_id');
+    }
+
+    public function mkKonversis()
+    {
+        return $this->hasMany(MkKonversi::class, 'kurikulum_id');
+    }
+
+    public function createdBy()
+    {
+        return $this->belongsTo(FtiData::class, 'created_by');
+    }
+
+    public function updatedBy()
+    {
+        return $this->belongsTo(FtiData::class, 'updated_by');
+    }
 }

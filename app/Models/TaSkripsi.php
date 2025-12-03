@@ -26,4 +26,10 @@ class TaSkripsi extends Model
     {
         return $this->belongsTo(MahasiswaTugasAkhir::class, 'mahasiswa_tugas_akhir_id');
     }
+
+    // Direct relationship to FtiData
+    public function mahasiswa()
+    {
+        return $this->belongsTo(FtiData::class, 'mahasiswa');
+    }
 }

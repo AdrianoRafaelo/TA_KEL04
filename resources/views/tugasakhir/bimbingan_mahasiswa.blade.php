@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<meta name="csrf-token" content="{{ csrf_token() }}">
   <div class="row mb-3">
     <div class="col-12">
       <nav aria-label="breadcrumb">
@@ -29,8 +30,14 @@
   <div class="flex-grow-1" style="min-width: 600px;">
     {{-- Card Rekapitulasi --}}
     <div class="card">
+      <div class="card-header bg-white border-0 py-3 d-flex justify-content-between align-items-center">
+        <h5 class="kp-title mb-0"><i class="bi bi-list-check"></i> Rekapitulasi Bimbingan Mahasiswa</h5>
+        <button type="button" class="btn btn-primary btn-sm d-flex align-items-center gap-2" id="tambahLogActivity" onclick="openTambahLogModal()">
+          <i class="bi bi-plus-circle"></i>
+          <span>Tambah Log Activity</span>
+        </button>
+      </div>
       <div class="card-body">
-        <h5 class="kp-title"><i class="bi bi-list-check"></i> Rekapitulasi Bimbingan Mahasiswa</h5>
         <div class="table-responsive">
           <table class="table table-bordered align-middle mb-4">
             <thead class="table-light">
@@ -66,18 +73,39 @@
           </table>
         </div>
 
-        <button type="button" class="btn btn-link text-primary p-0 mb-3" id="tambahLogActivity" onclick="openTambahLogModal()" style="font-size: 14px; text-decoration: none; border: none; background: none;">
-          + Tambah log-activity
-        </button>
+        <!-- Separator line -->
+        <div class="section-separator">
+          <div class="separator-line"></div>
+        </div>
 
-         <form method="POST" action="{{ route('bimbingan.mahasiswa.upload.skripsi') }}" enctype="multipart/form-data">
-           @csrf
-           <div class="upload-section mb-3">
-             <label class="me-2 fw-semibold">Unggah Form Bimbingan</label>
-             <input type="file" name="form_bimbingan" class="form-control" style="max-width: 300px;" accept=".pdf,.doc,.docx">
-             <button type="submit" class="btn btn-primary px-4">Unggah</button>
+        @if($skripsi && $skripsi->file_form_bimbingan)
+           <div class="mb-3">
+             <label class="form-label">Form Bimbingan</label>
+             <div class="d-flex align-items-center">
+               <small class="text-success me-2">
+                 <i class="bi bi-check-circle"></i> File tersedia
+               </small>
+               <button class="btn btn-sm btn-outline-primary view-file-btn me-1" data-file-url="{{ route('storage.file', ['path' => $skripsi->file_form_bimbingan]) }}" data-file-name="Form Bimbingan">
+                 <i class="bi bi-eye"></i> Lihat
+               </button>
+               <button class="btn btn-sm btn-outline-warning edit-file-btn me-1" data-field="file_form_bimbingan" data-file-name="Form Bimbingan">
+                 <i class="bi bi-pencil"></i> Edit
+               </button>
+               <button class="btn btn-sm btn-outline-danger delete-file-btn" data-field="file_form_bimbingan" data-file-name="Form Bimbingan">
+                 <i class="bi bi-trash"></i> Hapus
+               </button>
+             </div>
            </div>
-         </form>
+         @else
+           <form method="POST" action="{{ route('bimbingan.mahasiswa.upload.skripsi') }}" enctype="multipart/form-data">
+             @csrf
+             <div class="upload-section mb-3">
+               <label class="me-2 fw-semibold">Unggah Form Bimbingan</label>
+               <input type="file" name="form_bimbingan" class="form-control" style="max-width: 300px;" accept=".pdf,.doc,.docx">
+               <button type="submit" class="btn btn-primary px-4">Unggah</button>
+             </div>
+           </form>
+         @endif
       </div>
     </div>
 
@@ -109,18 +137,69 @@
           </div>
         @endif
 
-        <form method="POST" action="{{ route('bimbingan.mahasiswa.upload.skripsi') }}" enctype="multipart/form-data">
-          @csrf
-          <div class="upload-section mb-3">
-            <label class="me-2 fw-semibold">Unggah Skripsi *Word</label>
-            <input type="file" name="file_skripsi_word" class="form-control" style="max-width: 300px;" accept=".doc,.docx">
+        @if($skripsi && ($skripsi->file_skripsi_word || $skripsi->file_skripsi_pdf))
+          <div class="mb-3">
+            <label class="form-label">Skripsi Word</label>
+            @if($skripsi->file_skripsi_word)
+              <div class="d-flex align-items-center">
+                <small class="text-success me-2">
+                  <i class="bi bi-check-circle"></i> File tersedia
+                </small>
+                <button class="btn btn-sm btn-outline-primary view-file-btn me-1" data-file-url="{{ route('storage.file', ['path' => $skripsi->file_skripsi_word]) }}" data-file-name="Skripsi Word">
+                  <i class="bi bi-eye"></i> Lihat
+                </button>
+                <button class="btn btn-sm btn-outline-warning edit-file-btn me-1" data-field="file_skripsi_word" data-file-name="Skripsi Word">
+                  <i class="bi bi-pencil"></i> Edit
+                </button>
+                <button class="btn btn-sm btn-outline-danger delete-file-btn" data-field="file_skripsi_word" data-file-name="Skripsi Word">
+                  <i class="bi bi-trash"></i> Hapus
+                </button>
+              </div>
+            @else
+              <small class="text-muted">Belum diunggah</small>
+            @endif
           </div>
-          <div class="upload-section mb-3">
-            <label class="me-2 fw-semibold">Unggah Skripsi *Pdf</label>
-            <input type="file" name="file_skripsi_pdf" class="form-control" style="max-width: 300px;" accept=".pdf">
+
+          <!-- Separator between Word and PDF -->
+          <div class="field-separator">
+            <div class="separator-line-thin"></div>
           </div>
-          <button type="submit" class="btn btn-primary px-4">Unggah Skripsi</button>
-        </form>
+
+          <div class="mb-3">
+             <label class="form-label">Skripsi PDF</label>
+            @if($skripsi->file_skripsi_pdf)
+              <div class="d-flex align-items-center">
+                <small class="text-success me-2">
+                  <i class="bi bi-check-circle"></i> File tersedia
+                </small>
+                <button class="btn btn-sm btn-outline-primary view-file-btn me-1" data-file-url="{{ route('storage.file', ['path' => $skripsi->file_skripsi_pdf]) }}" data-file-name="Skripsi PDF">
+                  <i class="bi bi-eye"></i> Lihat
+                </button>
+                <button class="btn btn-sm btn-outline-warning edit-file-btn me-1" data-field="file_skripsi_pdf" data-file-name="Skripsi PDF">
+                  <i class="bi bi-pencil"></i> Edit
+                </button>
+                <button class="btn btn-sm btn-outline-danger delete-file-btn" data-field="file_skripsi_pdf" data-file-name="Skripsi PDF">
+                  <i class="bi bi-trash"></i> Hapus
+                </button>
+              </div>
+            @else
+              <small class="text-muted">Belum diunggah</small>
+            @endif
+          </div>
+        @else
+          <form method="POST" action="{{ route('bimbingan.mahasiswa.upload.skripsi') }}" enctype="multipart/form-data">
+            @csrf
+            <div class="upload-section mb-3">
+              <label class="me-2 fw-semibold">Unggah Skripsi *Word</label>
+              <input type="file" name="file_skripsi_word" class="form-control" style="max-width: 300px;" accept=".doc,.docx">
+            </div>
+            <div class="upload-section mb-3">
+              <label class="me-2 fw-semibold">Unggah Skripsi *Pdf</label>
+              <input type="file" name="file_skripsi_pdf" class="form-control" style="max-width: 300px;" accept=".pdf">
+            </div>
+            <button type="submit" class="btn btn-primary px-4">Unggah Skripsi</button>
+          </form>
+        @endif
       </div>
     </div>
   </div>
@@ -217,6 +296,51 @@
   </div>
 </div>
 
+<!-- Modal Edit File -->
+<div class="modal fade" id="editFileModal" tabindex="-1" aria-labelledby="editFileModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editFileModalLabel">Edit File</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="editFileForm" method="POST" enctype="multipart/form-data">
+        @csrf
+        @method('PUT')
+        <div class="modal-body">
+          <div class="mb-3">
+            <label for="editFileInput" class="form-label" id="editFileLabel">Pilih file baru</label>
+            <input type="file" class="form-control" id="editFileInput" name="file" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="submit" class="btn btn-warning">Update</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Delete File -->
+<div class="modal fade" id="deleteFileModal" tabindex="-1" aria-labelledby="deleteFileModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteFileModalLabel">Hapus File</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Apakah Anda yakin ingin menghapus file <strong id="deleteFileName"></strong>?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Modal Tambah Log Activity -->
 <div class="modal fade modern-modal" id="tambahLogModal" tabindex="-1" role="dialog" aria-labelledby="tambahLogModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
@@ -292,15 +416,40 @@
 
 <style>
   body {
-    background-color: #f7f8fb;
+    background: linear-gradient(135deg, #f7f8fb 0%, #e2e8f0 100%);
+    min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   }
+
+  /* Add subtle animation for page load */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .card, .info-header {
+    animation: fadeInUp 0.6s ease-out;
+  }
+
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+  .info-header { animation-delay: 0s; }
 
   /* Tabs */
   .kp-tabs {
     display: flex;
+    justify-content: flex-start;
     gap: 10px;
     margin-bottom: 25px;
   }
+
   .kp-tab {
     padding: 10px 18px;
     background: #eee;
@@ -310,10 +459,63 @@
     text-decoration: none;
     transition: 0.3s;
   }
-  .kp-tab:hover { background: #dcdcdc; }
+
+  .kp-tab:hover {
+    background: #dcdcdc;
+  }
+
   .kp-tab.active {
     background: white;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .kp-tab.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Header Info */
+  .info-header {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    padding: 20px 24px;
+    margin-bottom: 25px;
+    transition: all 0.3s ease;
+  }
+
+  .info-header:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  }
+
+  .info-header th {
+    width: 160px;
+    color: #444;
+    padding: 8px 16px 8px 0;
+  }
+
+  .info-header td {
+    color: #1f2937;
+    font-weight: 500;
+    padding: 8px 0 8px 16px;
+  }
+
+  /* Container utama */
+  .section-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .section-left {
+    flex: 1;
+    min-width: 380px;
+  }
+
+  .section-right {
+    flex: 1;
+    min-width: 380px;
   }
 
   /* Layout Wrapper */
@@ -323,62 +525,323 @@
     gap: 35px;
   }
 
-  /* Card Styling */
+  /* Card */
   .card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
-    margin-bottom: 25px;
-  }
-  .card-body {
-    padding: 35px; /* ✅ padding diperlebar agar tidak rapat */
-  }
-
-  .kp-title {
-    font-weight: 600;
-    color: #111;
-    margin-bottom: 20px;
-  }
-
-  .table th {
-    font-weight: 600;
-    color: #333;
-  }
-
-  /* Upload Section */
-  .upload-section {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .upload-section input[type=file] {
-    flex: 1;
-    padding: 6px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-  }
-
-  /* Tambah Log Activity Button */
-  #tambahLogActivity {
-    cursor: pointer !important;
-    user-select: none;
-    transition: all 0.2s ease;
-    z-index: 10;
-    position: relative;
-    font-size: 14px !important;
-    text-decoration: none !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.9)) !important;
     border: none !important;
-    background: none !important;
-    padding: 0 !important;
-    color: #0d6efd !important;
+    border-radius: 16px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+    margin-bottom: 48px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease !important;
+    position: relative;
+    overflow: hidden;
   }
-  #tambahLogActivity:hover {
-    color: #0056b3 !important;
-    text-decoration: underline !important;
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
-  #tambahLogActivity:focus {
-    outline: none !important;
-    box-shadow: none !important;
+
+  .card:hover {
+    transform: translateY(-4px) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .card:hover::before {
+    opacity: 1;
+  }
+
+  .card-body {
+    padding: 24px;
+  }
+
+  /* Judul section */
+  .kp-title, .kp-list-title {
+    font-weight: 700;
+    color: #1f2937;
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px 20px;
+    display: inline-block;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .kp-title:hover, .kp-list-title:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, #f1f5f9 0%, #cbd5e1 100%);
+  }
+
+  .kp-title::before, .kp-list-title::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+    border-radius: 12px 12px 0 0;
+  }
+
+  /* Form */
+  .form-control {
+    border-radius: 12px;
+    border: 2px solid #e5e7eb;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+  }
+
+  .form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    background: rgba(255, 255, 255, 0.95);
+    transform: translateY(-1px);
+  }
+
+  .form-control:hover {
+    border-color: #9ca3af;
+  }
+
+  /* Tombol */
+  .btn {
+    border-radius: 12px;
+    font-weight: 600;
+    padding: 12px 24px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    border: none;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+  }
+
+  .btn:hover::before {
+    width: 300px;
+    height: 300px;
+  }
+
+  .btn-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: #fff;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+  }
+
+  .btn-warning:hover {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(245, 158, 11, 0.4);
+    color: #fff;
+  }
+
+  /* Teks link PDF */
+  .text-primary {
+    color: #1a73e8 !important;
+  }
+
+  /* Upload Area Styles */
+  .upload-area {
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 40px 20px;
+    text-align: center;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-area:hover {
+    border-color: #3b82f6;
+    background: rgba(59, 130, 246, 0.05);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+  }
+
+  .upload-area.dragover {
+    border-color: #10b981;
+    background: rgba(16, 185, 129, 0.1);
+    transform: scale(1.02);
+  }
+
+  .upload-icon {
+    font-size: 3rem;
+    color: #9ca3af;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+  }
+
+  .upload-area:hover .upload-icon {
+    color: #3b82f6;
+    transform: scale(1.1);
+  }
+
+  .upload-area.dragover .upload-icon {
+    color: #10b981;
+  }
+
+  .upload-content p {
+    margin: 0 0 10px 0;
+    color: #6b7280;
+    font-size: 1rem;
+  }
+
+  .upload-link {
+    color: #3b82f6;
+    text-decoration: underline;
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  .upload-section {
+    border: 3px solid #64748b;
+    border-radius: 12px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+    margin-bottom: 20px;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .upload-section:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #d1d5db, transparent);
+  }
+
+  .upload-link:hover {
+    color: #1d4ed8;
+  }
+
+  /* Modern Gradient Buttons */
+  .btn-submit {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  }
+
+  .btn-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+  }
+
+  .btn-submit:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 10px rgba(102, 126, 234, 0.4);
+  }
+
+  /* Nilai TA lingkaran hijau */
+  .bg-success {
+    background: linear-gradient(135deg, #1cc88a, #16a085) !important;
+    box-shadow: 0 8px 20px rgba(28, 200, 138, 0.3);
+  }
+
+  /* List group items */
+  .list-group-item {
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+  }
+
+  .list-group-item:hover {
+    background: rgba(59, 130, 246, 0.05);
+    border-color: #3b82f6;
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+  }
+
+  .list-group-item:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Hover untuk tombol */
+  .btn-primary:hover {
+    background-color: #2c3e50 !important;
+    border-color: #2c3e50 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  .btn-outline-primary:hover {
+    background-color: #5a67d8 !important;
+    color: white !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(90, 103, 216, 0.4) !important;
+  }
+
+  .btn-warning:hover, .btn-danger:hover, .btn-success:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  /* Alert enhancements */
+  .alert {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+  }
+
+  .alert-success {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.1));
+    color: #166534;
+  }
+
+  .alert-warning {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(217, 119, 6, 0.1));
+    color: #92400e;
+  }
+
+  .alert-info {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(29, 78, 216, 0.1));
+    color: #1e40af;
   }
 
   /* Enhanced Chart Styling */
@@ -513,10 +976,27 @@
     transform: scale(1.05);
   }
 
-  @media (max-width: 992px) {
-    .bimbingan-wrapper {
-      flex-direction: column;
-    }
+  /* Tambah Log Activity Button */
+  #tambahLogActivity {
+    cursor: pointer !important;
+    user-select: none;
+    transition: all 0.2s ease;
+    z-index: 10;
+    position: relative;
+    font-size: 14px !important;
+    text-decoration: none !important;
+    border: none !important;
+    background: none !important;
+    padding: 0 !important;
+    color: #0d6efd !important;
+  }
+  #tambahLogActivity:hover {
+    color: #0056b3 !important;
+    text-decoration: underline !important;
+  }
+  #tambahLogActivity:focus {
+    outline: none !important;
+    box-shadow: none !important;
   }
 
   /* Modern Modal Styling */
@@ -791,9 +1271,197 @@
       width: 100%;
     }
   }
+
+  /* Modern Table Styling */
+  .table-responsive {
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(5px);
+  }
+
+  .table {
+    margin-bottom: 0;
+    border: none !important;
+    background: transparent;
+  }
+
+  .table thead th {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border: none !important;
+    color: #374151;
+    font-weight: 600;
+    padding: 16px 12px;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: relative;
+  }
+
+  .table thead th::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
+  }
+
+  .table tbody td {
+    border: none !important;
+    padding: 16px 12px;
+    background: rgba(255, 255, 255, 0.8);
+    color: #374151;
+    font-size: 0.875rem;
+    vertical-align: middle;
+    transition: all 0.3s ease;
+  }
+
+  .table tbody tr {
+    border-bottom: 1px solid #f3f4f6;
+    transition: all 0.3s ease;
+  }
+
+  .table tbody tr:hover {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.02), rgba(5, 150, 105, 0.02));
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+  }
+
+  .table tbody tr:hover td {
+    background: transparent;
+    color: #065f46;
+  }
+
+  .table tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  .badge {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 20px;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .bg-success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: white;
+  }
+
+  .bg-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    color: white;
+  }
+
+  .bg-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: white;
+  }
+
+  /* Section Separator */
+  .section-separator {
+    margin: 2rem 0;
+    position: relative;
+  }
+
+  .separator-line {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #d1d5db 20%, #d1d5db 80%, transparent 100%);
+    border-radius: 0.5px;
+    box-shadow: 0 1px 2px rgba(209, 213, 219, 0.2);
+  }
+
+  /* Field Separator (for between form fields) */
+  .field-separator {
+    margin: 1.5rem 0;
+    position: relative;
+  }
+
+  .separator-line-thin {
+    height: 1px;
+    background: linear-gradient(90deg, transparent 0%, #d1d5db 30%, #d1d5db 70%, transparent 100%);
+    border-radius: 0.5px;
+  }
+
+  /* Responsive fix */
+  @media (max-width: 992px) {
+    .bimbingan-wrapper {
+      flex-direction: column;
+    }
+
+    .table-responsive {
+      border-radius: 8px;
+    }
+
+    .table thead th,
+    .table tbody td {
+      padding: 12px 8px;
+      font-size: 0.8rem;
+    }
+
+    .table tbody tr:hover {
+      transform: none;
+    }
+
+    .section-separator {
+      margin: 1.5rem 0;
+    }
+  }
 </style>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+$(document).ready(function() {
+  // Edit file button
+  $('.edit-file-btn').click(function(e) {
+    e.preventDefault();
+    const field = $(this).data('field');
+    const fileName = $(this).data('file-name');
+
+    $('#editFileModalLabel').text('Edit ' + fileName);
+    $('#editFileLabel').text('Pilih ' + fileName.toLowerCase() + ' baru');
+    $('#editFileForm').attr('action', '/bimbingan-mahasiswa/update-file/' + field);
+    $('#editFileModal').modal('show');
+  });
+
+  // Delete file button
+  $('.delete-file-btn').click(function(e) {
+    e.preventDefault();
+    const field = $(this).data('field');
+    const fileName = $(this).data('file-name');
+
+    $('#deleteFileName').text(fileName);
+    $('#confirmDeleteBtn').data('field', field);
+    $('#deleteFileModal').modal('show');
+  });
+
+  // Confirm delete
+  $('#confirmDeleteBtn').click(function() {
+    const field = $(this).data('field');
+    const form = $('<form>', {
+      method: 'POST',
+      action: '/bimbingan-mahasiswa/delete-file/' + field
+    });
+    form.append('<input type="hidden" name="_token" value="' + $('meta[name="csrf-token"]').attr('content') + '">');
+    form.append('<input type="hidden" name="_method" value="DELETE">');
+    $('body').append(form);
+    form.submit();
+  });
+});
+</script>
 <script>
 // Global function for inline onclick
 function openTambahLogModal() {
@@ -860,11 +1528,27 @@ function handleSimpanLog() {
       console.log('AJAX success - xhr:', xhr);
 
       if (data.success) {
-        alert(data.message);
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: data.message,
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
         $('#tambahLogModal').modal('hide');
         location.reload();
       } else {
-        alert('Gagal menyimpan: ' + (data.message || 'Unknown error'));
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'error',
+          title: 'Gagal menyimpan: ' + (data.message || 'Unknown error'),
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true
+        });
       }
     },
     error: function(xhr, status, error) {
@@ -997,5 +1681,44 @@ if (typeof $ === 'undefined') {
   console.log('jQuery already loaded, initializing bimbingan page');
   initializeBimbinganPage();
 }
+
+// SweetAlert2 toast notifications
+document.addEventListener('DOMContentLoaded', function() {
+  @if(session('success'))
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: '{{ session("success") }}',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  @endif
+
+  @if(session('error'))
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'error',
+      title: '{{ session("error") }}',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  @endif
+
+  @if(session('message'))
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: '{{ session("message") }}',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true
+    });
+  @endif
+});
 </script>
 @endsection

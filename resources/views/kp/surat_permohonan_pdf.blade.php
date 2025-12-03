@@ -155,11 +155,10 @@
             font-weight: bold;
         }
 
-        th:nth-child(1), td:nth-child(1) { width: 8%; text-align: center; }
-        th:nth-child(2), td:nth-child(2) { width: 18%; }
-        th:nth-child(3), td:nth-child(3) { width: 35%; }
-        th:nth-child(4), td:nth-child(4) { width: 15%; text-align: center; }
-        th:nth-child(5), td:nth-child(5) { width: 24%; }
+        th:nth-child(1), td:nth-child(1) { width: 10%; text-align: center; }
+        th:nth-child(2), td:nth-child(2) { width: 20%; }
+        th:nth-child(3), td:nth-child(3) { width: 45%; }
+        th:nth-child(4), td:nth-child(4) { width: 25%; }
 
         /* Penutup */
         .closing {
@@ -224,7 +223,7 @@
 
     <!-- Halaman 1 -->
     <div class="header">
-        <img src="https://via.placeholder.com/65x65/003366/FFFFFF?text=IT+Del" alt="Logo" class="logo">
+        <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('img/logo_del.png'))) }}" alt="Logo" class="logo">
         <div class="inst-name">INSTITUT TEKNOLOGI DEL</div>
         <div class="faculty-name">FAKULTAS TEKNOLOGI INDUSTRI</div>
         <div class="address">
@@ -244,9 +243,8 @@
 
     <div class="recipient">
         <p>Kepada Yth,</p>
-        <p><strong>Bapak Aditya Budi Waluyo</strong></p>
-        <p><strong>Manager Perencanaan & Pengendalian Produksi Pesawat Terbang</strong></p>
-        <p>Jl. Padjajaran No. 154 Bandung, 40174, West Java - Indonesia</p>
+        <p><strong>Bapak/Ibu {{ $request->company->nama_perusahaan ?? 'Nama Perusahaan' }}</strong></p>
+        <p>{{ $request->company->alamat_perusahaan ?? 'Alamat Perusahaan' }}</p>
     </div>
 
     <div class="content">
@@ -270,31 +268,28 @@
                         <th>No</th>
                         <th>NIM</th>
                         <th>Nama Mahasiswa</th>
-                        <th>Jenis Kelamin</th>
                         <th>Program Studi</th>
                     </tr>
                 </thead>
                 <tbody>
+                    @php
+                        $mahasiswaList = json_decode($request->company->mahasiswa ?? '[]', true);
+                        $students = \App\Models\FtiData::whereIn('username', $mahasiswaList)->get();
+                    @endphp
+                    @foreach($students as $index => $student)
                     <tr>
-                        <td>1</td>
-                        <td>21S22017</td>
-                        <td>Yuli Cesima Panggabean</td>
-                        <td>Perempuan</td>
-                        <td>S1 Manajemen Rekayasa</td>
+                        <td>{{ $index + 1 }}</td>
+                        <td>{{ $student->nim ?? '-' }}</td>
+                        <td>{{ $student->nama ?? '-' }}</td>
+                        <td>{{ $student->prodi ?? '-' }}</td>
                     </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>21S22035</td>
-                        <td>Hendrik Jeremia Simamora</td>
-                        <td>Laki-laki</td>
-                        <td>S1 Manajemen Rekayasa</td>
-                    </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
 
         <p class="closing">
-            Atas perhatian Bapak/Ibu, kami menyampaikan rasa terimakasih dan penghargaan kami atas dukungan dan kontribusi Bapak Aditya Budi Waluyo Manager Perencanaan & Pengendalian Produksi Pesawat Terbang, terhadap upaya kami dalam mencerdaskan serta mengembangkan pengetahuan dan keterampilan putra-putri bangsa yang telah kami asuh.
+            Atas perhatian Bapak/Ibu, kami menyampaikan rasa terimakasih dan penghargaan kami atas dukungan dan kontribusi Bapak/Ibu dari {{ $request->company->nama_perusahaan ?? 'Perusahaan' }}, terhadap upaya kami dalam mencerdaskan serta mengembangkan pengetahuan dan keterampilan putra-putri bangsa yang telah kami asuh.
         </p>
     </div>
 

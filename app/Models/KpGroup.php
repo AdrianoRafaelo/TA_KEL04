@@ -17,4 +17,9 @@ class KpGroup extends Model
     protected $casts = [
         'mahasiswa' => 'array'
     ];
+
+    public function mahasiswa()
+    {
+        return \App\Models\FtiData::whereIn('username', $this->mahasiswa ?? [])->get();
+    }
 }

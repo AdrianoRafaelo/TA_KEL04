@@ -49,4 +49,9 @@ class KpRequest extends Model
     {
         return $this->hasMany(KpTopikKhusus::class, 'kp_request_id');
     }
+
+    public function kelompok()
+    {
+        return $this->hasOne(KpGroup::class, 'request_id');
+    }
 }

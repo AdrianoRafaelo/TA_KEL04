@@ -109,9 +109,9 @@
     </div>
 
     <!-- Footer Button -->
-    <div class="d-flex justify-content-end mt-3">
+    <!-- <div class="d-flex justify-content-end mt-3">
         <button class="btn btn-success" id="sendInfo">Kirim Informasi</button>
-    </div>
+    </div> -->
 </div>
 
 @section('scripts')

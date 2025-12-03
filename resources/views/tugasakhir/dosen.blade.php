@@ -50,11 +50,25 @@
   </div>
 </div>
 
-<div class="row mb-3">
-  <div class="col-12">
-    <img src="{{ asset('assets/images/banner-ta.jpg') }}" class="kp-banner img-fluid" alt="Banner TA">
-  </div>
-</div>
+
+    <!-- Banner Section -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="gambar" style="background-image:url('/img/panel%20surya.jpeg')">
+          <div class="banner-text">Peran Manajemen Rekayasa Dalam Peningkatan Energi Terbarukan</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="gambar" style="background-image:url('/img/panel%20surya.jpeg')">
+          <div class="banner-text">Peraturan Pemerintah Melalui Gerakan Hijau</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="gambar" style="background-image:url('/img/wind turbine.jpg')">
+          <div class="banner-text">Peningkatan Kualitas Pendidikan Teknik Mesin</div>
+        </div>
+      </div>
+    </div>
 
 <div class="row mb-3">
   <div class="col-md-6">
@@ -190,3 +204,27 @@
   </div>
 </div>
 @endsection
+
+<style>
+          .gambar {
+    height: 200px !important;
+    background-size: cover !important;
+    background-position: center !important;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .banner-text {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        right: 10px;
+        color: #ffff;
+        background: rgba(0, 0, 0, 0.5);
+        padding: 10px;
+        border-radius: 8px;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    }
+</style>

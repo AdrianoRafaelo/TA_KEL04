@@ -28,4 +28,25 @@ class MahasiswaTugasAkhir extends Model
     {
         return $this->hasOne(TaSkripsi::class, 'mahasiswa_tugas_akhir_id');
     }
+
+    // Relationships to FtiData
+    public function mahasiswa()
+    {
+        return $this->belongsTo(FtiData::class, 'mahasiswa');
+    }
+
+    public function pembimbing()
+    {
+        return $this->belongsTo(FtiData::class, 'pembimbing');
+    }
+
+    public function pengulas1()
+    {
+        return $this->belongsTo(FtiData::class, 'pengulas_1');
+    }
+
+    public function pengulas2()
+    {
+        return $this->belongsTo(FtiData::class, 'pengulas_2');
+    }
 }

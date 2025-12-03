@@ -207,7 +207,7 @@
                     <form id="perusahaanForm">
                         <div class="mb-3">
                             <label for="nama_perusahaan" class="form-label">Nama Perusahaan</label>
-                            <input type="text" class="form-control" id="nama_perusahaan" name="nama_perusahaan" required>
+                            <input type="text" class="form-control" id="nama_perusahaan" name="nama_perusahaan" required autofocus>
                         </div>
                         <div class="mb-3">
                             <label for="alamat" class="form-label">Alamat</label>
@@ -354,6 +354,34 @@
             });
     }
 
+    // Handle perusahaan form submission
+    document.getElementById('perusahaanForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        fetch('/kerja-praktik/store-perusahaan', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                loadPerusahaans(); // reload the list
+                this.reset(); // reset form
+                alert('Perusahaan berhasil ditambahkan!');
+            } else {
+                alert('Error: ' + (data.message || 'Gagal menambahkan perusahaan'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat menyimpan perusahaan.');
+        });
+    });
+
 </script>
 @endsection
 
@@ -363,7 +391,7 @@
     /* 1. BANNER SECTION */
     /* ========================================================================= */
     .gambar {
-    height: 200px !important;
+    height: 300px !important;
     background-size: cover !important;
     background-position: center !important;
     border-radius: 8px;

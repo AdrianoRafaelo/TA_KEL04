@@ -107,7 +107,7 @@ class KerjaPraktikController extends Controller
         // Fetch pengantar requests with relations for dosen assignment
         $pengantar_requests = KpRequest::with(['company', 'mahasiswa', 'supervisor', 'dosen'])
             ->where('type', 'pengantar')
-            ->whereIn('status', ['pending', 'approved', 'assigned'])
+            ->whereIn('status', ['pending', 'assigned', 'approved'])
             ->get();
 
         // Fetch lecturers from fti_datas where role is 'lecturer'
@@ -138,8 +138,10 @@ class KerjaPraktikController extends Controller
         $pengantar_requests = KpRequest::with('company')
             ->where('mahasiswa_id', $user['username'])
             ->where('type', 'pengantar')
-            ->where('status', 'approved')
             ->get();
+
+        // Get approved pengantar requests for download
+        $approved_pengantar_requests = $pengantar_requests->where('status', 'approved');
 
         // Get final companies (companies with approved requests)
         $final_companies = KpCompany::whereHas('requests', function($query) use ($user) {
@@ -150,7 +152,7 @@ class KerjaPraktikController extends Controller
         // Get all active companies from kp_perusahaans
         $perusahaans = KpPerusahaan::where('active', 1)->get();
 
-        return view('kp.pendaftaran_kp', compact('permohonan_requests', 'approved_permohonan_requests', 'pengantar_requests', 'final_companies', 'perusahaans'));
+        return view('kp.pendaftaran_kp', compact('permohonan_requests', 'approved_permohonan_requests', 'pengantar_requests', 'approved_pengantar_requests', 'final_companies', 'perusahaans'));
     }
 
     public function storePermohonan(Request $request)
@@ -165,10 +167,14 @@ class KerjaPraktikController extends Controller
             'waktu_awal_kp' => 'required|date',
             'waktu_selesai_kp' => 'required|date|after:waktu_awal_kp',
             'tahun_ajaran' => 'required|string|max:255',
-            'mahasiswa' => 'required|string',
+            'mahasiswa' => 'nullable|string',
         ]);
 
         $perusahaan = KpPerusahaan::find($request->perusahaan_id);
+
+        // Get user's group if exists
+        $group = KpGroup::where('active', true)->whereJsonContains('mahasiswa', $user['username'])->first();
+        $mahasiswa = $group ? $group->mahasiswa : [$request->mahasiswa ?: $user['username']];
 
         // Create company
         $company = KpCompany::create([
@@ -177,7 +183,7 @@ class KerjaPraktikController extends Controller
             'waktu_awal_kp' => $request->waktu_awal_kp,
             'waktu_selesai_kp' => $request->waktu_selesai_kp,
             'tahun_ajaran' => $request->tahun_ajaran,
-            'mahasiswa' => json_encode([$request->mahasiswa]), // Store as JSON array
+            'mahasiswa' => json_encode($mahasiswa), // Store group members or single mahasiswa
             'created_by' => $user['username'],
         ]);
 
@@ -242,6 +248,209 @@ class KerjaPraktikController extends Controller
         return redirect()->back()->with('success', 'Surat pengantar berhasil diajukan');
     }
 
+    public function editPermohonan($id)
+    {
+        $user = Session::get('user');
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        $request = KpRequest::with('company')->find($id);
+
+        if (!$request || $request->mahasiswa_id != $user['username'] || $request->type != 'permohonan' || $request->status != 'pending') {
+            abort(404);
+        }
+
+        // Get all active companies from kp_perusahaans
+        $perusahaans = KpPerusahaan::where('active', 1)->get();
+
+        return view('kp.edit_permohonan', compact('request', 'perusahaans'));
+    }
+
+
+
+    public function deletePermohonan(Request $request, $id)
+    {
+        $user = Session::get('user');
+        if (!$user) {
+            return redirect()->route('login');
+        }
+
+        $kpRequest = KpRequest::find($id);
+
+        if (!$kpRequest || $kpRequest->mahasiswa_id != $user['username'] || $kpRequest->type != 'permohonan' || $kpRequest->status != 'pending') {
+            abort(404);
+        }
+
+        // Delete the request first, then associated company
+        $kpRequest->delete();
+        $kpRequest->company->delete();
+
+        return redirect()->route('pendaftaran-kp')->with('success', 'Permohonan KP berhasil dihapus');
+    }
+
+    public function getPengantar($id)
+    {
+        $user = Session::get('user');
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $kpRequest = KpRequest::with('company', 'supervisor')->find($id);
+
+        if (!$kpRequest || $kpRequest->mahasiswa_id != $user['username'] || $kpRequest->type != 'pengantar' || $kpRequest->status != 'pending') {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+
+        return response()->json([
+            'perusahaan_id' => $kpRequest->company->kp_perusahaan_id ?? null,
+            'nama_supervisor' => $kpRequest->supervisor->nama_supervisor ?? '',
+            'no_supervisor' => $kpRequest->supervisor->no_supervisor ?? '',
+        ]);
+    }
+
+    public function getPermohonan($id)
+    {
+        $user = Session::get('user');
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $kpRequest = KpRequest::with('company')->find($id);
+
+        if (!$kpRequest || $kpRequest->mahasiswa_id != $user['username'] || $kpRequest->type != 'permohonan' || $kpRequest->status != 'pending') {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+
+        $company = $kpRequest->company;
+        $perusahaan = null;
+        $alamat_perusahaan = '';
+        $waktu_awal_kp = '';
+        $waktu_selesai_kp = '';
+        $tahun_ajaran = '';
+        $mahasiswa = '';
+
+        if ($company) {
+            $perusahaan = KpPerusahaan::where('nama_perusahaan', $company->nama_perusahaan)->first();
+            $alamat_perusahaan = $company->alamat_perusahaan;
+            $waktu_awal_kp = $company->waktu_awal_kp;
+            $waktu_selesai_kp = $company->waktu_selesai_kp;
+            $tahun_ajaran = $company->tahun_ajaran;
+            $mahasiswaData = $company->mahasiswa;
+            if (is_string($mahasiswaData)) {
+                $mahasiswaArray = json_decode($mahasiswaData, true);
+                $mahasiswa = is_array($mahasiswaArray) ? ($mahasiswaArray[0] ?? '') : '';
+            } else {
+                $mahasiswa = is_array($mahasiswaData) ? ($mahasiswaData[0] ?? '') : $mahasiswaData;
+            }
+        }
+
+        return response()->json([
+            'perusahaan_id' => $perusahaan ? $perusahaan->id : null,
+            'alamat_perusahaan' => $alamat_perusahaan,
+            'waktu_awal_kp' => $waktu_awal_kp,
+            'waktu_selesai_kp' => $waktu_selesai_kp,
+            'tahun_ajaran' => $tahun_ajaran,
+            'mahasiswa' => $mahasiswa,
+        ]);
+    }
+
+    public function updatePermohonan(Request $request, $id)
+    {
+        $user = Session::get('user');
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $kpRequest = KpRequest::find($id);
+
+        if (!$kpRequest || $kpRequest->mahasiswa_id != $user['username'] || $kpRequest->type != 'permohonan' || $kpRequest->status != 'pending') {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+
+        $request->validate([
+            'perusahaan_id' => 'required|exists:kp_perusahaans,id',
+            'waktu_awal_kp' => 'required|date',
+            'waktu_selesai_kp' => 'required|date|after:waktu_awal_kp',
+            'tahun_ajaran' => 'required|string|max:255',
+            'mahasiswa' => 'required|string',
+        ]);
+
+        $perusahaan = KpPerusahaan::find($request->perusahaan_id);
+
+        // Update company
+        $company = $kpRequest->company;
+        $company->update([
+            'nama_perusahaan' => $perusahaan->nama_perusahaan,
+            'alamat_perusahaan' => $perusahaan->alamat,
+            'waktu_awal_kp' => $request->waktu_awal_kp,
+            'waktu_selesai_kp' => $request->waktu_selesai_kp,
+            'tahun_ajaran' => $request->tahun_ajaran,
+            'mahasiswa' => json_encode([$request->mahasiswa]),
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Permohonan KP berhasil diperbarui']);
+    }
+
+    public function updatePengantar(Request $request, $id)
+    {
+        $user = Session::get('user');
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $kpRequest = KpRequest::find($id);
+
+        if (!$kpRequest || $kpRequest->mahasiswa_id != $user['username'] || $kpRequest->type != 'pengantar' || $kpRequest->status != 'pending') {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+
+        $request->validate([
+            'perusahaan_id' => 'required|exists:kp_perusahaans,id',
+            'nama_supervisor' => 'required|string|max:255',
+            'no_supervisor' => 'required|string|max:255',
+        ]);
+
+        $perusahaan = KpPerusahaan::find($request->perusahaan_id);
+
+        // Update company
+        $company = $kpRequest->company;
+        $company->update([
+            'nama_perusahaan' => $perusahaan->nama_perusahaan,
+            'alamat_perusahaan' => $perusahaan->alamat,
+        ]);
+
+        // Update supervisor
+        $supervisor = $kpRequest->supervisor;
+        $supervisor->update([
+            'nama_supervisor' => $request->nama_supervisor,
+            'no_supervisor' => $request->no_supervisor,
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Surat pengantar berhasil diperbarui']);
+    }
+
+    public function deletePengantar(Request $request, $id)
+    {
+        $user = Session::get('user');
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $kpRequest = KpRequest::find($id);
+
+        if (!$kpRequest || $kpRequest->mahasiswa_id != $user['username'] || $kpRequest->type != 'pengantar' || $kpRequest->status != 'pending') {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+
+        // Delete the request, supervisor, and company
+        $kpRequest->supervisor->delete();
+        $kpRequest->company->delete();
+        $kpRequest->delete();
+
+        return response()->json(['success' => true, 'message' => 'Surat pengantar berhasil dihapus']);
+    }
+
     public function downloadPermohonan($id)
     {
         $user = Session::get('user');
@@ -289,10 +498,10 @@ class KerjaPraktikController extends Controller
         $kpRequest = KpRequest::find($request->request_id);
         $kpRequest->dosen_id = $request->dosen_id;
         $kpRequest->divisi = $request->divisi;
-        $kpRequest->status = 'assigned'; // Update status to assigned
+        $kpRequest->status = 'approved'; // Update status to approved (include approval)
         $kpRequest->save();
 
-        return redirect()->back()->with('success', 'Dosen pembimbing berhasil ditentukan');
+        return redirect()->back()->with('success', 'Dosen pembimbing berhasil ditentukan dan surat pengantar disetujui');
     }
 
     public function approvePermohonan(Request $request)
@@ -321,6 +530,19 @@ class KerjaPraktikController extends Controller
         return redirect()->back()->with('success', 'Permohonan KP berhasil ditolak');
     }
 
+    public function approvePengantar(Request $request)
+    {
+        $request->validate([
+            'request_id' => 'required|exists:kp_requests,id',
+        ]);
+
+        $kpRequest = KpRequest::find($request->request_id);
+        $kpRequest->status = 'approved'; // Update status to approved
+        $kpRequest->save();
+
+        return redirect()->back()->with('success', 'Surat pengantar KP berhasil disetujui');
+    }
+
     public function daftarKelompok(Request $request)
     {
         $request->validate([
@@ -333,11 +555,17 @@ class KerjaPraktikController extends Controller
             return response()->json(['success' => false, 'message' => 'User tidak terautentikasi']);
         }
 
+        // Tambahkan user yang membuat kelompok ke dalam array mahasiswa jika belum ada
+        $mahasiswa = $request->mahasiswa;
+        if (!in_array($user['username'], $mahasiswa)) {
+            $mahasiswa[] = $user['username'];
+        }
+
         // Cek apakah ada mahasiswa yang sudah terdaftar di kelompok lain
         $existingMahasiswa = KpGroup::where('active', true)
-            ->where(function($query) use ($request) {
-                foreach ($request->mahasiswa as $mahasiswa) {
-                    $query->orWhereJsonContains('mahasiswa', $mahasiswa);
+            ->where(function($query) use ($mahasiswa) {
+                foreach ($mahasiswa as $mhs) {
+                    $query->orWhereJsonContains('mahasiswa', $mhs);
                 }
             })
             ->exists();
@@ -347,13 +575,13 @@ class KerjaPraktikController extends Controller
         }
 
         // Generate nama kelompok otomatis berdasarkan mahasiswa pertama
-        $firstMahasiswa = FtiData::where('username', $request->mahasiswa[0])->first();
-        $namaKelompok = 'Kelompok ' . ($firstMahasiswa ? $firstMahasiswa->nama : $request->mahasiswa[0]);
+        $firstMahasiswa = FtiData::where('username', $mahasiswa[0])->first();
+        $namaKelompok = 'Kelompok ' . ($firstMahasiswa ? $firstMahasiswa->nama : $mahasiswa[0]);
 
         // Buat kelompok baru
         KpGroup::create([
             'nama_kelompok' => $namaKelompok,
-            'mahasiswa' => $request->mahasiswa,
+            'mahasiswa' => $mahasiswa,
             'created_by' => $user['username'] ?? $user['id'],
             'updated_by' => $user['username'] ?? $user['id'],
             'active' => true
@@ -516,8 +744,8 @@ class KerjaPraktikController extends Controller
             'nama_perusahaan' => $request->nama_perusahaan,
             'alamat' => $request->alamat,
             'kontak' => $request->kontak,
-            'created_by' => $user['username'],
-            'updated_by' => $user['username'],
+            'created_by' => null,
+            'updated_by' => null,
             'active' => 1,
         ]);
 
@@ -1046,7 +1274,19 @@ class KerjaPraktikController extends Controller
         $seminar = KpSeminar::where('kp_request_id', $request->seminar_id)->where('active', true)->first();
 
         if (!$seminar) {
-            return response()->json(['success' => false, 'message' => 'Seminar tidak ditemukan']);
+            // Create seminar record if not exists
+            $kpRequest = KpRequest::find($request->seminar_id);
+            if (!$kpRequest) {
+                return response()->json(['success' => false, 'message' => 'KP Request tidak ditemukan']);
+            }
+            $seminar = KpSeminar::create([
+                'kp_request_id' => $request->seminar_id,
+                'mahasiswa_id' => $kpRequest->mahasiswa_id,
+                'status' => 'pending',
+                'active' => true,
+                'created_by' => auth()->id() ?? 'system',
+                'updated_by' => auth()->id() ?? 'system',
+            ]);
         }
 
         $seminar->update([$request->field => $request->value]);

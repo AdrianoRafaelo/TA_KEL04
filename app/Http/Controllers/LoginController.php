@@ -41,87 +41,6 @@ class LoginController extends Controller
             return redirect()->route('welcome');
         }
 
-        // 🔹 DEVELOPMENT MODE: Skip API untuk environment local
-        if (env('APP_ENV') === 'local') {
-            // Cari role dari fti_datas berdasarkan username
-            $ftiData = FtiData::where('username', $request->username)->first();
-
-            if ($ftiData && $ftiData->role_id) {
-                $role = Role::find($ftiData->role_id);
-                $roleName = $role ? $role->name : 'Mahasiswa';
-            } else {
-                // Default role untuk development
-                $roleName = 'Mahasiswa';
-            }
-
-            // 🔹 Simpan data ke tabel users untuk development
-            $nim = $request->username; // Gunakan username sebagai nim
-            $email = $request->username . '@students.del.ac.id'; // Default email
-
-            User::updateOrCreate(
-                ['nim' => $nim], // Cari berdasarkan nim
-                [
-                    'name' => $request->username,
-                    'email' => $email,
-                    'password' => bcrypt('password'), // Default password
-                    'created_by' => $request->username,
-                    'updated_by' => $request->username,
-                    'active' => '1', // Default active
-                ]
-            );
-
-            // Jika role dari fti_datas, pastikan user_roles ada
-            if ($ftiData && $ftiData->role_id) {
-                UserRole::firstOrCreate(
-                    ['username' => $request->username],
-                    [
-                        'role_id' => $ftiData->role_id,
-                        'created_by' => $request->username,
-                        'active' => '1',
-                    ]
-                );
-            } else {
-                // Default role Mahasiswa
-                $defaultRole = Role::firstOrCreate(
-                    ['name' => 'Mahasiswa'],
-                    ['created_by' => 'system', 'active' => 1]
-                );
-
-                UserRole::firstOrCreate(
-                    ['username' => $request->username],
-                    [
-                        'role_id' => $defaultRole->id,
-                        'created_by' => $request->username,
-                        'active' => '1',
-                    ]
-                );
-            }
-
-            // Set session untuk development
-            $request->session()->put('api_token', 'dev_token_' . $request->username);
-            $request->session()->put('username', $request->username);
-            $request->session()->put('role', $roleName);
-            $request->session()->put('user', [
-                'id' => null,
-                'username' => $request->username,
-                'nama' => $request->username, // Gunakan username sebagai nama
-                'role' => $roleName
-            ]);
-
-            \Log::info('Login Success (Development) - Username: ' . $request->username . ', Role: ' . $roleName);
-
-            // Arahkan berdasarkan role
-            if (strtolower($roleName) === 'dosen') {
-                return redirect()->route('dosen.home');
-            } elseif (strtolower($roleName) === 'mahasiswa') {
-                return redirect()->route('mahasiswa.home');
-            } elseif (strtolower($roleName) === 'koordinator') {
-                return redirect()->route('welcome');
-            } else {
-                return redirect()->route('welcome');
-            }
-        }
-
         try {
             $client = new \GuzzleHttp\Client();
             $apiBaseUrl = env('API_BASE_URL', config('app.api_base_url'));
@@ -186,8 +105,8 @@ class LoginController extends Controller
                     'name' => $nama,
                     'email' => $email,
                     'password' => bcrypt('password'), // Default password
-                    'created_by' => $request->username,
-                    'updated_by' => $request->username,
+                    'created_by' => null,
+                    'updated_by' => null,
                     'active' => '1', // Default active
                 ]
             );
@@ -216,9 +135,9 @@ class LoginController extends Controller
 
             // 🔹 Arahkan berdasarkan role
             if (strtolower($roleName) === 'dosen') {
-                return redirect()->route('dosen.home');
+                return redirect()->route('welcome');
             } elseif (strtolower($roleName) === 'mahasiswa') {
-                return redirect()->route('mahasiswa.home');
+                return redirect()->route('welcome');
             } elseif (strtolower($roleName) === 'koordinator') {
                 return redirect()->route('welcome');
             } else {

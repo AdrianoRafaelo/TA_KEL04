@@ -9,7 +9,7 @@ class TaPendaftaran extends Model
     protected $table = 'ta_pendaftaran';
     protected $fillable = [
         'judul', 'deskripsi', 'file', 'deskripsi_syarat', 'dosen',
-        'created_by', 'updated_by', 'active', 'status_id'
+        'created_by', 'updated_by', 'active', 'status_id', 'user_id'
     ];
 
     public function transaksi()
@@ -25,5 +25,10 @@ class TaPendaftaran extends Model
     public function mahasiswaTugasAkhir()
     {
         return $this->hasOne(MahasiswaTugasAkhir::class, 'judul', 'judul');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'user_id');
     }
 }

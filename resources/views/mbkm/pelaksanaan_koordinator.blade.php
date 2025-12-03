@@ -25,11 +25,13 @@
     </div>
 </div>
 
+
+
 <div class="row mb-4">
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="card-title">Pelaksanaan MBKM</h5>
+                <h5 class="card-title">Pelaksanaan MBKM Mitra</h5>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -46,9 +48,21 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse($pelaksanaans as $index => $pelaksanaan)
+                            <tr>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $pelaksanaan->mahasiswa->nama ?? 'N/A' }}</td>
+                                <td>{{ $companies[$pelaksanaan->mahasiswa_id] ?? 'N/A' }}</td>
+                                <td>{{ $pelaksanaan->minggu }}</td>
+                                <td>{{ $pelaksanaan->deskripsi_kegiatan }}</td>
+                                <td>{{ $pelaksanaan->bimbingan ?? '-' }}</td>
+                                <td>{{ $pelaksanaan->matkul }}</td>
+                            </tr>
+                            @empty
                             <tr>
                                 <td colspan="7" class="text-center text-muted">Data belum tersedia</td>
                             </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
@@ -87,5 +101,7 @@
         </div>
     </div>
 </div>
+
+
 
 @endsection

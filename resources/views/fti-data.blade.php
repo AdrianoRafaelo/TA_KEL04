@@ -195,7 +195,6 @@
                 @if ($activeRole == 'lecturer')
                     <th>User ID</th>
                 @endif
-                <th>Username</th>
                 @if (isset($data[0]['nim'])) <th>NIM</th> @endif
                 <th>Role</th>
                 <th>Prodi</th>
@@ -212,7 +211,6 @@
                     @if ($activeRole == 'lecturer')
                         <td>{{ $item['user_id'] ?? '-' }}</td>
                     @endif
-                    <td>{{ $item['username'] }}</td>
                     @if (isset($item['nim'])) <td>{{ $item['nim'] }}</td> @endif
                     <td>{{ ucfirst($item['role']) }}</td>
                     <td>{{ $item['prodi'] }}</td>

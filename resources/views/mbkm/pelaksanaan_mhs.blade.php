@@ -35,16 +35,16 @@
                 <div class="d-flex align-items-center mb-3">
                     <div>
                         <small class="text-muted">Nama/NIM</small>
-                        <h6 class="fw-bold mb-0">Nama Mahasiswa</h6>
-                        <small class="text-muted">Fakultas / 123456789</small>
-                        <small class="text-muted d-block mt-1">Anggota Kelompok: Anggota 1, Anggota 2</small>
+                        <h6 class="fw-bold mb-0">{{ $user->nama }}</h6>
+                        <small class="text-muted">Fakultas / {{ $user->nim }}</small>
+                        <small class="text-muted d-block mt-1">Anggota Kelompok: -</small>
                     </div>
                 </div>
 
                 <div class="d-flex align-items-center">
                     <div>
                         <small class="text-muted">Posisi (Divisi)</small>
-                        <h6 class="fw-bold mb-0">Divisi Contoh</h6>
+                        <h6 class="fw-bold mb-0">{{ $approvedMbkm->divisi ?? 'N/A' }}</h6>
                     </div>
                 </div>
             </div>
@@ -54,7 +54,7 @@
                 <div class="d-flex align-items-center mb-3">
                     <div>
                         <small class="text-muted">Perusahaan</small>
-                        <h6 class="fw-bold mb-0">Nama Perusahaan</h6>
+                        <h6 class="fw-bold mb-0">{{ $approvedMbkm->mitra->nama_perusahaan ?? 'N/A' }}</h6>
                     </div>
                 </div>
 
@@ -85,38 +85,29 @@
                             <tr>
                                 <th style="width: 60px;">Week</th>
                                 <th style="width: 120px;">Matkul</th>
-                                <th>Log-Activity Mahasiswa</th>
+                                <th>Deskripsi Kegiatan</th>
                                 <th style="width: 120px;">Bimbingan</th>
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse($pelaksanaans as $pelaksanaan)
                             <tr>
-                                <td>W1</td>
-                                <td>Relog</td>
-                                <td>
-                                    Lorem ipsum dolor sit amet, consectetur adipisci elit, sed eiusmod tempor
-                                    incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-                                    nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
-                                </td>
-                                <td>-</td>
+                                <td>W{{ $pelaksanaan->minggu }}</td>
+                                <td>{{ $pelaksanaan->matkul }}</td>
+                                <td>{{ $pelaksanaan->deskripsi_kegiatan }}</td>
+                                <td>{{ $pelaksanaan->bimbingan ?? '-' }}</td>
                             </tr>
-
+                            @empty
                             <tr>
-                                <td>W1</td>
-                                <td>Remu</td>
-                                <td>
-                                    Lorem ipsum dolor sit amet, consectetur adipisci elit, sed eiusmod tempor
-                                    incidunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-                                    nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur.
-                                </td>
-                                <td>-</td>
+                                <td colspan="4" class="text-center text-muted">Belum ada log-activity.</td>
                             </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
 
                 <div class="mt-3 text-end">
-                    <a href="#" class="text-primary small">+ Tambah log-activity</a>
+                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#tambahLogModal">+ Tambah Log-Activity</button>
                 </div>
 
             </div>
@@ -131,10 +122,10 @@
                 <div class="position-relative d-inline-block" style="width: 140px; height: 140px;">
                     <canvas id="progressChart"></canvas>
                     <div class="position-absolute top-50 start-50 translate-middle text-center">
-                        <div class="fw-bold fs-3 text-primary">25%</div>
+                        <div class="fw-bold fs-3 text-primary">{{ round($progressPercentage) }}%</div>
                     </div>
                 </div>
-                <p class="small text-muted mt-3">Minggu ke-1 dari 16</p>
+                <p class="small text-muted mt-3">Minggu ke-{{ $completedWeeks }} dari {{ $totalWeeks }}</p>
             </div>
         </div>
     </div>
@@ -148,7 +139,7 @@ new Chart(document.getElementById('progressChart'), {
     type: 'doughnut',
     data: {
         datasets: [{
-            data: [25, 75], // 25% progress, 75% remaining
+            data: [{{ $progressPercentage }}, {{ 100 - $progressPercentage }}], // progress, remaining
             backgroundColor: ['#6f42c1', '#e9ecef'],
             borderWidth: 0,
             borderRadius: 8
@@ -162,4 +153,41 @@ new Chart(document.getElementById('progressChart'), {
     }
 });
 </script>
+
+<!-- Modal Tambah Log-Activity -->
+<div class="modal fade" id="tambahLogModal" tabindex="-1" aria-labelledby="tambahLogModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tambahLogModalLabel">Tambah Log-Activity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ route('mbkm.store.pelaksanaan') }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="minggu" class="form-label">Minggu</label>
+                        <input type="number" class="form-control" id="minggu" name="minggu" min="1" max="16" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="matkul" class="form-label">Mata Kuliah</label>
+                        <input type="text" class="form-control" id="matkul" name="matkul" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="deskripsi_kegiatan" class="form-label">Deskripsi Kegiatan</label>
+                        <textarea class="form-control" id="deskripsi_kegiatan" name="deskripsi_kegiatan" rows="4" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="bimbingan" class="form-label">Bimbingan</label>
+                        <textarea class="form-control" id="bimbingan" name="bimbingan" rows="3" placeholder="Opsional, diisi oleh pembimbing"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 @endsection

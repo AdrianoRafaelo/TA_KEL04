@@ -15,15 +15,17 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'nim' => '123456789',
-            'email' => 'test@example.com',
-            'password' => bcrypt('password'),
-            'created_by' => 'system',
-            'updated_by' => 'system',
-            'active' => '1',
-        ]);
+        User::updateOrCreate(
+            ['nim' => '123456789'],
+            [
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+                'password' => bcrypt('password'),
+                'created_by' => null,
+                'updated_by' => null,
+                'active' => '1',
+            ]
+        );
 
         $this->call([
             RoleSeeder::class,
@@ -31,6 +33,7 @@ class DatabaseSeeder extends Seeder
             RefStatusTaSeeder::class,
             UpdateTaPendaftaranStatusSeeder::class,
             KurikulumSeeder::class,
+            StudentDataSeeder::class,
         ]);
     }
 }

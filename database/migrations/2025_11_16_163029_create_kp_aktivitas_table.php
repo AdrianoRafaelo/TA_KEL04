@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('kp_aktivitas', function (Blueprint $table) {
             $table->id();
             $table->string('mahasiswa_id');
+            $table->foreign('mahasiswa_id')->references('nim')->on('users');
             $table->string('judul');
             $table->text('deskripsi')->nullable();
             $table->string('file_path')->nullable();
@@ -31,6 +32,9 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('kp_aktivitas', function (Blueprint $table) {
+            $table->dropForeign(['mahasiswa_id']);
+        });
         Schema::dropIfExists('kp_aktivitas');
     }
 };

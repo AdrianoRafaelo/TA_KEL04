@@ -45,9 +45,32 @@
                             </tr>
                         </thead>
                         <tbody>
+                            @forelse($seminars as $index => $seminar)
                             <tr>
-                                <td colspan="7" class="text-center text-muted">Data belum tersedia</td>
+                                <td>{{ $index + 1 }}</td>
+                                <td>{{ $seminar->mahasiswa->nama ?? 'N/A' }} ({{ $seminar->mahasiswa->username ?? 'N/A' }})</td>
+                                <td>{{ $companies[$seminar->mahasiswa_id] ?? 'N/A' }}</td>
+                                <td>
+                                    @if($seminar->laporan_ekotek_file || $seminar->laporan_pmb_file)
+                                        <span class="badge bg-success">Ada</span>
+                                    @else
+                                        <span class="badge bg-warning">Belum</span>
+                                    @endif
+                                </td>
+                                <td>{{ $konversiCounts[$seminar->mahasiswa_id] ?? 0 }}</td>
+                                <td>
+                                    @if($seminar->jadwal_seminar_file)
+                                        <a href="#" class="text-primary">Download</a>
+                                    @else
+                                        <span class="text-muted">Belum ada</span>
+                                    @endif
+                                </td>
                             </tr>
+                            @empty
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">Data belum tersedia</td>
+                            </tr>
+                            @endforelse
                         </tbody>
                     </table>
                 </div>

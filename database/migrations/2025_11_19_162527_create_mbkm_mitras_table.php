@@ -18,7 +18,9 @@ return new class extends Migration
             $table->text('alamat')->nullable();
             $table->string('kontak')->nullable();
             $table->unsignedBigInteger('created_by')->nullable();
+            $table->foreign('created_by')->references('id')->on('users');
             $table->unsignedBigInteger('updated_by')->nullable();
+            $table->foreign('updated_by')->references('id')->on('users');
             $table->enum('active', ['0', '1'])->default('1');
             $table->timestamps();
         });
@@ -29,6 +31,10 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('mbkm_mitras', function (Blueprint $table) {
+            $table->dropForeign(['created_by']);
+            $table->dropForeign(['updated_by']);
+        });
         Schema::dropIfExists('mbkm_mitras');
     }
 };

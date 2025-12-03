@@ -24,4 +24,9 @@ class KpAktivitas extends Model
     {
         return $this->belongsTo(FtiData::class, 'mahasiswa_id', 'username');
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'mahasiswa_id', 'nim');
+    }
 }
