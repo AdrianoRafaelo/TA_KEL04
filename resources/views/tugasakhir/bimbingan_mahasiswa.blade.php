@@ -1421,10 +1421,18 @@
   }
 </style>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 $(document).ready(function() {
+  // View file button
+  $('.view-file-btn').click(function(e) {
+    e.preventDefault();
+    const fileUrl = $(this).data('file-url');
+    window.open(fileUrl, '_blank');
+  });
+
   // Edit file button
   $('.edit-file-btn').click(function(e) {
     e.preventDefault();

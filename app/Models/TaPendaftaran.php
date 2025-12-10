@@ -8,7 +8,7 @@ class TaPendaftaran extends Model
 {
     protected $table = 'ta_pendaftaran';
     protected $fillable = [
-        'judul', 'deskripsi', 'file', 'deskripsi_syarat', 'dosen',
+        'judul', 'user_id', 'deskripsi', 'file', 'deskripsi_syarat', 'dosen',
         'created_by', 'updated_by', 'active', 'status_id', 'user_id'
     ];
 
@@ -30,5 +30,15 @@ class TaPendaftaran extends Model
     public function user()
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
+
+    public function seminarProposal()
+    {
+        return $this->hasOne(TaSeminarProposal::class);
+    }
+
+    public function taBimbingans()
+    {
+        return $this->hasMany(TaBimbingan::class, 'ta_pendaftaran_id');
     }
 }

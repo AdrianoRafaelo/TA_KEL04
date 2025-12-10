@@ -8,6 +8,8 @@ class TaSidangAkhir extends Model
 {
     protected $fillable = [
         'mahasiswa',
+        'ta_pendaftaran_id',
+        'ta_seminar_hasils_id',
         'judul',
         'pembimbing',
         'pengulas_1',
@@ -25,6 +27,19 @@ class TaSidangAkhir extends Model
     ];
 
     // Relationships
+
+    public function tapendaftaran()
+    {
+        return $this->belongsTo(TaPendaftaran::class);
+    }
+
+    public function taSeminarHasil()
+    {
+        return $this->belongsTo(TaSeminarHasil::class, 'ta_seminar_hasils_id');
+    }
+
+
+
     public function mahasiswaTugasAkhir()
     {
         return $this->belongsTo(MahasiswaTugasAkhir::class, 'mahasiswa', 'mahasiswa');

@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('ta_skripsis', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('ta_pendaftaran_id')->unique()->constrained('ta_pendaftaran');
             $table->unsignedBigInteger('mahasiswa_tugas_akhir_id');
             $table->string('mahasiswa');
             $table->string('file_skripsi_word')->nullable();

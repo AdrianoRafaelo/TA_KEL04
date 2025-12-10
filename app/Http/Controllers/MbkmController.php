@@ -376,6 +376,7 @@ class MbkmController extends Controller
         $userId = $user ? $user->id : null;
 
         PendaftaranMbkm::create([
+            'user_id' => $user ? $user->user_id : null,
             'mahasiswa_id' => $userId,
             'mitra_id' => $request->mitra_id,
             'nama' => $request->nama,

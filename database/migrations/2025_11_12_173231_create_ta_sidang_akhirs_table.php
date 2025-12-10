@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('ta_sidang_akhirs', function (Blueprint $table) {
             $table->id();
             $table->string('mahasiswa'); // NIM atau username mahasiswa
-            $table->foreign('mahasiswa')->references('nim')->on('users');
-            $table->string('judul'); // Judul TA
+            $table->foreignId('ta_pendaftaran_id')->unique()->constrained('ta_pendaftaran');
+            $table->foreignId('ta_seminar_hasils_id')->unique()->constrained('ta_seminar_hasils')->onDelete('restrict');
             $table->string('pembimbing')->nullable(); // Pembimbing
             $table->string('pengulas_1')->nullable(); // Pengulas I
             $table->string('pengulas_2')->nullable(); // Pengulas II
@@ -37,7 +37,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('ta_sidang_akhirs', function (Blueprint $table) {
-            $table->dropForeign(['mahasiswa']);
+            $table->dropForeign(['ta_pendaftaran_id']);
+            $table->dropForeign(['ta_seminar_hasils_id']);
         });
         Schema::dropIfExists('ta_sidang_akhirs');
     }

@@ -9,8 +9,8 @@ return new class extends Migration {
         Schema::create('ta_seminar_hasils', function (Blueprint $table) {
             $table->id();
             $table->string('mahasiswa');
-            $table->foreign('mahasiswa')->references('nim')->on('users');
-            $table->string('judul');
+            $table->foreignId('ta_pendaftaran_id')->unique()->constrained('ta_pendaftaran');
+            $table->foreignId('ta_seminar_proposals_id')->unique()->constrained('ta_seminar_proposals')->onDelete('restrict');
             $table->string('pembimbing');
             $table->string('pengulas_1')->nullable();
             $table->string('pengulas_2')->nullable();
@@ -28,7 +28,8 @@ return new class extends Migration {
 
     public function down() {
         Schema::table('ta_seminar_hasils', function (Blueprint $table) {
-            $table->dropForeign(['mahasiswa']);
+            $table->dropForeign(['ta_pendaftaran_id']);
+            $table->dropForeign(['ta_seminar_proposals_id']);
         });
         Schema::dropIfExists('ta_seminar_hasils');
     }

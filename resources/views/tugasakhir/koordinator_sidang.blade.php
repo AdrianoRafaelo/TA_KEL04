@@ -1,6 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
+<!-- SweetAlert2 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
 <div class="container-fluid py-3">
     <!-- Breadcrumb & Title -->
     <div class="row mb-3">
@@ -37,6 +42,11 @@
                 Sidang Akhir
             </button>
         </div>
+        <div>
+            <button id="editJadwalBtn" class="btn btn-sm btn-secondary">
+                <i class="bi bi-pencil me-1"></i>Edit Jadwal Sidang
+            </button>
+        </div>
     </div>
 
     <!-- Table -->
@@ -64,7 +74,7 @@
                     </td>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $sidang->nama }} @if($sidang->nim) ({{ $sidang->nim }}) @endif</td>
-                    <td>{{ $sidang->judul }}</td>
+                    <td>{{ $sidang->taPendaftaran ? $sidang->taPendaftaran->judul : 'Judul tidak ditemukan' }}</td>
                     <td>
                         <i class="bi bi-file-earmark-text me-1"></i>
                         @if($sidang->file_dokumen_ta)
@@ -80,11 +90,8 @@
                         @if($sidang->jadwal_sidang_file)
                             <a href="{{ route('storage.file', ['path' => $sidang->jadwal_sidang_file]) }}" target="_blank" class="jadwal-file-link-{{ $sidang->id }}">Lihat File</a>
                         @else
-                            <span class="text-muted jadwal-file-placeholder-{{ $sidang->id }}">Belum ada dokumen</span>
-                        @endif
-                        <div style="margin-top:8px;">
                             <input type="file" class="form-control form-control-sm jadwal-file-input" data-sidang-id="{{ $sidang->id }}" accept=".pdf,.doc,.docx">
-                        </div>
+                        @endif
                     </td>
                     <td>
                         <button
@@ -133,6 +140,23 @@
 @section('scripts')
 <script>
 $(document).ready(function() {
+    let editMode = false;
+
+    $('#editJadwalBtn').click(function() {
+        editMode = !editMode;
+        if (editMode) {
+            $(this).text('Batal Edit');
+            $('.jadwal-cell .jadwal-file-input').removeClass('d-none');
+            $('.jadwal-cell .jadwal-file-link').addClass('d-none');
+            $('.jadwal-cell .jadwal-file-placeholder').addClass('d-none');
+        } else {
+            $(this).html('<i class="bi bi-pencil me-1"></i>Edit Jadwal Sidang');
+            $('.jadwal-cell .jadwal-file-input').addClass('d-none');
+            $('.jadwal-cell .jadwal-file-link').removeClass('d-none');
+            $('.jadwal-cell .jadwal-file-placeholder').removeClass('d-none');
+        }
+    });
+
     $('#selectAll').change(function() {
         $('.sidang-checkbox').prop('checked', this.checked);
     });
@@ -155,7 +179,15 @@ $(document).ready(function() {
         });
 
         if (fileUploads.length === 0) {
-            alert('Tidak ada file yang dipilih untuk diunggah.');
+            Swal.fire({
+                icon: 'info',
+                title: 'Info',
+                text: 'Tidak ada file yang dipilih untuk diunggah.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
             return;
         }
 
@@ -186,50 +218,80 @@ $(document).ready(function() {
             });
 
             if (allOk) {
-                alert('File jadwal berhasil disimpan!');
-                window.location.href = '/koordinator-sidang';
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'File jadwal berhasil disimpan!',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                }).then(() => {
+                    window.location.href = '/koordinator-sidang';
+                });
             } else {
-                alert('Beberapa file gagal diunggah. Periksa kembali.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: 'Beberapa file gagal diunggah. Periksa kembali.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
             }
         })
         .catch(err => {
             console.error(err);
-            alert('Terjadi kesalahan saat mengunggah file jadwal.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Terjadi kesalahan saat mengunggah file jadwal.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
         });
     });
 
     $('#approveSelected').click(function() {
         const selected = $('.sidang-checkbox:checked:not(:disabled)');
         if (selected.length === 0) {
-            alert('Pilih setidaknya satu sidang akhir.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Pilih setidaknya satu sidang akhir.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
             return;
         }
         const ids = selected.map((i, cb) => cb.value).get();
 
-        const modal = $('<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;">' +
-            '<div style="background:white;padding:20px;border-radius:8px;max-width:400px;width:90%;">' +
-                '<h5>Konfirmasi</h5>' +
-                '<p>Yakin menerima ' + ids.length + ' sidang akhir?</p>' +
-                '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">' +
-                    '<button id="cancelBtn" style="padding:8px 16px;border:1px solid #ccc;background:#f8f9fa;border-radius:4px;cursor:pointer;">Batal</button>' +
-                    '<button id="confirmBtn" style="padding:8px 16px;background:#28a745;color:white;border:none;border-radius:4px;cursor:pointer;">Ya</button>' +
-                '</div>' +
-            '</div>' +
-        '</div>');
-        $('body').append(modal);
-
-        modal.find('#cancelBtn').click(() => modal.remove());
-        modal.find('#confirmBtn').click(() => {
-            modal.remove();
-            const form = document.getElementById('approveForm');
-            ids.forEach(id => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'ids[]';
-                input.value = id;
-                form.appendChild(input);
-            });
-            form.submit();
+        Swal.fire({
+            title: 'Konfirmasi',
+            text: 'Yakin menerima ' + ids.length + ' sidang akhir?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('approveForm');
+                ids.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'ids[]';
+                    input.value = id;
+                    form.appendChild(input);
+                });
+                form.submit();
+            }
         });
     });
 

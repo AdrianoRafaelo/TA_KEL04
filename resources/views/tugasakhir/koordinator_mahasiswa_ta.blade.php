@@ -2,6 +2,29 @@
 
 @section('title', 'Mahasiswa TA')
 
+@section('styles')
+<!-- SweetAlert2 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+@endsection
+
+@section('scripts')
+<!-- SweetAlert2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
+<script>
+    @if(session('success'))
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+            icon: 'success',
+            title: '{{ session("success") }}'
+        });
+    @endif
+</script>
+@endsection
+
 @section('content')
 <div class="container-fluid py-3">
     <!-- Breadcrumb & Title -->

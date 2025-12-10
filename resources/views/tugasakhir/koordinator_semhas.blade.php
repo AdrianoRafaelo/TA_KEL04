@@ -37,6 +37,11 @@
                 Seminar Hasil
             </button>
         </div>
+        <div>
+            <button id="editJadwalBtn" class="btn btn-sm btn-secondary">
+                <i class="bi bi-pencil me-1"></i>Edit Jadwal Seminar
+            </button>
+        </div>
     </div>
 
     <!-- Table -->
@@ -64,7 +69,7 @@
                     </td>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $hasil->nama }} @if($hasil->nim) ({{ $hasil->nim }}) @endif</td>
-                    <td>{{ $hasil->judul }}</td>
+                    <td>{{ $hasil->taPendaftaran->judul }}</td>
                     <td>
                         <i class="bi bi-file-earmark-text me-1"></i>
                         @if($hasil->file_dokumen_ta)
@@ -76,15 +81,13 @@
                     <td>{{ $hasil->pembimbing ?? '-' }}</td>
                     <td>{{ $hasil->pengulas_1 ?? '-' }}</td>
                     <td>{{ $hasil->pengulas_2 ?? '-' }}</td>
-                    <td>
+                    <td class="jadwal-cell" data-hasil-id="{{ $hasil->id }}">
                         @if($hasil->jadwal_seminar_file)
-                            <a href="{{ route('storage.file', ['path' => $hasil->jadwal_seminar_file]) }}" target="_blank" class="jadwal-file-link-{{ $hasil->id }}">Lihat File</a>
+                            <a href="{{ asset('storage/' . $hasil->jadwal_seminar_file) }}" target="_blank" class="ms-2 jadwal-file-link-{{ $hasil->id }}">Lihat File</a>
+                            <input type="file" class="form-control form-control-sm jadwal-file-input d-none" data-hasil-id="{{ $hasil->id }}" accept=".pdf,.doc,.docx">
                         @else
-                            <span class="text-muted jadwal-file-placeholder-{{ $hasil->id }}">Belum ada dokumen</span>
-                        @endif
-                        <div style="margin-top:8px;">
                             <input type="file" class="form-control form-control-sm jadwal-file-input" data-hasil-id="{{ $hasil->id }}" accept=".pdf,.doc,.docx">
-                        </div>
+                        @endif
                     </td>
                     <td>
                         <button 
@@ -125,8 +128,24 @@
 </div>
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(document).ready(function() {
+    let editMode = false;
+
+    $('#editJadwalBtn').click(function() {
+        editMode = !editMode;
+        if (editMode) {
+            $(this).text('Batal Edit');
+            $('.jadwal-cell .jadwal-file-input').removeClass('d-none');
+            $('.jadwal-cell .jadwal-file-link').addClass('d-none');
+        } else {
+            $(this).html('<i class="bi bi-pencil me-1"></i>Edit Jadwal Seminar');
+            $('.jadwal-cell .jadwal-file-input').addClass('d-none');
+            $('.jadwal-cell .jadwal-file-link').removeClass('d-none');
+        }
+    });
+
     $('#selectAll').change(function() {
         $('.hasil-checkbox').prop('checked', this.checked);
     });
@@ -149,7 +168,15 @@ $(document).ready(function() {
         });
 
         if (fileUploads.length === 0) {
-            alert('Tidak ada file yang dipilih untuk diunggah.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Tidak ada file yang dipilih untuk diunggah.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 5000
+            });
             return;
         }
 
@@ -166,13 +193,12 @@ $(document).ready(function() {
                 const hid = fileUploads[idx].hasilId;
                 if (res.success) {
                     const selectorLink = '.jadwal-file-link-' + hid;
-                    const selectorPlaceholder = '.jadwal-file-placeholder-' + hid;
-                    $(selectorPlaceholder).remove();
                     if ($(selectorLink).length) {
                         $(selectorLink).attr('href', res.file_path);
                     } else {
                         const inputEl = $('.jadwal-file-input[data-hasil-id="' + hid + '"]');
                         inputEl.before('<a href="' + res.file_path + '" target="_blank" class="ms-2 jadwal-file-link-' + hid + '">Lihat File</a>');
+                        inputEl.addClass('d-none');
                     }
                 } else {
                     allOk = false;
@@ -180,51 +206,88 @@ $(document).ready(function() {
             });
 
             if (allOk) {
-                alert('File jadwal berhasil disimpan!');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'File jadwal berhasil disimpan!',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 5000
+                });
                 location.reload();
             } else {
-                alert('Beberapa file gagal diunggah. Periksa kembali.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: 'Beberapa file gagal diunggah. Periksa kembali.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 5000
+                });
             }
         })
         .catch(err => {
             console.error(err);
-            alert('Terjadi kesalahan saat mengunggah file jadwal.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: 'Terjadi kesalahan saat mengunggah file jadwal.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 5000
+            });
         });
     });
 
     $('#approveSelected').click(function() {
         const selected = $('.hasil-checkbox:checked:not(:disabled)');
         if (selected.length === 0) {
-            alert('Pilih setidaknya satu seminar hasil.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Pilih setidaknya satu seminar hasil.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 5000
+            });
             return;
         }
         const ids = selected.map((i, cb) => cb.value).get();
 
-        const modal = $('<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;">' +
-            '<div style="background:white;padding:20px;border-radius:8px;max-width:400px;width:90%;">' +
-                '<h5>Konfirmasi</h5>' +
-                '<p>Yakin menerima ' + ids.length + ' seminar hasil?</p>' +
-                '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">' +
-                    '<button id="cancelBtn" style="padding:8px 16px;border:1px solid #ccc;background:#f8f9fa;border-radius:4px;cursor:pointer;">Batal</button>' +
-                    '<button id="confirmBtn" style="padding:8px 16px;background:#28a745;color:white;border:none;border-radius:4px;cursor:pointer;">Ya</button>' +
-                '</div>' +
-            '</div>' +
-        '</div>');
-        $('body').append(modal);
-
-        modal.find('#cancelBtn').click(() => modal.remove());
-        modal.find('#confirmBtn').click(() => {
-            modal.remove();
-            fetch('{{ route("koordinator.approve.semhas") }}', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                body: JSON.stringify({ ids })
-            })
-            .then(r => r.json())
-            .then(data => {
-                alert(data.message || 'Sukses!');
-                location.reload();
-            });
+        Swal.fire({
+            title: 'Konfirmasi',
+            text: 'Yakin menerima ' + ids.length + ' seminar hasil?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('{{ route("koordinator.approve.semhas") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: JSON.stringify({ ids })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: data.message || 'Sukses!',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 5000
+                    });
+                    location.reload();
+                });
+            }
         });
     });
 
@@ -426,7 +489,15 @@ $(document).ready(function() {
 
         // Simpan (hanya notifikasi)
         modal.find('#simpanBtn').click(() => {
-            alert('Semua perubahan disimpan otomatis.');
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: 'Semua perubahan disimpan otomatis.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 5000
+            });
             modal.remove();
         });
     });

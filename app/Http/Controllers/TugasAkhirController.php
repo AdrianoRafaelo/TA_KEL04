@@ -54,8 +54,13 @@ class TugasAkhirController extends Controller
             }
         }
 
+        // Get user_id from nim (username is nim)
+        $user = \App\Models\User::where('nim', $username)->first();
+        $userId = $user ? $user->id : null;
+
         $data = [
             'judul' => $request->judul,
+            'user_id' => $userId,
             'deskripsi' => $request->deskripsi,
             'file' => $request->file('file') ? $request->file('file')->store('ta_files', 'public') : null,
             'deskripsi_syarat' => $deskripsiSyarat,
@@ -449,9 +454,13 @@ class TugasAkhirController extends Controller
             $seminarProposal = TaSeminarProposal::where('mahasiswa', $username)->first();
             \Log::info('SeminarProposal query result: ' . ($seminarProposal ? 'found' : 'not found'), ['existing' => $seminarProposal]);
 
+            // Find the corresponding ta_pendaftaran
+            $taPendaftaran = TaPendaftaran::where('judul', $mahasiswaTa->judul)->first();
+
             if (!$seminarProposal) {
                 $seminarProposal = new TaSeminarProposal();
                 $seminarProposal->mahasiswa = $mahasiswaTa->mahasiswa;
+                $seminarProposal->ta_pendaftaran_id = $taPendaftaran ? $taPendaftaran->id : null;
                 $seminarProposal->judul = $mahasiswaTa->judul;
                 $seminarProposal->pembimbing = $mahasiswaTa->pembimbing;
                 $seminarProposal->status = 'pending';
@@ -636,9 +645,15 @@ class TugasAkhirController extends Controller
         $username = Session::get('username') ?? null;
 
         // Ambil data mahasiswa tugas akhir yang sudah diterima oleh koordinator
-        $mahasiswaTa = MahasiswaTugasAkhir::with('sidangAkhir')->where('mahasiswa', $username)->where('active', true)->first();
+        $mahasiswaTa = MahasiswaTugasAkhir::with('sidangAkhir', 'taPendaftaran')->where('mahasiswa', $username)->where('active', true)->first();
 
-        return view('tugasakhir.sidang_akhir_mahasiswa', compact('mahasiswaTa'));
+        // Find the corresponding ta_pendaftaran
+        $taPendaftaran = null;
+        if ($mahasiswaTa) {
+            $taPendaftaran = TaPendaftaran::where('judul', $mahasiswaTa->judul)->first();
+        }
+
+        return view('tugasakhir.sidang_akhir_mahasiswa', compact('mahasiswaTa', 'taPendaftaran'));
     }
 
     public function storeSidangAkhir(Request $request)
@@ -656,13 +671,20 @@ class TugasAkhirController extends Controller
             return redirect()->back()->with('error', 'Data mahasiswa tidak ditemukan.');
         }
 
+        // Find the corresponding ta_pendaftaran
+        $taPendaftaran = TaPendaftaran::where('judul', $mahasiswaTa->judul)->first();
+
+        // Find the corresponding ta_seminar_hasil
+        $taSeminarHasil = TaSeminarHasil::where('mahasiswa', $mahasiswaTa->mahasiswa)->first();
+
         // Check if sidang akhir already exists
         $sidangAkhir = TaSidangAkhir::where('mahasiswa', $mahasiswaTa->mahasiswa)->first();
 
         if (!$sidangAkhir) {
             $sidangAkhir = new TaSidangAkhir();
             $sidangAkhir->mahasiswa = $mahasiswaTa->mahasiswa;
-            $sidangAkhir->judul = $mahasiswaTa->judul;
+            $sidangAkhir->ta_pendaftaran_id = $taPendaftaran ? $taPendaftaran->id : null;
+            $sidangAkhir->ta_seminar_hasils_id = $taSeminarHasil ? $taSeminarHasil->id : null;
             $sidangAkhir->pembimbing = $mahasiswaTa->pembimbing;
             $sidangAkhir->pengulas_1 = $mahasiswaTa->pengulas_1;
             $sidangAkhir->pengulas_2 = $mahasiswaTa->pengulas_2;
@@ -815,16 +837,15 @@ class TugasAkhirController extends Controller
 
         $username = Session::get('username') ?? null;
 
-        // Get mahasiswa id from fti_datas
-        $mahasiswa = FtiData::where('username', $username)->first();
-        $mahasiswaId = $mahasiswa ? $mahasiswa->id : null;
+        // Check if mahasiswa has active TA
+        $mahasiswaTa = MahasiswaTugasAkhir::where('mahasiswa', $username)->where('active', true)->first();
 
-        if (!$mahasiswaId) {
+        if (!$mahasiswaTa) {
             return response()->json(['success' => false, 'message' => 'Data mahasiswa tidak ditemukan.']);
         }
 
         TaBimbingan::create([
-            'mahasiswa_id' => $mahasiswaId,
+            'mahasiswa_id' => $mahasiswaTa->id,
             'tanggal' => $request->tanggal,
             'topik_pembahasan' => $request->topik_pembahasan,
             'tugas_selanjutnya' => $request->tugas_selanjutnya,
@@ -980,6 +1001,7 @@ class TugasAkhirController extends Controller
             // Create new assignment
             MahasiswaTugasAkhir::create([
                 'mahasiswa' => $taPendaftaran->created_by,
+                'ta_pendaftaran_id' => $titleId,
                 'judul' => $taPendaftaran->judul,
                 'pembimbing' => $data['pembimbing'] ?? null,
                 'pengulas_1' => $data['pengulas1'] ?? null,
@@ -1079,6 +1101,22 @@ class TugasAkhirController extends Controller
         $proposal = TaSeminarProposal::findOrFail($request->proposal_id);
         $proposal->{$request->field} = $request->value;
         $proposal->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function updateSidangPengulas(Request $request)
+    {
+        $request->validate([
+            'sidang_id' => 'required|exists:ta_sidang_akhirs,id',
+            'pengulas_1' => 'nullable|string',
+            'pengulas_2' => 'nullable|string'
+        ]);
+
+        $sidang = TaSidangAkhir::findOrFail($request->sidang_id);
+        $sidang->pengulas_1 = $request->pengulas_1;
+        $sidang->pengulas_2 = $request->pengulas_2;
+        $sidang->save();
 
         return response()->json(['success' => true]);
     }
@@ -1186,6 +1224,7 @@ class TugasAkhirController extends Controller
                 \DB::raw('COALESCE(fti_datas.nama, ta_sidang_akhirs.mahasiswa) as nama'),
                 \DB::raw('COALESCE(fti_datas.nim, "") as nim')
             )
+            ->with('taPendaftaran')
             ->get();
 
         // Merge data - ambil pengulas dari MahasiswaTugasAkhir jika kosong di TaSidangAkhir
@@ -1357,10 +1396,17 @@ class TugasAkhirController extends Controller
         // Check if seminar hasil already exists
         $seminarHasil = TaSeminarHasil::where('mahasiswa', $mahasiswaTa->mahasiswa)->first();
         
+        // Find the corresponding ta_pendaftaran
+        $taPendaftaran = TaPendaftaran::where('judul', $mahasiswaTa->judul)->first();
+
+        // Find the corresponding ta_seminar_proposals
+        $taSeminarProposal = TaSeminarProposal::where('mahasiswa', $mahasiswaTa->mahasiswa)->first();
+
         if (!$seminarHasil) {
             $seminarHasil = new TaSeminarHasil();
             $seminarHasil->mahasiswa = $mahasiswaTa->mahasiswa;
-            $seminarHasil->judul = $mahasiswaTa->judul;
+            $seminarHasil->ta_pendaftaran_id = $taPendaftaran ? $taPendaftaran->id : null;
+            $seminarHasil->ta_seminar_proposals_id = $taSeminarProposal ? $taSeminarProposal->id : null;
             $seminarHasil->pembimbing = $mahasiswaTa->pembimbing;
             $seminarHasil->status = 'pending';
         }
@@ -1504,6 +1550,7 @@ class TugasAkhirController extends Controller
 
             if (!$skripsi) {
                 $skripsi = new TaSkripsi();
+                $skripsi->ta_pendaftaran_id = $mahasiswaTa->ta_pendaftaran_id;
                 $skripsi->mahasiswa_tugas_akhir_id = $mahasiswaTa->id;
                 $skripsi->mahasiswa = $mahasiswaTa->mahasiswa;
                 $skripsi->status = 'draft';

@@ -7,8 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class TaBimbingan extends Model
 {
     protected $fillable = [
-        'mahasiswa_id',
-        'dosen_id',
+        'ta_pendaftaran_id',
         'tanggal',
         'topik_pembahasan',
         'tugas_selanjutnya',
@@ -23,14 +22,9 @@ class TaBimbingan extends Model
     ];
 
     // Relationships
-    public function mahasiswa()
+    public function taPendaftaran()
     {
-        return $this->belongsTo(FtiData::class, 'mahasiswa_id');
-    }
-
-    public function dosen()
-    {
-        return $this->belongsTo(FtiData::class, 'dosen_id');
+        return $this->belongsTo(TaPendaftaran::class, 'ta_pendaftaran_id');
     }
 
     public function createdBy()

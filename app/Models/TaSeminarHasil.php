@@ -9,6 +9,8 @@ class TaSeminarHasil extends Model
     protected $table = 'ta_seminar_hasils';
     protected $fillable = [
         'mahasiswa',
+        'ta_pendaftaran_id',
+        'ta_seminar_proposals_id',
         'judul',
         'pembimbing',
         'pengulas_1',
@@ -26,12 +28,6 @@ class TaSeminarHasil extends Model
     public function mahasiswaTugasAkhir()
     {
         return $this->belongsTo(MahasiswaTugasAkhir::class, 'mahasiswa', 'mahasiswa');
-    }
-
-    // Direct relationships to FtiData
-    public function mahasiswa()
-    {
-        return $this->belongsTo(FtiData::class, 'mahasiswa');
     }
 
     // Relationship to User
@@ -53,5 +49,15 @@ class TaSeminarHasil extends Model
     public function pengulas2()
     {
         return $this->belongsTo(FtiData::class, 'pengulas_2');
+    }
+
+    public function taPendaftaran()
+    {
+        return $this->belongsTo(TaPendaftaran::class);
+    }
+
+    public function taSeminarProposal()
+    {
+        return $this->belongsTo(TaSeminarProposal::class, 'ta_seminar_proposals_id');
     }
 }

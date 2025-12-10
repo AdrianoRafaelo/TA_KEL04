@@ -8,6 +8,7 @@ class TaSeminarProposal extends Model
 {
     protected $fillable = [
         'mahasiswa',
+        'ta_pendaftaran_id',
         'judul',
         'pembimbing',
         'pengulas_1',
@@ -58,5 +59,10 @@ class TaSeminarProposal extends Model
     public function pengulas2()
     {
         return $this->belongsTo(FtiData::class, 'pengulas_2');
+    }
+
+    public function taPendaftaran()
+    {
+        return $this->belongsTo(TaPendaftaran::class);
     }
 }

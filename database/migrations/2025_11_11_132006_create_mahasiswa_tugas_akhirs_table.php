@@ -13,12 +13,15 @@ return new class extends Migration
     {
         Schema::create('mahasiswa_tugas_akhirs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('ta_pendaftaran_id');
-            $table->enum('peran', ['pembimbing', 'pengulas1', 'pengulas2']);
-            $table->string('nama_dosen');
-            $table->timestamps();
-
-            $table->foreign('ta_pendaftaran_id')->references('id')->on('ta_pendaftaran')->onDelete('cascade');
+            $table->string('mahasiswa');
+            $table->foreignId('ta_pendaftaran_id')->unique()->constrained('ta_pendaftaran');
+            $table->string('judul');
+            $table->string('pembimbing')->nullable();
+            $table->string('pengulas_1')->nullable();
+            $table->string('pengulas_2')->nullable();
+            $table->string('created_by');
+            $table->string('updated_by');
+            $table->boolean('active')->default(true);
         });
     }
 

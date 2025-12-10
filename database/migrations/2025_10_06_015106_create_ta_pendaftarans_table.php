@@ -13,13 +13,14 @@ class CreateTaPendaftaransTable extends Migration
     {
         Schema::create('ta_pendaftaran', function (Blueprint $table) {
             $table->bigIncrements('id');
+            $table->foreignId('user_id')->constrained();
             $table->string('judul');
             $table->text('deskripsi');
             $table->string('file')->nullable();
             $table->text('deskripsi_syarat')->nullable();
-            $table->timestamps();
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
+            $table->timestamps();
             $table->integer('active')->default(1);
         });
     }
@@ -29,6 +30,9 @@ class CreateTaPendaftaransTable extends Migration
      */
     public function down(): void
     {
+        Schema::table('ta_seminar_proposals', function (Blueprint $table) {
+            $table->dropForeign(['ta_pendaftaran_id']);
+        });
         Schema::dropIfExists('ta_pendaftaran');
     }
 };

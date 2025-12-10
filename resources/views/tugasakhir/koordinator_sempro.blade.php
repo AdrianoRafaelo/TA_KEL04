@@ -37,6 +37,11 @@
                 Seminar Proposal
             </button>
         </div>
+        <div>
+            <button id="editJadwalBtn" class="btn btn-sm btn-secondary">
+                <i class="bi bi-pencil me-1"></i>Edit Jadwal Seminar
+            </button>
+        </div>
     </div>
 
     <!-- Table -->
@@ -64,7 +69,7 @@
                     </td>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $proposal->nama }} @if($proposal->nim) ({{ $proposal->nim }}) @endif</td>
-                    <td>{{ $proposal->judul }}</td>
+                    <td>{{ $proposal->taPendaftaran->judul ?? 'N/A' }}</td>
                     <td>
                         <i class="bi bi-file-earmark-text me-1"></i>
                         @if($proposal->file_proposal)
@@ -96,13 +101,13 @@
                             @endforeach
                         </select>
                     </td>
-                    <td>
+                    <td class="jadwal-cell" data-proposal-id="{{ $proposal->id }}">
                         @if($proposal->jadwal_seminar_file)
                             <a href="{{ asset('storage/' . $proposal->jadwal_seminar_file) }}" target="_blank" class="ms-2 jadwal-file-link-{{ $proposal->id }}">Lihat File</a>
-                        @endif
-                        <div style="margin-top:8px;">
+                            <input type="file" class="form-control form-control-sm jadwal-file-input d-none" data-proposal-id="{{ $proposal->id }}" accept=".pdf,.doc,.docx">
+                        @else
                             <input type="file" class="form-control form-control-sm jadwal-file-input" data-proposal-id="{{ $proposal->id }}" accept=".pdf,.doc,.docx">
-                        </div>
+                        @endif
                     </td>
                     <td>
                         <button
@@ -143,8 +148,24 @@
 </div>
 
 @section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(document).ready(function() {
+    let editMode = false;
+
+    $('#editJadwalBtn').click(function() {
+        editMode = !editMode;
+        if (editMode) {
+            $(this).text('Batal Edit');
+            $('.jadwal-cell .jadwal-file-input').removeClass('d-none');
+            $('.jadwal-cell .jadwal-file-link').addClass('d-none');
+        } else {
+            $(this).html('<i class="bi bi-pencil me-1"></i>Edit Jadwal Seminar');
+            $('.jadwal-cell .jadwal-file-input').addClass('d-none');
+            $('.jadwal-cell .jadwal-file-link').removeClass('d-none');
+        }
+    });
+
     $('#selectAll').change(function() {
         $('.proposal-checkbox').prop('checked', this.checked);
     });
@@ -214,9 +235,10 @@ $(document).ready(function() {
                         if ($(selectorLink).length) {
                             $(selectorLink).attr('href', res.file_path);
                         } else {
-                            // insert link before the file input
+                            // insert link before the file input and hide the input
                             const inputEl = $('.jadwal-file-input[data-proposal-id="' + pid + '"]');
                             inputEl.before('<a href="' + res.file_path + '" target="_blank" class="ms-2 jadwal-file-link-' + pid + '">Lihat File</a>');
+                            inputEl.hide();
                         }
                     } else {
                         allOk = false;
@@ -243,36 +265,49 @@ $(document).ready(function() {
     $('#approveSelected').click(function() {
         const selected = $('.proposal-checkbox:checked:not(:disabled)');
         if (selected.length === 0) {
-            alert('Pilih setidaknya satu proposal.');
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan',
+                text: 'Pilih setidaknya satu proposal.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 5000
+            });
             return;
         }
         const ids = selected.map((i, cb) => cb.value).get();
 
-        const modal = $('<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;">' +
-            '<div style="background:white;padding:20px;border-radius:8px;max-width:400px;width:90%;">' +
-                '<h5>Konfirmasi</h5>' +
-                '<p>Yakin menerima ' + ids.length + ' proposal?</p>' +
-                '<div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px;">' +
-                    '<button id="cancelBtn" style="padding:8px 16px;border:1px solid #ccc;background:#f8f9fa;border-radius:4px;cursor:pointer;">Batal</button>' +
-                    '<button id="confirmBtn" style="padding:8px 16px;background:#28a745;color:white;border:none;border-radius:4px;cursor:pointer;">Ya</button>' +
-                '</div>' +
-            '</div>' +
-        '</div>');
-        $('body').append(modal);
-
-        modal.find('#cancelBtn').click(() => modal.remove());
-        modal.find('#confirmBtn').click(() => {
-            modal.remove();
-            fetch('{{ route("koordinator.approve.sempro") }}', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                body: JSON.stringify({ ids })
-            })
-            .then(r => r.json())
-            .then(data => {
-                alert(data.message || 'Sukses!');
-                location.reload();
-            });
+        Swal.fire({
+            title: 'Konfirmasi',
+            text: 'Yakin menerima ' + ids.length + ' proposal?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Ya',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('{{ route("koordinator.approve.sempro") }}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                    body: JSON.stringify({ ids })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: data.message || 'Sukses!',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 5000
+                    });
+                    location.reload();
+                });
+            }
         });
     });
 
@@ -513,6 +548,7 @@ $(document).ready(function() {
     align-items: center;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
+
 
 .modal-title {
     font-size: 20px;

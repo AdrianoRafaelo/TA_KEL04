@@ -138,6 +138,7 @@ Route::get('/koordinator-sidang', [TugasAkhirController::class, 'koordinatorSida
 Route::post('/koordinator-sidang/approve', [TugasAkhirController::class, 'approveSidangAkhirs'])->name('koordinator.approve.sidang')->middleware('auth.session');
 Route::post('/koordinator-sidang/upload-jadwal', [TugasAkhirController::class, 'uploadJadwalSidangDokumen'])->name('koordinator.upload.sidang.jadwal')->middleware('auth.session');
 Route::post('/koordinator-sidang/upload-dokumen', [TugasAkhirController::class, 'uploadSidangDokumen'])->name('koordinator.upload.sidang.dokumen')->middleware('auth.session');
+Route::post('/koordinator-sidang/update-pengulas', [TugasAkhirController::class, 'updateSidangPengulas'])->name('koordinator.update.sidang.pengulas')->middleware('auth.session');
 Route::get('/storage-file/{path}', [TugasAkhirController::class, 'serveStorageFile'])->where('path', '.*')->name('storage.file')->middleware('auth.session');
 route::get('/koordinator-skripsi', [TugasAkhirController::class, 'koordinatorSkripsi'])->name('koordinator.skripsi')->middleware('auth.session');
 

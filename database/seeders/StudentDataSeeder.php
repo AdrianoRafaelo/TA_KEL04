@@ -14,7 +14,7 @@ class StudentDataSeeder extends Seeder
     public function run(): void
     {
         FtiData::updateOrCreate(
-            ['username' => 'if420086'],
+            ['username' => 'if420086'], // Use nim as username
             [
                 'nama' => 'Theresya Gurning',
                 'nim' => '11420086',
@@ -28,7 +28,7 @@ class StudentDataSeeder extends Seeder
         );
 
         FtiData::updateOrCreate(
-            ['username' => 'if321002'],
+            ['username' => 'if321002'], // Use nim as username
             [
                 'nama' => 'Samuel Sibuea',
                 'nim' => '11321002',

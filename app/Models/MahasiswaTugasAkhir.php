@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class MahasiswaTugasAkhir extends Model
 {
+    public $timestamps = false;
+
     protected $table = 'mahasiswa_tugas_akhirs';
-    protected $fillable = ['mahasiswa', 'judul', 'pembimbing', 'pengulas_1', 'pengulas_2', 'created_by', 'updated_by', 'active'];
+    protected $fillable = ['mahasiswa', 'ta_pendaftaran_id', 'judul', 'pembimbing', 'pengulas_1', 'pengulas_2', 'created_by', 'updated_by', 'active'];
 
     public function seminarProposal()
     {
@@ -27,6 +29,11 @@ class MahasiswaTugasAkhir extends Model
     public function skripsi()
     {
         return $this->hasOne(TaSkripsi::class, 'mahasiswa_tugas_akhir_id');
+    }
+
+    public function taPendaftaran()
+    {
+        return $this->belongsTo(TaPendaftaran::class, 'ta_pendaftaran_id');
     }
 
     // Relationships to FtiData

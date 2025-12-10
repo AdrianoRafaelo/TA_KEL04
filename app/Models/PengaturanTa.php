@@ -9,6 +9,7 @@ class PengaturanTa extends Model
     protected $table = 'pengaturan_tas';
 
     protected $fillable = [
+        'user_id',
         'batas_waktu_pendaftaran',
         'pendaftaran_ditutup',
         'pesan_penutupan',
@@ -16,18 +17,8 @@ class PengaturanTa extends Model
         'updated_by',
     ];
 
-    protected $casts = [
-        'batas_waktu_pendaftaran' => 'datetime',
-        'pendaftaran_ditutup' => 'boolean',
-    ];
-
-    public function createdBy()
+    public function user()
     {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-    public function updatedBy()
-    {
-        return $this->belongsTo(User::class, 'updated_by');
+        return $this->belongsTo(User::class);
     }
 }

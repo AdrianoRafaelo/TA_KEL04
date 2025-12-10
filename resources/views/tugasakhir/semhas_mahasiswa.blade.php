@@ -537,7 +537,7 @@ KONTEN DUA KOLOM
           @csrf
           <div class="mb-3">
             <label class="form-label">Unggah Dokumen TA</label>
-            <input type="file" class="form-control" name="file_dokumen_ta" accept=".pdf,.doc,.docx">
+            <input type="file" class="form-control" name="file_dokumen_ta" accept=".pdf,.doc,.docx" @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->status == 'approved') disabled @endif>
             @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->file_dokumen_ta)
               <div class="d-flex align-items-center mt-1">
                 <small class="text-success me-2">
@@ -546,18 +546,20 @@ KONTEN DUA KOLOM
                 <button class="btn btn-sm btn-outline-primary view-file-btn me-1" data-file-url="{{ route('storage.file', ['path' => $mahasiswaTa->seminarHasil->file_dokumen_ta]) }}" data-file-name="Dokumen TA">
                   <i class="bi bi-eye"></i> Lihat
                 </button>
-                <button class="btn btn-sm btn-outline-warning edit-file-btn me-1" data-field="file_dokumen_ta" data-file-name="Dokumen TA">
-                  <i class="bi bi-pencil"></i> Edit
-                </button>
-                <button class="btn btn-sm btn-outline-danger delete-file-btn" data-field="file_dokumen_ta" data-file-name="Dokumen TA">
-                  <i class="bi bi-trash"></i> Hapus
-                </button>
+                @if($mahasiswaTa->seminarHasil->status != 'approved')
+                  <button class="btn btn-sm btn-outline-warning edit-file-btn me-1" data-field="file_dokumen_ta" data-file-name="Dokumen TA">
+                    <i class="bi bi-pencil"></i> Edit
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger delete-file-btn" data-field="file_dokumen_ta" data-file-name="Dokumen TA">
+                    <i class="bi bi-trash"></i> Hapus
+                  </button>
+                @endif
               </div>
             @endif
           </div>
           <div class="mb-3">
             <label class="form-label">Unggah Log-Activity</label>
-            <input type="file" class="form-control" name="file_log_activity" accept=".pdf,.doc,.docx">
+            <input type="file" class="form-control" name="file_log_activity" accept=".pdf,.doc,.docx" @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->status == 'approved') disabled @endif>
             @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->file_log_activity)
               <div class="d-flex align-items-center mt-1">
                 <small class="text-success me-2">
@@ -566,18 +568,20 @@ KONTEN DUA KOLOM
                 <button class="btn btn-sm btn-outline-primary view-file-btn me-1" data-file-url="{{ route('storage.file', ['path' => $mahasiswaTa->seminarHasil->file_log_activity]) }}" data-file-name="Log Activity">
                   <i class="bi bi-eye"></i> Lihat
                 </button>
-                <button class="btn btn-sm btn-outline-warning edit-file-btn me-1" data-field="file_log_activity" data-file-name="Log Activity">
-                  <i class="bi bi-pencil"></i> Edit
-                </button>
-                <button class="btn btn-sm btn-outline-danger delete-file-btn" data-field="file_log_activity" data-file-name="Log Activity">
-                  <i class="bi bi-trash"></i> Hapus
-                </button>
+                @if($mahasiswaTa->seminarHasil->status != 'approved')
+                  <button class="btn btn-sm btn-outline-warning edit-file-btn me-1" data-field="file_log_activity" data-file-name="Log Activity">
+                    <i class="bi bi-pencil"></i> Edit
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger delete-file-btn" data-field="file_log_activity" data-file-name="Log Activity">
+                    <i class="bi bi-trash"></i> Hapus
+                  </button>
+                @endif
               </div>
             @endif
           </div>
           <div class="mb-3">
             <label class="form-label">Unggah Form Persetujuan</label>
-            <input type="file" class="form-control" name="file_persetujuan" accept=".pdf,.doc,.docx">
+            <input type="file" class="form-control" name="file_persetujuan" accept=".pdf,.doc,.docx" @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->status == 'approved') disabled @endif>
             @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->file_persetujuan)
               <div class="d-flex align-items-center mt-1">
                 <small class="text-success me-2">
@@ -586,16 +590,22 @@ KONTEN DUA KOLOM
                 <button class="btn btn-sm btn-outline-primary view-file-btn me-1" data-file-url="{{ route('storage.file', ['path' => $mahasiswaTa->seminarHasil->file_persetujuan]) }}" data-file-name="Form Persetujuan">
                   <i class="bi bi-eye"></i> Lihat
                 </button>
-                <button class="btn btn-sm btn-outline-warning edit-file-btn me-1" data-field="file_persetujuan" data-file-name="Form Persetujuan">
-                  <i class="bi bi-pencil"></i> Edit
-                </button>
-                <button class="btn btn-sm btn-outline-danger delete-file-btn" data-field="file_persetujuan" data-file-name="Form Persetujuan">
-                  <i class="bi bi-trash"></i> Hapus
-                </button>
+                @if($mahasiswaTa->seminarHasil->status != 'approved')
+                  <button class="btn btn-sm btn-outline-warning edit-file-btn me-1" data-field="file_persetujuan" data-file-name="Form Persetujuan">
+                    <i class="bi bi-pencil"></i> Edit
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger delete-file-btn" data-field="file_persetujuan" data-file-name="Form Persetujuan">
+                    <i class="bi bi-trash"></i> Hapus
+                  </button>
+                @endif
               </div>
             @endif
           </div>
-          <button type="submit" class="btn btn-warning">Daftar</button>
+          @if(!$mahasiswaTa || !$mahasiswaTa->seminarHasil || $mahasiswaTa->seminarHasil->status != 'approved')
+            <button type="submit" class="btn btn-warning">Daftar</button>
+          @else
+            <button type="button" class="btn btn-secondary" disabled>Sudah Diterima</button>
+          @endif
         </form>
       </div>
     </div>
@@ -657,12 +667,14 @@ KONTEN DUA KOLOM
                 <button class="btn btn-sm btn-outline-primary view-file-btn me-1" data-file-url="{{ route('storage.file', ['path' => $mahasiswaTa->seminarHasil->form_revisi]) }}" data-file-name="Form Revisi">
                   <i class="bi bi-eye"></i> Lihat
                 </button>
-                <button class="btn btn-sm btn-outline-warning edit-file-btn me-1" data-field="form_revisi" data-file-name="Form Revisi">
-                  <i class="bi bi-pencil"></i> Edit
-                </button>
-                <button class="btn btn-sm btn-outline-danger delete-file-btn" data-field="form_revisi" data-file-name="Form Revisi">
-                  <i class="bi bi-trash"></i> Hapus
-                </button>
+                @if($mahasiswaTa->seminarHasil->status != 'approved')
+                  <button class="btn btn-sm btn-outline-warning edit-file-btn me-1" data-field="form_revisi" data-file-name="Form Revisi">
+                    <i class="bi bi-pencil"></i> Edit
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger delete-file-btn" data-field="form_revisi" data-file-name="Form Revisi">
+                    <i class="bi bi-trash"></i> Hapus
+                  </button>
+                @endif
               </div>
             @endif
           </div>
@@ -677,16 +689,22 @@ KONTEN DUA KOLOM
                 <button class="btn btn-sm btn-outline-primary view-file-btn me-1" data-file-url="{{ route('storage.file', ['path' => $mahasiswaTa->seminarHasil->revisi_dokumen]) }}" data-file-name="Dokumen Revisi">
                   <i class="bi bi-eye"></i> Lihat
                 </button>
-                <button class="btn btn-sm btn-outline-warning edit-file-btn me-1" data-field="revisi_dokumen" data-file-name="Dokumen Revisi">
-                  <i class="bi bi-pencil"></i> Edit
-                </button>
-                <button class="btn btn-sm btn-outline-danger delete-file-btn" data-field="revisi_dokumen" data-file-name="Dokumen Revisi">
-                  <i class="bi bi-trash"></i> Hapus
-                </button>
+                @if($mahasiswaTa->seminarHasil->status != 'approved')
+                  <button class="btn btn-sm btn-outline-warning edit-file-btn me-1" data-field="revisi_dokumen" data-file-name="Dokumen Revisi">
+                    <i class="bi bi-pencil"></i> Edit
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger delete-file-btn" data-field="revisi_dokumen" data-file-name="Dokumen Revisi">
+                    <i class="bi bi-trash"></i> Hapus
+                  </button>
+                @endif
               </div>
             @endif
           </div>
-          <button type="submit" class="btn btn-warning">Kirim</button>
+          @if(!$mahasiswaTa || !$mahasiswaTa->seminarHasil || $mahasiswaTa->seminarHasil->status != 'approved')
+            <button type="submit" class="btn btn-warning">Kirim</button>
+          @else
+            <button type="button" class="btn btn-secondary" disabled>Sudah Diterima</button>
+          @endif
         </form>
       </div>
     </div>
