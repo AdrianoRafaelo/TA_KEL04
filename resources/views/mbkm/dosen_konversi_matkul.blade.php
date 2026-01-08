@@ -95,6 +95,11 @@
                                         data-course-name="{{ $course->nama_mk }}">
                                     Lihat ({{ isset($pendaftarData[$course->id]) ? $pendaftarData[$course->id]->count() : 0 }})
                                 </button>
+                                @if(isset($pendaftarData[$course->id]) && $pendaftarData[$course->id]->where('status', 'approved')->count() > 0)
+                                    <br><small class="text-success fw-semibold mt-1 d-block">
+                                        <i class="bi bi-check-circle-fill"></i> Sudah Diterima
+                                    </small>
+                                @endif
                             </td>
                         </tr>
                         @empty
@@ -211,15 +216,27 @@ document.addEventListener('DOMContentLoaded', function() {
                         let html = '<div class="list-group">';
                         data.forEach((pendaftar, index) => {
                             html += `
-                                <div class="list-group-item">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>${pendaftar.mahasiswa.nama}</strong><br>
-                                            <small class="text-muted">NIM: ${pendaftar.mahasiswa.nim || 'N/A'}</small>
+                                <div class="card mb-3">
+                                    <div class="card-body">
+                                        <div class="mb-2">
+                                            <div>
+                                                <h6 class="card-title mb-1" style="color: #000;">${pendaftar.mahasiswa.nama}</h6>
+                                                <small class="text-muted">NIM: ${pendaftar.mahasiswa.nim || 'N/A'}</small>
+                                            </div>
                                         </div>
-                                        <span class="badge bg-${pendaftar.status === 'approved' ? 'success' : pendaftar.status === 'rejected' ? 'danger' : 'warning'}">
-                                            ${pendaftar.status === 'approved' ? 'Disetujui' : pendaftar.status === 'rejected' ? 'Ditolak' : 'Menunggu'}
-                                        </span>
+                                        <div class="mb-3">
+                                            <strong>Deskripsi Kegiatan:</strong>
+                                            <p class="mt-1">${pendaftar.deskripsi_kegiatan}</p>
+                                        </div>
+                                        <div class="mb-3">
+                                            <strong>Alokasi Waktu:</strong> ${pendaftar.alokasi_waktu} jam
+                                        </div>
+                                        ${pendaftar.status === 'pending' ? `
+                                        <div class="d-flex gap-2">
+                                            <button class="btn btn-success btn-sm" onclick="approveKonversi(${pendaftar.id})">Terima</button>
+                                            <button class="btn btn-danger btn-sm" onclick="rejectKonversi(${pendaftar.id})">Tolak</button>
+                                        </div>
+                                        ` : ''}
                                     </div>
                                 </div>
                             `;
@@ -283,6 +300,76 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+function loadCpmkForPendaftar(pendaftarId, courseId) {
+    fetch(`/mbkm/dosen-konversi-matkul/${courseId}/cpmk-data`)
+        .then(response => response.json())
+        .then(cpmkData => {
+            const container = document.getElementById(`cpmk-display-${pendaftarId}`);
+            if (cpmkData && cpmkData.length > 0) {
+                let html = '<ul class="list-unstyled">';
+                cpmkData.forEach((cpmk, index) => {
+                    html += `<li class="mb-1"><small>${index + 1}. ${cpmk}</small></li>`;
+                });
+                html += '</ul>';
+                container.innerHTML = html;
+            } else {
+                container.innerHTML = '<small class="text-muted">Belum ada CPMK yang ditentukan</small>';
+            }
+        })
+        .catch(error => {
+            console.error('Error loading CPMK:', error);
+            document.getElementById(`cpmk-display-${pendaftarId}`).innerHTML = '<small class="text-danger">Error loading CPMK</small>';
+        });
+}
+
+function approveKonversi(id) {
+    if (confirm('Apakah Anda yakin ingin menyetujui konversi MK ini?')) {
+        fetch(`/mbkm/konversi-mk/approve/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Konversi MK berhasil disetujui!');
+                location.reload();
+            } else {
+                alert('Terjadi kesalahan: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memproses permintaan.');
+        });
+    }
+}
+
+function rejectKonversi(id) {
+    if (confirm('Apakah Anda yakin ingin menolak konversi MK ini?')) {
+        fetch(`/mbkm/konversi-mk/reject/${id}`, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Konversi MK berhasil ditolak!');
+                location.reload();
+            } else {
+                alert('Terjadi kesalahan: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memproses permintaan.');
+        });
+    }
+}
 
 function addCpmkInput(value) {
     const container = document.getElementById('cpmkContainer');

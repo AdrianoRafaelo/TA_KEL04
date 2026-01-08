@@ -9,6 +9,7 @@ class MbkmMitra extends Model
     protected $table = 'mbkm_mitras';
 
     protected $fillable = [
+        'user_id',
         'nama_perusahaan',
         'created_by',
         'updated_by',

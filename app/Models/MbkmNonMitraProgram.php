@@ -9,6 +9,7 @@ class MbkmNonMitraProgram extends Model
     protected $table = 'mbkm_non_mitra_programs';
 
     protected $fillable = [
+        'user_id',
         'nama_program',
         'created_by',
         'updated_by',
@@ -18,7 +19,7 @@ class MbkmNonMitraProgram extends Model
     // Relationships
     public function mbkmRegistrations()
     {
-        return $this->hasMany(PendaftaranMbkmNonmitra::class, 'mitra_id');
+        return $this->hasMany(PendaftaranMbkmNonmitra::class, 'nonmitra_id');
     }
 
     public function createdBy()

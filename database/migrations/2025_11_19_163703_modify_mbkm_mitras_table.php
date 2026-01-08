@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('mbkm_mitras', function (Blueprint $table) {
+            $table->unsignedBigInteger('user_id')->nullable()->change();
             $table->dropColumn(['nama_mitra', 'alamat', 'kontak']);
         });
     }

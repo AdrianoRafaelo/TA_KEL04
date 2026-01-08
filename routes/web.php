@@ -194,6 +194,8 @@ Route::post('/mbkm/pendaftaran-nonmitra/approve/{id}', [MbkmController::class, '
 Route::post('/mbkm/pendaftaran-nonmitra/reject/{id}', [MbkmController::class, 'rejectPendaftaranMbkmNonmitra'])->name('mbkm.reject.pendaftaran.nonmitra')->middleware('auth.session');
 Route::get('/mbkm/pendaftaran-nonmitra/edit/{id}', [MbkmController::class, 'editPendaftaranMbkmNonmitra'])->name('mbkm.edit.pendaftaran.nonmitra')->middleware('auth.session');
 Route::post('/mbkm/konversi-mk/store', [MbkmController::class, 'storeKonversiMk'])->name('mbkm.konversi-mk.store')->middleware('auth.session');
+Route::post('/mbkm/konversi-mk/approve/{id}', [MbkmController::class, 'approveKonversiMk'])->name('mbkm.konversi-mk.approve')->middleware('auth.session');
+Route::post('/mbkm/konversi-mk/reject/{id}', [MbkmController::class, 'rejectKonversiMk'])->name('mbkm.konversi-mk.reject')->middleware('auth.session');
 route::get('/mbkm/informasi-nonmitra', [MbkmController::class, 'informasinonmitra'])->name('mbkm.informasi-nonmitra-mhs')->middleware('auth.session');
 route::get('/mbkm/seminar-nonmitra', [MbkmController::class, 'seminarnonmitra'])->name('mbkm.seminar-nonmitra-mhs')->middleware('auth.session');
 Route::get('/mbkm/dosen-konversi-matkul', [MbkmController::class, 'konversimatkul'])->name('mbkm.dosen.konversi-matkul')->middleware('auth.session');

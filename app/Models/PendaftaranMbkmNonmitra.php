@@ -10,7 +10,8 @@ class PendaftaranMbkmNonmitra extends Model
 
     protected $fillable = [
         'mahasiswa_id',
-        'mitra_id',
+        'nonmitra_id',
+        'user_id',
         'nama_perusahaan',
         'posisi_mbkm',
         'file_loa',
@@ -30,7 +31,7 @@ class PendaftaranMbkmNonmitra extends Model
 
     public function program()
     {
-        return $this->belongsTo(MbkmNonMitraProgram::class, 'mitra_id');
+        return $this->belongsTo(MbkmNonMitraProgram::class, 'nonmitra_id');
     }
 
     public function creator()

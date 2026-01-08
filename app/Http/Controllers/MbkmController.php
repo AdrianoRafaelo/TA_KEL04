@@ -438,7 +438,7 @@ class MbkmController extends Controller
 
         PendaftaranMbkmNonmitra::create([
             'mahasiswa_id' => $mahasiswaId,
-            'mitra_id' => $request->program_id, // Using mitra_id field to store program_id
+            'nonmitra_id' => $request->program_id,
             'nama_perusahaan' => $request->nama_perusahaan,
             'posisi_mbkm' => $request->posisi_mbkm,
             'file_loa' => $loaPath,
@@ -515,10 +515,13 @@ class MbkmController extends Controller
             'nama_program' => 'required|string|max:255|unique:mbkm_non_mitra_programs,nama_program',
         ]);
 
+        $user = \App\Models\FtiData::where('username', session('username'))->first();
+        $userId = $user ? $user->id : null;
+
         MbkmNonMitraProgram::create([
             'nama_program' => $request->nama_program,
-            'created_by' => auth()->id() ?? session('username'),
-            'updated_by' => auth()->id() ?? session('username'),
+            'created_by' => $userId,
+            'updated_by' => $userId,
             'active' => 1,
         ]);
 
@@ -542,8 +545,11 @@ class MbkmController extends Controller
 
     public function deleteProgramNonmitra($id)
     {
+        $user = \App\Models\FtiData::where('username', session('username'))->first();
+        $userId = $user ? $user->id : null;
+
         $program = MbkmNonMitraProgram::findOrFail($id);
-        $program->update(['active' => 0, 'updated_by' => auth()->id() ?? session('username')]);
+        $program->update(['active' => 0, 'updated_by' => $userId]);
 
         return redirect()->back()->with('success', 'Program MBKM Non-Mitra berhasil dihapus.');
     }
@@ -667,5 +673,82 @@ class MbkmController extends Controller
             ->get();
 
         return response()->json($pendaftar);
+    }
+
+    public function getCpmkData($courseId)
+    {
+        // Get current lecturer
+        $user = FtiData::where('username', session('username'))->first();
+        if (!$user) {
+            return response()->json(['error' => 'User tidak ditemukan.'], 403);
+        }
+
+        // Check if lecturer teaches this course
+        $course = Kurikulum::where('id', $courseId)
+            ->where('dosen_id', $user->id)
+            ->where('active', 1)
+            ->first();
+
+        if (!$course) {
+            return response()->json(['error' => 'Anda tidak memiliki akses untuk melihat CPMK mata kuliah ini.'], 403);
+        }
+
+        return response()->json($course->cpmk ?? []);
+    }
+
+    public function approveKonversiMk($id)
+    {
+        // Get current lecturer
+        $user = FtiData::where('username', session('username'))->first();
+        if (!$user) {
+            return response()->json(['error' => 'User tidak ditemukan.'], 403);
+        }
+
+        $konversi = MkKonversi::findOrFail($id);
+
+        // Check if lecturer teaches this course
+        $course = Kurikulum::where('id', $konversi->kurikulum_id)
+            ->where('dosen_id', $user->id)
+            ->where('active', 1)
+            ->first();
+
+        if (!$course) {
+            return response()->json(['error' => 'Anda tidak memiliki akses untuk menyetujui konversi mata kuliah ini.'], 403);
+        }
+
+        $konversi->update([
+            'status' => 'approved',
+            'updated_by' => $user->id
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Konversi MK berhasil disetujui.']);
+    }
+
+    public function rejectKonversiMk($id)
+    {
+        // Get current lecturer
+        $user = FtiData::where('username', session('username'))->first();
+        if (!$user) {
+            return response()->json(['error' => 'User tidak ditemukan.'], 403);
+        }
+
+        $konversi = MkKonversi::findOrFail($id);
+
+        // Check if lecturer teaches this course
+        $course = Kurikulum::where('id', $konversi->kurikulum_id)
+            ->where('dosen_id', $user->id)
+            ->where('active', 1)
+            ->first();
+
+        if (!$course) {
+            return response()->json(['error' => 'Anda tidak memiliki akses untuk menolak konversi mata kuliah ini.'], 403);
+        }
+
+        $konversi->update([
+            'status' => 'rejected',
+            'updated_by' => $user->id
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Konversi MK berhasil ditolak.']);
     }
 }

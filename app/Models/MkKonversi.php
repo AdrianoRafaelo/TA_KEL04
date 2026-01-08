@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class MkKonversi extends Model
 {
     protected $fillable = [
+        'user_id',
         'mahasiswa_id',
         'kurikulum_id',
         'deskripsi_kegiatan',

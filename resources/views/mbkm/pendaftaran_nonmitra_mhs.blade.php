@@ -234,3 +234,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+<style>
+    .cardd {
+        background-color: #ffffff;
+    }
+</style>

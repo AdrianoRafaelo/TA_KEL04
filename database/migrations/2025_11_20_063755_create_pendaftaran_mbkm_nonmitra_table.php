@@ -14,7 +14,10 @@ return new class extends Migration
         Schema::create('pendaftaran_mbkm_nonmitra', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('mahasiswa_id');
-            $table->unsignedBigInteger('mitra_id')->nullable();
+            $table->foreign('mahasiswa_id')->references('id')->on('fti_datas');
+            $table->unsignedBigInteger('nonmitra_id');
+            $table->foreign('nonmitra_id')->references('id')->on('mbkm_non_mitra_programs');
+            $table->foreignId('user_id')->nullable()->constrained();
             $table->string('nama_perusahaan');
             $table->string('posisi_mbkm');
             $table->string('file_loa');
@@ -23,9 +26,7 @@ return new class extends Migration
             $table->enum('matakuliah_ekuivalensi', ['ya', 'tidak']);
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->unsignedBigInteger('created_by')->nullable();
-            $table->foreign('created_by')->references('id')->on('users');
             $table->unsignedBigInteger('updated_by')->nullable();
-            $table->foreign('updated_by')->references('id')->on('users');
             $table->enum('active', ['0', '1'])->default('1');
             $table->timestamps();
         });
@@ -37,8 +38,8 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('pendaftaran_mbkm_nonmitra', function (Blueprint $table) {
-            $table->dropForeign(['created_by']);
-            $table->dropForeign(['updated_by']);
+            $table->dropForeign(['mahasiswa_id']);
+            $table->dropForeign(['user_id']);
         });
         Schema::dropIfExists('pendaftaran_mbkm_nonmitra');
     }
