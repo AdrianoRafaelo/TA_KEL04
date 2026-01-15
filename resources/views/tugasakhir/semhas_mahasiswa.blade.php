@@ -530,6 +530,7 @@ KONTEN DUA KOLOM
 <div class="section-container">
   {{-- KIRI --}}
   <div class="section-left">
+    @if($mahasiswaTa)
     <div class="card">
       <div class="card-body">
         <span class="kp-list-title">Unggah Hasil</span>
@@ -647,10 +648,22 @@ KONTEN DUA KOLOM
         </ul>
       </div>
     </div>
+    @else
+    <div class="card">
+      <div class="card-body">
+        <div class="alert alert-warning">
+          <i class="bi bi-exclamation-triangle me-2"></i>
+          <strong>Judul Final Belum Ditentukan</strong><br>
+          Anda belum dapat mengakses fitur seminar hasil karena judul final TA belum ditentukan oleh koordinator.
+        </div>
+      </div>
+    </div>
+    @endif
   </div>
 
   {{-- KANAN --}}
   <div class="section-right">
+    @if($mahasiswaTa)
     <div class="card">
       <div class="card-body">
         <span class="kp-list-title">Unggah Perbaikan</span>
@@ -708,6 +721,7 @@ KONTEN DUA KOLOM
         </form>
       </div>
     </div>
+    @endif
   </div>
 </div>
 

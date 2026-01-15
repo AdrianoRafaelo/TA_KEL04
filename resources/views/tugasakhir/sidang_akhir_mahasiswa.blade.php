@@ -487,8 +487,10 @@
                 <span class="btn btn-success btn-sm">Diterima</span>
               @elseif($mahasiswaTa && $mahasiswaTa->sidangAkhir && $mahasiswaTa->sidangAkhir->status == 'rejected')
                 <span class="btn btn-danger btn-sm">Ditolak</span>
-              @else
+              @elseif($mahasiswaTa && $mahasiswaTa->sidangAkhir)
                 <span class="btn btn-warning btn-sm">Menunggu</span>
+              @else
+                <span class="text-muted">-</span>
               @endif
             </td>
           </tr>
@@ -501,6 +503,7 @@
   <div class="section-container">
     {{-- Kiri --}}
     <div class="section-left">
+      @if($mahasiswaTa)
       <div class="card">
         <div class="card-body">
           <span class="kp-list-title">Unggah Skripsi</span>
@@ -618,10 +621,22 @@
           </ul>
         </div>
       </div>
+      @else
+      <div class="card">
+        <div class="card-body">
+          <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Judul Final Belum Ditentukan</strong><br>
+            Anda belum dapat mengakses fitur sidang akhir karena judul final TA belum ditentukan oleh koordinator.
+          </div>
+        </div>
+      </div>
+      @endif
     </div>
 
     {{-- Kanan --}}
     <div class="section-right">
+      @if($mahasiswaTa)
       <div class="card">
         <div class="card-body">
           <span class="kp-list-title">Unggah Perbaikan</span>
@@ -679,6 +694,7 @@
           </form>
         </div>
       </div>
+      @endif
     </div>
   </div>
 

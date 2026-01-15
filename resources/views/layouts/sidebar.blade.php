@@ -181,33 +181,18 @@
       @endif
 
       @if (session('role') === 'Dosen')
-      <li class="nav-item menu-items">
-        <a class="nav-link @if(request()->is('mbkm*')) active @endif" data-toggle="collapse" href="#mbkmCollapse" aria-expanded="false" aria-controls="mbkmCollapse">
-          <span class="menu-icon">
-            <span class="icon-bg bg-success rounded-circle">
-              <i class="mdi mdi-security text-white"></i>
-            </span>
-          </span>
-          <span class="menu-medal">MBKM</span>
-          <i class="menu-arrow"></i>
-        </a>
-        <div class="collapse" id="mbkmCollapse">
-          <ul class="nav flex-column sub-menu">
-            <li class="nav-item sub-menu-item">
-              <a class="nav-link" href="{{ url('/mbkm/dosen-konversi-matkul') }}">
-                <span class="sub-icon"><i class="mdi mdi-handshake"></i></span>
-                <span class="sub-title">Mitra</span>
-              </a>
-            </li>
-            <li class="nav-item sub-menu-item">
-              <a class="nav-link" href="{{ url('/mbkm/pendaftaran-nonmitra-mhs') }}">
-                <span class="sub-icon"><i class="mdi mdi-account-group"></i></span>
-                <span class="sub-title">Non-Mitra</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-      </li>
+<li class="nav-item menu-items">
+  <a class="nav-link @if(request()->is('mbkm*')) active @endif"
+     href="{{ url('/mbkm/dosen-konversi-matkul') }}">
+    <span class="menu-icon">
+      <span class="icon-bg bg-success rounded-circle">
+        <i class="mdi mdi-security text-white"></i>
+      </span>
+    </span>
+    <span class="menu-medal">MBKM</span>
+  </a>
+</li>
+
         <li class="nav-item menu-items">
           <a class="nav-link @if(request()->is('kerja-praktik-dosen*')) active @endif" href="{{ url('/kerja-praktik-dosen') }}">
             <span class="menu-icon">
@@ -256,34 +241,18 @@
             <span class="menu-title">Kerja Praktik</span>
           </a>
         </li>
-        <li class="nav-item menu-items">
-          <a class="nav-link @if(request()->is('mbkm*')) active @endif" data-toggle="collapse" href="#mbkmCollapse" aria-expanded="false" aria-controls="mbkmCollapse" data-toggle="tooltip" data-placement="right" title="Program MBKM">
-            <span class="menu-icon">
-              <span class="icon-bg bg-success rounded-circle">
-                <i class="mdi mdi-security text-white"></i>
-              </span>
-            </span>
-            <span class="menu-medal">MBKM</span>
-            <i class="menu-arrow"></i>
-            <span class="notification-badge pulse">5</span>
-          </a>
-  <div class="collapse" id="mbkmCollapse">
-    <ul class="nav flex-column sub-menu">
-      <li class="nav-item sub-menu-item">
-        <a class="nav-link" href="{{ url('/mbkm/pendaftaran-koordinator') }}">
-          <span class="sub-icon"><i class="mdi mdi-handshake"></i></span>
-          <span class="sub-title">Mitra</span>
-        </a>
-      </li>
-      <li class="nav-item sub-menu-item">
-        <a class="nav-link" href="{{ url('/mbkm/pendaftaran-nonmitra-mhs') }}">
-          <span class="sub-icon"><i class="mdi mdi-account-group"></i></span>
-          <span class="sub-title">Non-Mitra</span>
-        </a>
-      </li>
-    </ul>
-  </div>
+<li class="nav-item menu-items">
+  <a class="nav-link @if(request()->is('mbkm/pendaftaran-koordinator')) active @endif"
+     href="{{ url('/mbkm/pendaftaran-koordinator') }}">
+    <span class="menu-icon">
+      <span class="icon-bg bg-success rounded-circle">
+        <i class="mdi mdi-security text-white"></i>
+      </span>
+    </span>
+    <span class="menu-medal">MBKM</span>
+  </a>
 </li>
+
         <li class="nav-item menu-items">
           <a class="nav-link @if(request()->is('koordinator-pendaftaran*')) active @endif" href="{{ url('/koordinator-pendaftaran') }}">
             <span class="menu-icon">
