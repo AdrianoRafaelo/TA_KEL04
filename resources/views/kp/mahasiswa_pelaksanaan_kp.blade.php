@@ -81,6 +81,7 @@
                         <select class="form-control" id="jenis" name="jenis" required>
                             <option value="">Pilih Jenis Bimbingan</option>
                             <option value="sebelum_kp">Sebelum KP</option>
+                            <option value="sewaktu_kp">Sewaktu KP</option>
                             <option value="sesudah_kp">Sesudah KP</option>
                         </select>
                     </div>
@@ -352,7 +353,13 @@
                                     <span>{{ $bimbinganItem->tanggal->format('d M Y') }}</span>
                                 </div>
                                 <span class="badge-jenis {{ $bimbinganItem->jenis }}">
-                                    {{ $bimbinganItem->jenis == 'sebelum_kp' ? 'Sebelum KP' : 'Sesudah KP' }}
+                                    @if($bimbinganItem->jenis == 'sebelum_kp')
+                                        Sebelum KP
+                                    @elseif($bimbinganItem->jenis == 'sewaktu_kp')
+                                        Sewaktu KP
+                                    @else
+                                        Sesudah KP
+                                    @endif
                                 </span>
                             </div>
                             <div class="bimbingan-body">
@@ -461,54 +468,6 @@
 </div>
 </div>
 
-<!-- Modal for Bimbingan – VERSI SUPER MODERN -->
-<div class="modal-overlay" id="bimbinganModal">
-    <div class="modal-container">
-        <div class="modal-header">
-            <div class="modal-title">
-                <i class="bi bi-file-earmark-text-fill me-2"></i>
-                Ajukan Bimbingan
-            </div>
-            <button type="button" class="modal-close-btn" onclick="closeModal('#bimbinganModal')">
-                <i class="bi bi-x-lg"></i>
-            </button>
-        </div>
-
-        <form id="bimbinganForm">
-            @csrf
-            <input type="hidden" name="kp_request_id" value="{{ $kpRequest ? $kpRequest->id : '' }}">
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-md-12">
-                        <label class="form-label">Tanggal Bimbingan</label>
-                        <input type="date" class="form-control" id="tanggal" name="tanggal" min="{{ date('Y-m-d') }}" required>
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label">Topik Bimbingan</label>
-                        <textarea class="form-control" id="topik" name="topik" rows="3" placeholder="Jelaskan topik yang ingin dibahas..." required></textarea>
-                    </div>
-                    <div class="col-md-12">
-                        <label class="form-label">Jenis Bimbingan</label>
-                        <select class="form-control" id="jenis" name="jenis" required>
-                            <option value="">Pilih Jenis Bimbingan</option>
-                            <option value="sebelum_kp">Sebelum KP</option>
-                            <option value="sesudah_kp">Sesudah KP</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" onclick="closeModal('#bimbinganModal')">
-                    Batal
-                </button>
-                <button type="submit" class="btn btn-primary">
-                    <i class="bi bi-check-circle me-2"></i> Ajukan
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
 
 <!-- Modal for Topik Khusus – VERSI SUPER MODERN -->
 <div class="modal-overlay" id="topikKhususModal">
@@ -1417,6 +1376,12 @@
         background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
         color: #92400e;
         border: 1px solid #f59e0b;
+    }
+
+    .badge-jenis.sewaktu_kp {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+        color: #166534;
+        border: 1px solid #16a34a;
     }
 
     .badge-jenis.sesudah_kp {

@@ -21,6 +21,11 @@ class KpSeminar extends Model
         'catatan',
         'penguji',
         'jadwal_seminar_file',
+        'bimbingan_sebelum_kp',
+        'bimbingan_sewaktu_kp',
+        'bimbingan_sesudah_kp',
+        'total_bimbingan',
+        'rekap_submitted_at',
         'created_by',
         'updated_by',
         'active'

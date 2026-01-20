@@ -47,6 +47,7 @@
                     <th style="width: 200px;">Perusahaan KP</th>
                     <th style="width: 200px;">Laporan KP</th>
                     <th style="width: 90px;">Pembimbing</th>
+                    <th style="width: 120px;">Rekap Bimbingan</th>
                     <th style="width: 130px;">Dosen Penguji</th>
                     <th style="width: 150px;">Jadwal Seminar</th>
                 </tr>
@@ -78,6 +79,16 @@
                         @endif
                     </td>
                     <td>{{ $seminar->pembimbing }}</td>
+                    <td style="font-size: 12px;">
+                        @if($seminar->total_bimbingan > 0)
+                            <div>Sebelum: {{ $seminar->bimbingan_sebelum_kp }}</div>
+                            <div>Sewaktu: {{ $seminar->bimbingan_sewaktu_kp }}</div>
+                            <div>Sesudah: {{ $seminar->bimbingan_sesudah_kp }}</div>
+                            <div><strong>Total: {{ $seminar->total_bimbingan }}</strong></div>
+                        @else
+                            <span class="text-muted">Belum ada rekap</span>
+                        @endif
+                    </td>
                     <td>
                         <select class="form-select form-select-sm penguji-select" data-field="penguji" data-seminar-id="{{ $seminar->id }}">
                             <option value="">Pilih Dosen</option>

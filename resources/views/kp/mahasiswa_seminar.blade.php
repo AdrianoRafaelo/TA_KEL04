@@ -96,10 +96,38 @@
                 </div>
                 <div class="cardd body p-4">
                     <div class="mb-3">
-                        <h6 class="fw-bold">Total Bimbingan : {{ $totalBimbingan }}</h6>
+                        <h6 class="fw-bold">Total Bimbingan Disetujui : {{ $totalBimbingan }} / {{ $minTotal }}
+                            @if($totalBimbingan >= $minTotal)
+                                <span class="badge bg-success ms-2">✓ Sudah Memenuhi</span>
+                            @else
+                                <span class="badge bg-warning ms-2">Belum Memenuhi</span>
+                            @endif
+                        </h6>
                         <ul class="list-unstyled small text-muted mb-0">
-                            <li>• Selesai Bimbingan : {{ $selesaiBimbingan }}</li>
-                            <li>• Menunggu Persetujuan : {{ $totalBimbingan - $selesaiBimbingan }}</li>
+                            <li>• Sebelum KP : {{ $bimbinganSebelum }} / {{ $minSebelum }}
+                                @if($bimbinganSebelum >= $minSebelum)
+                                    <span class="badge bg-success ms-1">✓</span>
+                                @else
+                                    <span class="badge bg-warning ms-1">✗</span>
+                                @endif
+                            </li>
+                            <li>• Sewaktu KP : {{ $bimbinganSewaktu }} / {{ $minSewaktu }}
+                                @if($bimbinganSewaktu >= $minSewaktu)
+                                    <span class="badge bg-success ms-1">✓</span>
+                                @else
+                                    <span class="badge bg-warning ms-1">✗</span>
+                                @endif
+                            </li>
+                            <li>• Sesudah KP : {{ $bimbinganSesudah }} / {{ $minSesudah }}
+                                @if($bimbinganSesudah >= $minSesudah)
+                                    <span class="badge bg-success ms-1">✓</span>
+                                @else
+                                    <span class="badge bg-warning ms-1">✗</span>
+                                @endif
+                            </li>
+                            <li>• Total Bimbingan Diajukan : {{ $totalBimbinganAll }}</li>
+                            <li>• Bimbingan Disetujui : {{ $selesaiBimbingan }}</li>
+                            <li>• Menunggu Persetujuan : {{ $totalBimbinganAll - $selesaiBimbingan }}</li>
                         </ul>
                     </div>
 
@@ -344,7 +372,11 @@
                     </div>
 
                     <div class="text-center">
-                        <button class="btn-kirim">Kirim</button>
+                        @if($totalBimbingan >= $minTotal)
+                            <button class="btn-kirim" id="btnKirim">Kirim</button>
+                        @else
+                            <button class="btn-kirim" disabled style="opacity: 0.5;">Kirim (Belum Memenuhi Syarat)</button>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -391,7 +423,7 @@
                     @else
                         <button class="btn btn-outline-primary btn-sm mb-2" disabled>Unduh Jadwal</button>
                     @endif
-                    <button class="btn btn-outline-secondary btn-sm">Doc</button>
+                    <!-- <button class="btn btn-outline-secondary btn-sm">Doc</button> -->
                 </div>
             </div>
 
@@ -812,6 +844,11 @@ document.addEventListener('DOMContentLoaded', function() {
         uploadFile('lembarKonfirmasi', 'file_lembar_konfirmasi', 'submitLembarKonfirmasi');
     });
 
+    // Handle Kirim Rekap Bimbingan button
+    document.getElementById('btnKirim')?.addEventListener('click', function() {
+        kirimRekapBimbingan();
+    });
+
 function initializeDragDrop(dropAreaId, inputId) {
     const dropArea = document.getElementById(dropAreaId);
     const fileInput = document.getElementById(inputId);
@@ -849,6 +886,61 @@ function initializeDragDrop(dropAreaId, inputId) {
     // File input change
     fileInput.addEventListener('change', () => {
         // Optional: show selected file name
+    });
+}
+
+function kirimRekapBimbingan() {
+    if (!kpRequestId) {
+        Swal.fire('Error!', 'Data KP tidak ditemukan. Silakan refresh halaman.', 'error');
+        return;
+    }
+
+    Swal.fire({
+        title: 'Kirim Rekap Bimbingan?',
+        text: 'Apakah Anda yakin ingin mengirim rekap bimbingan? Setelah dikirim, data akan dikirim ke koordinator untuk persetujuan.',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#007bff',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Ya, Kirim',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Show loading
+            const button = document.getElementById('btnKirim');
+            const originalText = button.textContent;
+            button.textContent = 'Mengirim...';
+            button.disabled = true;
+
+            fetch('{{ route("kp.seminar.kirim-rekap") }}', {
+                method: 'POST',
+                body: JSON.stringify({
+                    kp_request_id: kpRequestId
+                }),
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire('Berhasil!', 'Rekap bimbingan berhasil dikirim ke koordinator.', 'success').then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire('Gagal!', 'Gagal mengirim rekap: ' + (data.message || 'Terjadi kesalahan'), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire('Error!', 'Terjadi kesalahan saat mengirim rekap.', 'error');
+            })
+            .finally(() => {
+                button.textContent = originalText;
+                button.disabled = false;
+            });
+        }
     });
 }
 

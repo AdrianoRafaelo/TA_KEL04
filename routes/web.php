@@ -77,6 +77,7 @@ Route::post('/koordinator/upload-seminar-dokumen', [KerjaPraktikController::clas
 
 // Seminar KP routes
 Route::post('/kp/seminar/store', [KerjaPraktikController::class, 'storeSeminarKp'])->name('kp.seminar.store')->middleware('auth.session');
+Route::post('/kp/seminar/kirim-rekap', [KerjaPraktikController::class, 'kirimRekapBimbingan'])->name('kp.seminar.kirim-rekap')->middleware('auth.session');
 Route::post('/kp/seminar/update-status', [KerjaPraktikController::class, 'updateSeminarKpStatus'])->name('kp.seminar.update-status')->middleware('auth.session');
 Route::get('/kp/seminar/download/{filename}', [KerjaPraktikController::class, 'downloadSeminarFile'])->name('kp.seminar.download')->middleware('auth.session');
 Route::delete('/kp/seminar/delete-file', [KerjaPraktikController::class, 'deleteSeminarFile'])->name('kp.seminar.delete-file')->middleware('auth.session');

@@ -923,7 +923,11 @@ class KerjaPraktikController extends Controller
                 'file_surat_persetujuan' => $seminar ? $seminar->file_surat_persetujuan : null,
                 'file_lembar_konfirmasi' => $seminar ? $seminar->file_lembar_konfirmasi : null,
                 'jadwal_seminar_file' => $seminar ? $seminar->jadwal_seminar_file : null,
-                'status' => $seminar ? $seminar->status : 'pending'
+                'status' => $seminar ? $seminar->status : 'pending',
+                'total_bimbingan' => $seminar ? $seminar->total_bimbingan : 0,
+                'bimbingan_sebelum_kp' => $seminar ? $seminar->bimbingan_sebelum_kp : 0,
+                'bimbingan_sewaktu_kp' => $seminar ? $seminar->bimbingan_sewaktu_kp : 0,
+                'bimbingan_sesudah_kp' => $seminar ? $seminar->bimbingan_sesudah_kp : 0,
             ];
         })->filter()->values();
 
@@ -1151,15 +1155,44 @@ class KerjaPraktikController extends Controller
             ->where('status', 'diterima')
             ->first();
 
-        // Get bimbingan count
-        $totalBimbingan = KpBimbingan::where('kp_request_id', $kpRequest->id ?? null)
+        // Get bimbingan count by jenis (only approved ones for minimum requirement)
+        $bimbinganSebelum = KpBimbingan::where('kp_request_id', $kpRequest->id ?? null)
+            ->where('active', 'active')
+            ->where('jenis', 'sebelum_kp')
+            ->where('status', 'diterima')
+            ->count();
+
+        $bimbinganSewaktu = KpBimbingan::where('kp_request_id', $kpRequest->id ?? null)
+            ->where('active', 'active')
+            ->where('jenis', 'sewaktu_kp')
+            ->where('status', 'diterima')
+            ->count();
+
+        $bimbinganSesudah = KpBimbingan::where('kp_request_id', $kpRequest->id ?? null)
+            ->where('active', 'active')
+            ->where('jenis', 'sesudah_kp')
+            ->where('status', 'diterima')
+            ->count();
+
+        $totalBimbingan = $bimbinganSebelum + $bimbinganSewaktu + $bimbinganSesudah;
+
+        // Also get total bimbingan (all, not just approved) for display
+        $totalBimbinganAll = KpBimbingan::where('kp_request_id', $kpRequest->id ?? null)
             ->where('active', 'active')
             ->count();
+
+        $selesaiBimbingan = $totalBimbingan; // Approved bimbingan
 
         $selesaiBimbingan = KpBimbingan::where('kp_request_id', $kpRequest->id ?? null)
             ->where('active', 'active')
             ->where('status', 'diterima')
             ->count();
+
+        // Minimum requirements
+        $minSebelum = 1;
+        $minSewaktu = 5;
+        $minSesudah = 3;
+        $minTotal = 9;
 
         // Get group information
         $group = KpGroup::where('active', true)
@@ -1178,7 +1211,7 @@ class KerjaPraktikController extends Controller
             ->where('active', true)
             ->first();
 
-        return view('kp.mahasiswa_seminar', compact('student', 'kpRequest', 'topikKhusus', 'totalBimbingan', 'selesaiBimbingan', 'group', 'groupMembers', 'seminar'));
+        return view('kp.mahasiswa_seminar', compact('student', 'kpRequest', 'topikKhusus', 'totalBimbingan', 'selesaiBimbingan', 'totalBimbinganAll', 'bimbinganSebelum', 'bimbinganSewaktu', 'bimbinganSesudah', 'minSebelum', 'minSewaktu', 'minSesudah', 'minTotal', 'group', 'groupMembers', 'seminar'));
     }
 
     public function storeBimbingan(Request $request)
@@ -1191,7 +1224,7 @@ class KerjaPraktikController extends Controller
         $request->validate([
             'tanggal' => 'required|date',
             'topik' => 'required|string|max:1000',
-            'jenis' => 'required|in:sebelum_kp,sesudah_kp',
+            'jenis' => 'required|in:sebelum_kp,sewaktu_kp,sesudah_kp',
         ]);
 
         // Get KP request for the user
@@ -1395,6 +1428,81 @@ class KerjaPraktikController extends Controller
     }
 
     // Seminar KP Methods
+    public function kirimRekapBimbingan(Request $request)
+    {
+        $request->validate([
+            'kp_request_id' => 'required|exists:kp_requests,id',
+        ]);
+
+        $user = Session::get('user');
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User tidak terautentikasi']);
+        }
+
+        // Get KP request
+        $kpRequest = KpRequest::find($request->kp_request_id);
+        if (!$kpRequest || $kpRequest->mahasiswa_id != $user['username']) {
+            return response()->json(['success' => false, 'message' => 'KP request tidak ditemukan']);
+        }
+
+        // Calculate bimbingan counts
+        $bimbinganSebelum = KpBimbingan::where('kp_request_id', $request->kp_request_id)
+            ->where('active', 'active')
+            ->where('jenis', 'sebelum_kp')
+            ->count();
+
+        $bimbinganSewaktu = KpBimbingan::where('kp_request_id', $request->kp_request_id)
+            ->where('active', 'active')
+            ->where('jenis', 'sewaktu_kp')
+            ->count();
+
+        $bimbinganSesudah = KpBimbingan::where('kp_request_id', $request->kp_request_id)
+            ->where('active', 'active')
+            ->where('jenis', 'sesudah_kp')
+            ->count();
+
+        $totalBimbingan = $bimbinganSebelum + $bimbinganSewaktu + $bimbinganSesudah;
+
+        // Check minimum requirements
+        $minSebelum = 1;
+        $minSewaktu = 5;
+        $minSesudah = 3;
+        $minTotal = 9;
+
+        if ($totalBimbingan < $minTotal ||
+            $bimbinganSebelum < $minSebelum ||
+            $bimbinganSewaktu < $minSewaktu ||
+            $bimbinganSesudah < $minSesudah) {
+            return response()->json(['success' => false, 'message' => 'Belum memenuhi syarat minimum bimbingan']);
+        }
+
+        // Check if seminar already exists
+        $seminar = KpSeminar::where('kp_request_id', $request->kp_request_id)
+            ->where('active', true)
+            ->first();
+
+        $data = [
+            'kp_request_id' => $request->kp_request_id,
+            'mahasiswa_id' => $user['username'],
+            'status' => 'pending',
+            'bimbingan_sebelum_kp' => $bimbinganSebelum,
+            'bimbingan_sewaktu_kp' => $bimbinganSewaktu,
+            'bimbingan_sesudah_kp' => $bimbinganSesudah,
+            'total_bimbingan' => $totalBimbingan,
+            'rekap_submitted_at' => now(),
+            'updated_by' => $user['username'],
+        ];
+
+        if ($seminar) {
+            $seminar->update($data);
+        } else {
+            $data['created_by'] = $user['username'];
+            KpSeminar::create($data);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Rekap bimbingan berhasil dikirim ke koordinator']);
+    }
+
     public function storeSeminarKp(Request $request)
     {
         $request->validate([
