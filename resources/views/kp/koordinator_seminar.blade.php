@@ -45,7 +45,7 @@
                     <th style="width: 80px;">No.</th>
                     <th style="width: 130px;">Mahasiswa</th>
                     <th style="width: 200px;">Perusahaan KP</th>
-                    <th style="width: 120px;">Laporan KP</th>
+                    <th style="width: 200px;">Laporan KP</th>
                     <th style="width: 90px;">Pembimbing</th>
                     <th style="width: 130px;">Dosen Penguji</th>
                     <th style="width: 150px;">Jadwal Seminar</th>
@@ -61,9 +61,20 @@
                     <td>{{ $seminar->nama }} @if($seminar->nim) ({{ $seminar->nim }}) @endif</td>
                     <td>{{ $seminar->perusahaan }}</td>
                     <td>
-                        <i class="bi bi-file-earmark-text me-1"></i>
                         @if($seminar->file_laporan_kp)
                             <a href="{{ route('kp.seminar.download', basename($seminar->file_laporan_kp)) }}" target="_blank">Laporan</a>
+                        @endif
+                        @if($seminar->file_krs_anggota || $seminar->file_surat_persetujuan || $seminar->file_lembar_konfirmasi) | @endif
+                        @if($seminar->file_krs_anggota)
+                            <a href="{{ route('kp.seminar.download', basename($seminar->file_krs_anggota)) }}" target="_blank">KRS</a>
+                        @endif
+                        @if($seminar->file_surat_persetujuan) | @endif
+                        @if($seminar->file_surat_persetujuan)
+                            <a href="{{ route('kp.seminar.download', basename($seminar->file_surat_persetujuan)) }}" target="_blank">Persetujuan</a>
+                        @endif
+                        @if($seminar->file_lembar_konfirmasi) | @endif
+                        @if($seminar->file_lembar_konfirmasi)
+                            <a href="{{ route('kp.seminar.download', basename($seminar->file_lembar_konfirmasi)) }}" target="_blank">Konfirmasi</a>
                         @endif
                     </td>
                     <td>{{ $seminar->pembimbing }}</td>

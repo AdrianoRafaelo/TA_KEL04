@@ -10,7 +10,6 @@
                 <li class="breadcrumb-item active" aria-current="page">Informasi Umum</li>
             </ol>
         </nav>
-        <h4 class="mb-2">MBKM</h4>
     </div>
 </div>
 

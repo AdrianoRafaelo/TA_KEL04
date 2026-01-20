@@ -20,7 +20,7 @@ class MatakuliahController extends Controller
         $lecturers = FtiData::where('role', 'lecturer')->get();
 
         // Check user role and show appropriate view
-        if (session('role') == 'Admin') {
+        if (session('role') == 'Admin' || session('role') == 'Koordinator' || session('role') == 'Dosen') {
             return view('matakuliah', compact('kurikulum', 'lecturers'));
         } else {
             return view('matakuliah_student', compact('kurikulum'));

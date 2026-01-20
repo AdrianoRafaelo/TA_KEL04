@@ -166,7 +166,7 @@
 
     <!-- INFO MAHASISWA FULL WIDTH -->
     <div class="cardd border-0 shadow-sm mb-4" style="border-radius: 16px;">
-        <div class="card-body p-4">
+        <div class="car p-4">
             <div class="row g-4">
                 <!-- Info Kiri -->
                 <div class="col-md-6">
@@ -1070,7 +1070,7 @@
     }
 
     /* Glassmorphism Card Styles */
-    .card {
+    .car {
         background: rgba(255, 255, 255, 0.9) !important;
         backdrop-filter: blur(10px) !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important;

@@ -16,6 +16,7 @@ class SeminarMbkm extends Model
         'laporan_ekotek_file',
         'laporan_pmb_file',
         'jadwal_seminar_file',
+        'nilai',
         'active',
         'created_by',
         'updated_by',

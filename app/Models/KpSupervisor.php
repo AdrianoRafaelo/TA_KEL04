@@ -10,6 +10,7 @@ class KpSupervisor extends Model
         'company_id',
         'nama_supervisor',
         'no_supervisor',
+        'file_surat_keterangan',
         'divisi',
         'created_by',
         'updated_by',

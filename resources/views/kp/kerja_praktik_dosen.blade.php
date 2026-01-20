@@ -12,7 +12,6 @@
                     <li class="breadcrumb-item active" aria-current="page">Pelaksanaan KP</li>
                 </ol>
             </nav>
-            <h4 class="mb-0">Pelaksanaan KP</h4>
         </div>
     </div>
 
@@ -61,7 +60,6 @@
         <table class="table align-middle mb-0">
             <thead style="background-color:#f8f9fa; color:#555; font-size:12px; text-transform:uppercase; border-bottom: 2px solid #b3743b;">
                 <tr>
-                    <th><input type="checkbox" id="selectAll"></th>
                     <th style="width: 80px;">No.</th>
                     <th style="width: 200px;">Mahasiswa</th>
                     <th style="width: 250px;">Perusahaan KP</th>
@@ -71,9 +69,6 @@
             <tbody style="font-size:14px;">
                 @forelse($supervisedStudents as $index => $group)
                 <tr class="hover-row">
-                    <td>
-                        <input type="checkbox" class="proposal-checkbox" name="selected_groups[]" value="{{ $index }}">
-                    </td>
                     <td>{{ $loop->iteration }}</td>
                     <td>
                         @foreach($group['students'] as $student)

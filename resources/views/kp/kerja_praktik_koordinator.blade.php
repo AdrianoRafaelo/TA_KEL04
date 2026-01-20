@@ -132,6 +132,7 @@ $pengantar_requests->each(function ($request) {
                 <th style="width: 150px;">Alamat</th>
                 <th style="width: 140px;">Divisi</th>
                 <th style="width: 200px;">Dosen Pembimbing</th>
+                <th style="width: 150px;">Surat Keterangan Diterima</th>
                 <th class="text-center" style="width: 100px;">Aksi</th>
             </tr>
         </thead>
@@ -159,18 +160,7 @@ $pengantar_requests->each(function ($request) {
 
                 <!-- Kolom Divisi -->
                 <td>
-                    @if($request->status == 'assigned' || $request->status == 'approved')
-                        {{ $request->divisi ?? 'N/A' }}
-                    @else
-                        <input 
-                            type="text" 
-                            name="divisi" 
-                            class="form-control form-control-sm" 
-                            placeholder="Divisi"
-                            form="form-assign-{{ $request->id }}"
-                            required
-                        >
-                    @endif
+                    {{ $request->divisi ?? 'N/A' }}
                 </td>
 
                 <!-- Kolom Dosen -->
@@ -188,6 +178,15 @@ $pengantar_requests->each(function ($request) {
                                 <option value="{{ $lecturer->id }}">{{ $lecturer->nama }}</option>
                             @endforeach
                         </select>
+                    @endif
+                </td>
+
+                <!-- Kolom Surat Keterangan -->
+                <td>
+                    @if($request->supervisor && $request->supervisor->file_surat_keterangan)
+                        <a href="{{ asset('storage/' . $request->supervisor->file_surat_keterangan) }}" target="_blank" class="btn btn-link btn-sm">Lihat File</a>
+                    @else
+                        <span class="text-muted">Belum diunggah</span>
                     @endif
                 </td>
 
@@ -219,7 +218,7 @@ $pengantar_requests->each(function ($request) {
             </tr>
             @empty
             <tr>
-                <td colspan="7" class="text-center py-5 text-muted">
+                <td colspan="8" class="text-center py-5 text-muted">
                     Belum ada permintaan surat pengantar KP.
                 </td>
             </tr>

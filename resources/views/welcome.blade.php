@@ -39,54 +39,39 @@
                 <div class="card-body">
                     <h6 class="fw-bold text-primary mb-3">Informasi</h6>
 
-                    <!-- Kompetisi -->
+                    @foreach($pengumuman as $kategori => $items)
                     <div class="mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <h6 class="fw-semibold mb-0">Kompetisi</h6>
-                            <select class="form-select form-select-sm w-auto">
-                                <option>Filter</option>
-                            </select>
+                        <h6 class="fw-semibold mb-2">{{ $kategori }}</h6>
+                        @forelse($items as $item)
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div class="flex-grow-1">
+                                <p class="small text-muted mb-1">
+                                    <strong>{{ $item->judul }}</strong> {{ Str::limit($item->deskripsi, 100) }}
+                                </p>
+                            </div>
+                            @if (session('role') === 'Koordinator')
+                            <div class="btn-group btn-group-sm ms-2" role="group">
+                                <button class="btn btn-outline-warning btn-sm" onclick="editInformasi({{ $item->id }}, '{{ $item->judul }}', '{{ $item->kategori }}', '{{ addslashes($item->deskripsi) }}')">
+                                    <i class="mdi mdi-pencil"></i>
+                                </button>
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteInformasi({{ $item->id }}, '{{ $item->judul }}')">
+                                    <i class="mdi mdi-delete"></i>
+                                </button>
+                            </div>
+                            @endif
                         </div>
-                        <p class="small text-muted mb-1">
-                            <strong>KEMENKUB</strong> buka pendaftaran Lomba Proposal Usaha Bisnis
-                        </p>
-                        <p class="small text-muted mb-1">
-                            Kemenkub membuka peluang bagi pengusaha muda yang ingin mengembangkan bisnis...
-                        </p>
-                        <p class="small text-muted">
-                            <strong>Lomba Business Case</strong> UNY kembali membuka lomba dalam hal business case yang dapat diikuti...
-                        </p>
+                        @empty
+                        <p class="small text-muted">Belum ada informasi {{ strtolower($kategori) }}.</p>
+                        @endforelse
                     </div>
-
+                    @if(!$loop->last)
                     <hr>
+                    @endif
+                    @endforeach
 
-                    <!-- Magang -->
-                    <div class="mb-4">
-                        <h6 class="fw-semibold mb-2">Magang</h6>
-                        <p class="small text-muted mb-1">
-                            <strong>Danil Irs</strong> Calling for You
-                        </p>
-                        <p class="small text-muted mb-1">
-                            Danil Irs membuka peluang untuk anda yang ingin melakukan magang melalui kemitraan...
-                        </p>
-                        <p class="small text-muted">
-                            <strong>Magang pribadi</strong> Bagi kalian yang ingin mengikuti magang secara pribadi, dapat mendaftarkan diri pada link berikut
-                        </p>
-                    </div>
-
-                    <hr>
-
-                    <!-- Info Umum -->
-                    <div>
-                        <h6 class="fw-semibold mb-2">Info Umum</h6>
-                        <p class="small text-muted mb-2">
-                            Pengumpulan KTM
-                        </p>
-                        <p class="small text-muted">
-                            Mahasiswa dapat mengambil KTM pada Ivo selama jam kuliah.
-                        </p>
-                        <a href="#" class="text-success small fw-medium">+ Tambah Informasi</a>
-                    </div>
+                    @if (session('role') === 'Koordinator')
+                    <a href="#" class="text-success small fw-medium" data-bs-toggle="modal" data-bs-target="#tambahInformasiModal">+ Tambah Informasi</a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -220,6 +205,71 @@
                         <button type="submit" class="btn btn-primary">Tambah Perusahaan</button>
                     </form>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Tambah Informasi -->
+<div class="modal fade" id="tambahInformasiModal" tabindex="-1" aria-labelledby="tambahInformasiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="tambahInformasiModalLabel">
+                    <i class="fas fa-plus me-2"></i>
+                    Tambah Informasi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="tambahInformasiForm">
+                    <div class="mb-3">
+                        <label for="judul" class="form-label">Judul</label>
+                        <input type="text" class="form-control" id="judul" name="judul" required autofocus>
+                    </div>
+                    <div class="mb-3">
+                        <label for="kategori" class="form-label">Kategori</label>
+                        <input type="text" class="form-control" id="kategori" name="kategori" placeholder="Masukkan kategori (contoh: Kompetisi, Magang, Info Umum)" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="deskripsi" class="form-label">Deskripsi</label>
+                        <textarea class="form-control" id="deskripsi" name="deskripsi" rows="5" placeholder="Masukkan deskripsi informasi..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Tambah Informasi</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Edit Informasi -->
+<div class="modal fade" id="editInformasiModal" tabindex="-1" aria-labelledby="editInformasiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editInformasiModalLabel">
+                    <i class="fas fa-edit me-2"></i>
+                    Edit Informasi
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editInformasiForm">
+                    <input type="hidden" id="editId" name="id">
+                    <div class="mb-3">
+                        <label for="editJudul" class="form-label">Judul</label>
+                        <input type="text" class="form-control" id="editJudul" name="judul" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editKategori" class="form-label">Kategori</label>
+                        <input type="text" class="form-control" id="editKategori" name="kategori" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDeskripsi" class="form-label">Deskripsi</label>
+                        <textarea class="form-control" id="editDeskripsi" name="deskripsi" rows="5" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Informasi</button>
+                </form>
             </div>
         </div>
     </div>
@@ -379,6 +429,149 @@
         .catch(error => {
             console.error('Error:', error);
             alert('Terjadi kesalahan saat menyimpan perusahaan.');
+        });
+    });
+
+    // Handle tambah informasi form submission
+    document.getElementById('tambahInformasiForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+
+        fetch('/pengumuman', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
+                throw new Error('Response is not JSON');
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                this.reset(); // reset form
+                alert('Informasi berhasil ditambahkan!');
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('tambahInformasiModal'));
+                modal.hide();
+                location.reload(); // reload to show new data
+            } else {
+                let errorMessage = data.message || 'Gagal menambahkan informasi';
+                if (data.errors) {
+                    errorMessage += '\n' + Object.values(data.errors).flat().join('\n');
+                }
+                alert('Error: ' + errorMessage);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (error.message === 'Response is not JSON') {
+                alert('Sesi login telah berakhir. Silakan login kembali.');
+            } else {
+                alert('Terjadi kesalahan saat menyimpan informasi.');
+            }
+        });
+    });
+
+    // Function to edit informasi
+    function editInformasi(id, judul, kategori, deskripsi) {
+        document.getElementById('editId').value = id;
+        document.getElementById('editJudul').value = judul;
+        document.getElementById('editKategori').value = kategori;
+        document.getElementById('editDeskripsi').value = deskripsi;
+
+        const modal = new bootstrap.Modal(document.getElementById('editInformasiModal'));
+        modal.show();
+    }
+
+    // Function to delete informasi
+    function deleteInformasi(id, judul) {
+        if (confirm('Apakah Anda yakin ingin menghapus informasi: ' + judul + '?')) {
+            fetch('/pengumuman/' + id, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    throw new Error('Response is not JSON');
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    alert('Informasi berhasil dihapus!');
+                    location.reload(); // reload to update list
+                } else {
+                    alert('Error: ' + (data.message || 'Gagal menghapus informasi'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (error.message === 'Response is not JSON') {
+                    alert('Sesi login telah berakhir. Silakan login kembali.');
+                } else {
+                    alert('Terjadi kesalahan saat menghapus informasi.');
+                }
+            });
+        }
+    }
+
+    // Handle edit informasi form submission
+    document.getElementById('editInformasiForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const id = document.getElementById('editId').value;
+
+        fetch('/pengumuman/' + id, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'X-HTTP-Method-Override': 'PUT', // for Laravel PUT
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => {
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                return response.json();
+            } else {
+                throw new Error('Response is not JSON');
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                alert('Informasi berhasil diperbarui!');
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editInformasiModal'));
+                modal.hide();
+                location.reload(); // reload to show updated data
+            } else {
+                let errorMessage = data.message || 'Gagal memperbarui informasi';
+                if (data.errors) {
+                    errorMessage += '\n' + Object.values(data.errors).flat().join('\n');
+                }
+                alert('Error: ' + errorMessage);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            if (error.message === 'Response is not JSON') {
+                alert('Sesi login telah berakhir. Silakan login kembali.');
+            } else {
+                alert('Terjadi kesalahan saat memperbarui informasi.');
+            }
         });
     });
 

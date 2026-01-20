@@ -42,7 +42,7 @@ $displayName = $user ? $user->nama : (session('username') ?? 'User');
         <div class="kp-tabs">
             <button class="kp-tab">Informasi Umum</button>
             <a href="{{ url('/mbkm/pendaftaran-nonmitra-mhs') }}" class="kp-tab active">Pendaftaran MBKM</a>
-            <a href="{{ url('/mbkm/pelaksanaan-mhs')}}" class="kp-tab">Pelaksanaan MBKM</a>
+            <a href="{{ url('/mbkm/pelaksanaan-nonmitra-mhs')}}" class="kp-tab">Pelaksanaan MBKM</a>
             <a href="{{ url('/mbkm/seminar-mhs')}}" class="kp-tab">Seminar MBKM</a>
         </div>
     </div>

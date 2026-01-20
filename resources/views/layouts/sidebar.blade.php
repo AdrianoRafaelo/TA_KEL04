@@ -264,6 +264,18 @@
           </a>
         </li>
       @endif
+      @if (session('role') === 'Koordinator')
+        <li class="nav-item menu-items">
+          <a class="nav-link @if(request()->is('matakuliah*')) active @endif" href="{{ url('/matakuliah') }}">
+            <span class="menu-icon">
+              <span class="icon-bg bg-orange rounded-circle">
+                <i class="mdi mdi-notebook text-white"></i>
+              </span>
+            </span>
+            <span class="menu-title">Kelola Matakuliah</span>
+          </a>
+        </li>
+      @endif
       <li class="nav-item menu-items">
         <a class="nav-link @if(request()->is('pages/icons*')) active @endif" href="pages/icons/mdi.html">
           <span class="menu-icon">

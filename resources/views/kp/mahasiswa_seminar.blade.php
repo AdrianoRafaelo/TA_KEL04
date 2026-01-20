@@ -15,7 +15,6 @@
                     <li class="breadcrumb-item active">Seminar</li>
                 </ol>
             </nav>
-            <h4>Seminar KP</h4>
         </div>
     </div>
 
@@ -32,8 +31,8 @@
 </div>
 
     <!-- INFO MAHASISWA FULL WIDTH -->
-    <div class="cardd border-0 shadow-sm mb-4" style="border-radius: 16px;">
-        <div class="card-body p-4">
+    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+        <div class="car p-4">
             <div class="row g-4">
                 <!-- Info Kiri -->
                 <div class="col-md-6">
@@ -106,113 +105,240 @@
 
                     <hr class="my-4">
 
-                    <!-- Upload Laporan Kerja Praktik -->
-                    <div class="upload-section mb-4">
-                        <h6 class="fw-bold mb-3">Laporan Kerja Praktik</h6>
-                        <div id="laporanKpUploaded" style="{{ $seminar && $seminar->file_laporan_kp ? '' : 'display: none;' }}">
-                            <div class="alert alert-success py-2 d-flex justify-content-between align-items-center">
-                                <span><i class="fas fa-check-circle me-2"></i> File sudah diunggah</span>
-                                <div>
-                                    @if($seminar && $seminar->file_laporan_kp)
-                                        <a href="{{ route('kp.seminar.download', basename($seminar->file_laporan_kp)) }}"
-                                           class="btn btn-sm btn-outline-primary me-2" target="_blank">
-                                            <i class="fas fa-eye"></i> Lihat
-                                        </a>
-                                    @endif
-                                    <button class="btn btn-sm btn-warning me-2" onclick="editFile('laporanKp')">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteFile('file_laporan_kp')">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
+                    <div class="row g-3">
+                        <!-- Row 1 -->
+                        <div class="col-md-4">
+                            <!-- Upload Laporan Kerja Praktik -->
+                            <div class="upload-section">
+                                <h6 class="fw-bold mb-3">Laporan Kerja Praktik</h6>
+                                <div id="laporanKpUploaded" style="{{ $seminar && $seminar->file_laporan_kp ? '' : 'display: none;' }}">
+                                    <div class="alert alert-success py-2 d-flex justify-content-between align-items-center">
+                                        <span><i class="fas fa-check-circle me-2"></i> File sudah diunggah</span>
+                                        <div>
+                                            @if($seminar && $seminar->file_laporan_kp)
+                                                <a href="{{ route('kp.seminar.download', basename($seminar->file_laporan_kp)) }}"
+                                                   class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                                                    <i class="fas fa-eye"></i> Lihat
+                                                </a>
+                                            @endif
+                                            <button class="btn btn-sm btn-warning me-2" onclick="editFile('laporanKp')">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteFile('file_laporan_kp')">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="laporanKpForm" style="{{ $seminar && $seminar->file_laporan_kp ? 'display: none;' : '' }}">
+                                    <div class="upload-area" id="laporanKpDropArea">
+                                        <div class="upload-content">
+                                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                            <p>Drag & drop file Laporan KP here or <span class="upload-link">browse</span></p>
+                                            <small class="text-muted">Format: PDF, DOC, DOCX. Maksimal 5MB</small>
+                                            <input type="file" id="laporanKp" accept=".pdf,.doc,.docx" style="display: none;">
+                                        </div>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button class="btn-submit" id="submitLaporanKp">Submit</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div id="laporanKpForm" style="{{ $seminar && $seminar->file_laporan_kp ? 'display: none;' : '' }}">
-                            <div class="upload-area" id="laporanKpDropArea">
-                                <div class="upload-content">
-                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                    <p>Drag & drop file Laporan KP here or <span class="upload-link">browse</span></p>
-                                    <small class="text-muted">Format: PDF, DOC, DOCX. Maksimal 5MB</small>
-                                    <input type="file" id="laporanKp" accept=".pdf,.doc,.docx" style="display: none;">
-                                </div>
-                            </div>
-                            <div class="text-center mt-3">
-                                <button class="btn-submit" id="submitLaporanKp">Submit</button>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Upload Penilaian Perusahaan -->
-                    <div class="upload-section mb-4">
-                        <h6 class="fw-bold mb-3">Unggah Penilaian Perusahaan</h6>
-                        <div id="penilaianPerusahaanUploaded" style="{{ $seminar && $seminar->file_penilaian_perusahaan ? '' : 'display: none;' }}">
-                            <div class="alert alert-success py-2 d-flex justify-content-between align-items-center">
-                                <span><i class="fas fa-check-circle me-2"></i> File sudah diunggah</span>
-                                <div>
-                                    @if($seminar && $seminar->file_penilaian_perusahaan)
-                                        <a href="{{ route('kp.seminar.download', basename($seminar->file_penilaian_perusahaan)) }}"
-                                           class="btn btn-sm btn-outline-primary me-2" target="_blank">
-                                            <i class="fas fa-eye"></i> Lihat
-                                        </a>
-                                    @endif
-                                    <button class="btn btn-sm btn-warning me-2" onclick="editFile('penilaianPerusahaan')">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteFile('file_penilaian_perusahaan')">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
+                        <div class="col-md-4">
+                            <!-- Upload Penilaian Perusahaan -->
+                            <div class="upload-section">
+                                <h6 class="fw-bold mb-3">Unggah Penilaian Perusahaan</h6>
+                                <div id="penilaianPerusahaanUploaded" style="{{ $seminar && $seminar->file_penilaian_perusahaan ? '' : 'display: none;' }}">
+                                    <div class="alert alert-success py-2 d-flex justify-content-between align-items-center">
+                                        <span><i class="fas fa-check-circle me-2"></i> File sudah diunggah</span>
+                                        <div>
+                                            @if($seminar && $seminar->file_penilaian_perusahaan)
+                                                <a href="{{ route('kp.seminar.download', basename($seminar->file_penilaian_perusahaan)) }}"
+                                                   class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                                                    <i class="fas fa-eye"></i> Lihat
+                                                </a>
+                                            @endif
+                                            <button class="btn btn-sm btn-warning me-2" onclick="editFile('penilaianPerusahaan')">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteFile('file_penilaian_perusahaan')">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="penilaianPerusahaanForm" style="{{ $seminar && $seminar->file_penilaian_perusahaan ? 'display: none;' : '' }}">
+                                    <div class="upload-area" id="penilaianPerusahaanDropArea">
+                                        <div class="upload-content">
+                                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                            <p>Drag & drop file Penilaian Perusahaan here or <span class="upload-link">browse</span></p>
+                                            <small class="text-muted">Format: PDF, DOC, DOCX. Maksimal 5MB</small>
+                                            <input type="file" id="penilaianPerusahaan" accept=".pdf,.doc,.docx" style="display: none;">
+                                        </div>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button class="btn-submit" id="submitPenilaianPerusahaan">Submit</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div id="penilaianPerusahaanForm" style="{{ $seminar && $seminar->file_penilaian_perusahaan ? 'display: none;' : '' }}">
-                            <div class="upload-area" id="penilaianPerusahaanDropArea">
-                                <div class="upload-content">
-                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                    <p>Drag & drop file Penilaian Perusahaan here or <span class="upload-link">browse</span></p>
-                                    <small class="text-muted">Format: PDF, DOC, DOCX. Maksimal 5MB</small>
-                                    <input type="file" id="penilaianPerusahaan" accept=".pdf,.doc,.docx" style="display: none;">
-                                </div>
-                            </div>
-                            <div class="text-center mt-3">
-                                <button class="btn-submit" id="submitPenilaianPerusahaan">Submit</button>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Upload Surat KP -->
-                    <div class="upload-section mb-4">
-                        <h6 class="fw-bold mb-3">Unggah Surat KP</h6>
-                        <div id="suratKpUploaded" style="{{ $seminar && $seminar->file_surat_kp ? '' : 'display: none;' }}">
-                            <div class="alert alert-success py-2 d-flex justify-content-between align-items-center">
-                                <span><i class="fas fa-check-circle me-2"></i> File sudah diunggah</span>
-                                <div>
-                                    @if($seminar && $seminar->file_surat_kp)
-                                        <a href="{{ route('kp.seminar.download', basename($seminar->file_surat_kp)) }}"
-                                           class="btn btn-sm btn-outline-primary me-2" target="_blank">
-                                            <i class="fas fa-eye"></i> Lihat
-                                        </a>
-                                    @endif
-                                    <button class="btn btn-sm btn-warning me-2" onclick="editFile('suratKp')">
-                                        <i class="fas fa-edit"></i> Edit
-                                    </button>
-                                    <button class="btn btn-sm btn-danger" onclick="deleteFile('file_surat_kp')">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
+                        <div class="col-md-4">
+                            <!-- Upload Surat KP -->
+                            <div class="upload-section">
+                                <h6 class="fw-bold mb-3">Unggah Surat KP</h6>
+                                <div id="suratKpUploaded" style="{{ $seminar && $seminar->file_surat_kp ? '' : 'display: none;' }}">
+                                    <div class="alert alert-success py-2 d-flex justify-content-between align-items-center">
+                                        <span><i class="fas fa-check-circle me-2"></i> File sudah diunggah</span>
+                                        <div>
+                                            @if($seminar && $seminar->file_surat_kp)
+                                                <a href="{{ route('kp.seminar.download', basename($seminar->file_surat_kp)) }}"
+                                                   class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                                                    <i class="fas fa-eye"></i> Lihat
+                                                </a>
+                                            @endif
+                                            <button class="btn btn-sm btn-warning me-2" onclick="editFile('suratKp')">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteFile('file_surat_kp')">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="suratKpForm" style="{{ $seminar && $seminar->file_surat_kp ? 'display: none;' : '' }}">
+                                    <div class="upload-area" id="suratKpDropArea">
+                                        <div class="upload-content">
+                                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                            <p>Drag & drop file Surat KP here or <span class="upload-link">browse</span></p>
+                                            <small class="text-muted">Format: PDF, DOC, DOCX. Maksimal 5MB</small>
+                                            <input type="file" id="suratKp" accept=".pdf,.doc,.docx" style="display: none;">
+                                        </div>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button class="btn-submit" id="submitSuratKp">Submit</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div id="suratKpForm" style="{{ $seminar && $seminar->file_surat_kp ? 'display: none;' : '' }}">
-                            <div class="upload-area" id="suratKpDropArea">
-                                <div class="upload-content">
-                                    <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                                    <p>Drag & drop file Surat KP here or <span class="upload-link">browse</span></p>
-                                    <small class="text-muted">Format: PDF, DOC, DOCX. Maksimal 5MB</small>
-                                    <input type="file" id="suratKp" accept=".pdf,.doc,.docx" style="display: none;">
+
+                        <!-- Row 2 -->
+                        <div class="col-md-4">
+                            <!-- Upload KRS Anggota Kelompok -->
+                            <div class="upload-section">
+                                <h6 class="fw-bold mb-3">KRS Anggota Kelompok</h6>
+                                <div id="krsAnggotaUploaded" style="{{ $seminar && $seminar->file_krs_anggota ? '' : 'display: none;' }}">
+                                    <div class="alert alert-success py-2 d-flex justify-content-between align-items-center">
+                                        <span><i class="fas fa-check-circle me-2"></i> File sudah diunggah</span>
+                                        <div>
+                                            @if($seminar && $seminar->file_krs_anggota)
+                                                <a href="{{ route('kp.seminar.download', basename($seminar->file_krs_anggota)) }}"
+                                                   class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                                                    <i class="fas fa-eye"></i> Lihat
+                                                </a>
+                                            @endif
+                                            <button class="btn btn-sm btn-warning me-2" onclick="editFile('krsAnggota')">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteFile('file_krs_anggota')">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="krsAnggotaForm" style="{{ $seminar && $seminar->file_krs_anggota ? 'display: none;' : '' }}">
+                                    <div class="upload-area" id="krsAnggotaDropArea">
+                                        <div class="upload-content">
+                                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                            <p>Drag & drop file KRS Anggota here or <span class="upload-link">browse</span></p>
+                                            <small class="text-muted">Format: PDF, DOC, DOCX. Maksimal 5MB</small>
+                                            <input type="file" id="krsAnggota" accept=".pdf,.doc,.docx" style="display: none;">
+                                        </div>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button class="btn-submit" id="submitKrsAnggota">Submit</button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="text-center mt-3">
-                                <button class="btn-submit" id="submitSuratKp">Submit</button>
+                        </div>
+
+                        <div class="col-md-4">
+                            <!-- Upload Surat Persetujuan Layak Seminar -->
+                            <div class="upload-section">
+                                <h6 class="fw-bold mb-3">Surat Persetujuan Layak Seminar Kerja Praktik</h6>
+                                <div id="suratPersetujuanUploaded" style="{{ $seminar && $seminar->file_surat_persetujuan ? '' : 'display: none;' }}">
+                                    <div class="alert alert-success py-2 d-flex justify-content-between align-items-center">
+                                        <span><i class="fas fa-check-circle me-2"></i> File sudah diunggah</span>
+                                        <div>
+                                            @if($seminar && $seminar->file_surat_persetujuan)
+                                                <a href="{{ route('kp.seminar.download', basename($seminar->file_surat_persetujuan)) }}"
+                                                   class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                                                    <i class="fas fa-eye"></i> Lihat
+                                                </a>
+                                            @endif
+                                            <button class="btn btn-sm btn-warning me-2" onclick="editFile('suratPersetujuan')">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteFile('file_surat_persetujuan')">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="suratPersetujuanForm" style="{{ $seminar && $seminar->file_surat_persetujuan ? 'display: none;' : '' }}">
+                                    <div class="upload-area" id="suratPersetujuanDropArea">
+                                        <div class="upload-content">
+                                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                            <p>Drag & drop file Surat Persetujuan here or <span class="upload-link">browse</span></p>
+                                            <small class="text-muted">Format: PDF, DOC, DOCX. Maksimal 5MB</small>
+                                            <input type="file" id="suratPersetujuan" accept=".pdf,.doc,.docx" style="display: none;">
+                                        </div>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button class="btn-submit" id="submitSuratPersetujuan">Submit</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <!-- Upload Lembar Konfirmasi Kerja Praktik -->
+                            <div class="upload-section">
+                                <h6 class="fw-bold mb-3">Lembar Konfirmasi Kerja Praktik</h6>
+                                <div id="lembarKonfirmasiUploaded" style="{{ $seminar && $seminar->file_lembar_konfirmasi ? '' : 'display: none;' }}">
+                                    <div class="alert alert-success py-2 d-flex justify-content-between align-items-center">
+                                        <span><i class="fas fa-check-circle me-2"></i> File sudah diunggah</span>
+                                        <div>
+                                            @if($seminar && $seminar->file_lembar_konfirmasi)
+                                                <a href="{{ route('kp.seminar.download', basename($seminar->file_lembar_konfirmasi)) }}"
+                                                   class="btn btn-sm btn-outline-primary me-2" target="_blank">
+                                                    <i class="fas fa-eye"></i> Lihat
+                                                </a>
+                                            @endif
+                                            <button class="btn btn-sm btn-warning me-2" onclick="editFile('lembarKonfirmasi')">
+                                                <i class="fas fa-edit"></i> Edit
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" onclick="deleteFile('file_lembar_konfirmasi')">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="lembarKonfirmasiForm" style="{{ $seminar && $seminar->file_lembar_konfirmasi ? 'display: none;' : '' }}">
+                                    <div class="upload-area" id="lembarKonfirmasiDropArea">
+                                        <div class="upload-content">
+                                            <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                                            <p>Drag & drop file Lembar Konfirmasi here or <span class="upload-link">browse</span></p>
+                                            <small class="text-muted">Format: PDF, DOC, DOCX. Maksimal 5MB</small>
+                                            <input type="file" id="lembarKonfirmasi" accept=".pdf,.doc,.docx" style="display: none;">
+                                        </div>
+                                    </div>
+                                    <div class="text-center mt-3">
+                                        <button class="btn-submit" id="submitLembarKonfirmasi">Submit</button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -339,7 +465,7 @@
     }
 
     /* Glassmorphism Card Styles */
-    .card {
+    .car {
         background: rgba(255, 255, 255, 0.9) !important;
         backdrop-filter: blur(10px) !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -419,7 +545,7 @@
     .upload-area {
         border: 2px dashed #d1d5db;
         border-radius: 12px;
-        padding: 40px 20px;
+        padding: 20px 15px;
         text-align: center;
         background: rgba(255, 255, 255, 0.8);
         backdrop-filter: blur(5px);
@@ -443,9 +569,9 @@
     }
 
     .upload-icon {
-        font-size: 3rem;
+        font-size: 2rem;
         color: #9ca3af;
-        margin-bottom: 15px;
+        margin-bottom: 10px;
         transition: all 0.3s ease;
     }
 
@@ -479,10 +605,10 @@
     .upload-section {
         border: 3px solid #64748b;
         border-radius: 12px;
-        padding: 20px;
+        padding: 15px;
         background: rgba(255, 255, 255, 0.9);
         backdrop-filter: blur(5px);
-        margin-bottom: 20px;
+        margin-bottom: 15px;
         position: relative;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     }
@@ -652,6 +778,9 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeDragDrop('laporanKpDropArea', 'laporanKp');
     initializeDragDrop('penilaianPerusahaanDropArea', 'penilaianPerusahaan');
     initializeDragDrop('suratKpDropArea', 'suratKp');
+    initializeDragDrop('krsAnggotaDropArea', 'krsAnggota');
+    initializeDragDrop('suratPersetujuanDropArea', 'suratPersetujuan');
+    initializeDragDrop('lembarKonfirmasiDropArea', 'lembarKonfirmasi');
 
     // Handle Laporan KP upload
     document.getElementById('submitLaporanKp')?.addEventListener('click', function() {
@@ -666,6 +795,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle Surat KP upload
     document.getElementById('submitSuratKp')?.addEventListener('click', function() {
         uploadFile('suratKp', 'file_surat_kp', 'submitSuratKp');
+    });
+
+    // Handle KRS Anggota upload
+    document.getElementById('submitKrsAnggota')?.addEventListener('click', function() {
+        uploadFile('krsAnggota', 'file_krs_anggota', 'submitKrsAnggota');
+    });
+
+    // Handle Surat Persetujuan upload
+    document.getElementById('submitSuratPersetujuan')?.addEventListener('click', function() {
+        uploadFile('suratPersetujuan', 'file_surat_persetujuan', 'submitSuratPersetujuan');
+    });
+
+    // Handle Lembar Konfirmasi upload
+    document.getElementById('submitLembarKonfirmasi')?.addEventListener('click', function() {
+        uploadFile('lembarKonfirmasi', 'file_lembar_konfirmasi', 'submitLembarKonfirmasi');
     });
 
 function initializeDragDrop(dropAreaId, inputId) {

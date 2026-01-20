@@ -216,7 +216,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <button class="btn btn-success btn-sm w-100 rounded-pill" style="font-size: 0.765rem; padding: 0.25rem 0;" onclick="showDetailModal({{ $registration->id }}, '{{ $registration->nama }}', '{{ $registration->nim }}', '{{ $registration->semester }}', '{{ $registration->ipk }}', '{{ $registration->matakuliah_ekuivalensi }}', '{{ $registration->mitra->nama_perusahaan ?? 'N/A' }}', '{{ $registration->file_portofolio }}', '{{ $registration->file_cv }}', '{{ $registration->status }}')">Selengkapnya</button>
+                                        <button class="btn btn-success btn-sm w-100 rounded-pill" style="font-size: 0.765rem; padding: 0.25rem 0;" onclick="showDetailModal({{ $registration->id }}, '{{ $registration->nama }}', '{{ $registration->nim }}', '{{ $registration->semester }}', '{{ $registration->ipk }}', '{{ $registration->matakuliah_ekuivalensi }}', '{{ $registration->mitra->nama_perusahaan ?? 'N/A' }}', '{{ $registration->file_portofolio }}', '{{ $registration->file_cv }}', '{{ $registration->status }}', {{ $registration->dosen_id ?? 'null' }})">Selengkapnya</button>
                                     </td>
                                 </tr>
                                 @empty
@@ -265,7 +265,7 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <button class="btn btn-success btn-sm w-100 rounded-pill" style="font-size: 0.765rem; padding: 0.25rem 0;" onclick="showDetailModalNonmitra({{ $registration->id }}, '{{ $registration->mahasiswa->nama ?? 'N/A' }}', '{{ $registration->program->nama_program ?? 'N/A' }}', '{{ $registration->posisi_mbkm }}', '{{ $registration->masa_mbkm }}', '{{ $registration->matakuliah_ekuivalensi }}', '{{ $registration->file_loa }}', '{{ $registration->file_proposal }}', '{{ $registration->status }}')">Selengkapnya</button>
+                                        <button class="btn btn-success btn-sm w-100 rounded-pill" style="font-size: 0.765rem; padding: 0.25rem 0;" onclick="showDetailModalNonmitra({{ $registration->id }}, '{{ $registration->mahasiswa->nama ?? 'N/A' }}', '{{ $registration->program->nama_program ?? 'N/A' }}', '{{ $registration->posisi_mbkm }}', '{{ $registration->masa_mbkm }}', '{{ $registration->matakuliah_ekuivalensi }}', '{{ $registration->file_loa }}', '{{ $registration->file_proposal }}', '{{ $registration->status }}', {{ $registration->dosen_id ?? 'null' }})">Selengkapnya</button>
                                     </td>
                                 </tr>
                                 @empty
@@ -412,7 +412,7 @@ document.getElementById('tambahNonMitraModal').addEventListener('hidden.bs.modal
     if (methodInput) methodInput.remove();
 });
 
-function showDetailModal(id, nama, nim, semester, ipk, matkul, perusahaan, portofolio, cv, status) {
+function showDetailModal(id, nama, nim, semester, ipk, matkul, perusahaan, portofolio, cv, status, dosenId = null) {
     document.getElementById('detailNama').value = nama;
     document.getElementById('detailNim').value = nim;
     document.getElementById('detailSemester').value = semester;
@@ -421,6 +421,7 @@ function showDetailModal(id, nama, nim, semester, ipk, matkul, perusahaan, porto
     document.getElementById('detailPerusahaan').value = perusahaan;
     document.getElementById('detailPortofolio').href = '/storage/' + portofolio;
     document.getElementById('detailCv').href = '/storage/' + cv;
+    document.getElementById('detailDosen').value = dosenId || '';
     document.getElementById('approveForm').action = '{{ url("/mbkm/pendaftaran/approve") }}/' + id;
     document.getElementById('rejectForm').action = '{{ url("/mbkm/pendaftaran/reject") }}/' + id;
     document.getElementById('editBtn').href = '{{ url("/mbkm/pendaftaran/edit") }}/' + id;
@@ -434,7 +435,7 @@ function showDetailModal(id, nama, nim, semester, ipk, matkul, perusahaan, porto
 }
 
 
-function showDetailModalNonmitra(id, nama, perusahaan, posisi, masa, matkul, loa, proposal, status) {
+function showDetailModalNonmitra(id, nama, perusahaan, posisi, masa, matkul, loa, proposal, status, dosenId = null) {
     document.getElementById('detailNonmitraNama').value = nama;
     document.getElementById('detailNonmitraPerusahaan').value = perusahaan;
     document.getElementById('detailNonmitraPosisi').value = posisi;
@@ -442,6 +443,7 @@ function showDetailModalNonmitra(id, nama, perusahaan, posisi, masa, matkul, loa
     document.getElementById('detailNonmitraMatkul').value = matkul;
     document.getElementById('detailNonmitraLoa').href = '/storage/' + loa;
     document.getElementById('detailNonmitraProposal').href = '/storage/' + proposal;
+    document.getElementById('detailNonmitraDosen').value = dosenId || '';
     document.getElementById('approveFormNonmitra').action = '{{ url("/mbkm/pendaftaran-nonmitra/approve") }}/' + id;
     document.getElementById('rejectFormNonmitra').action = '{{ url("/mbkm/pendaftaran-nonmitra/reject") }}/' + id;
     document.getElementById('editBtnNonmitra').href = '{{ url("/mbkm/pendaftaran-nonmitra/edit") }}/' + id;
@@ -524,6 +526,15 @@ function rejectRegistration(formId, modalId) {
                             <label class="form-label">CV</label>
                             <a id="detailCv" href="#" target="_blank" class="btn btn-link">Lihat File</a>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Dosen Pembimbing</label>
+                            <select class="form-select" id="detailDosen" name="dosen_id" form="approveForm">
+                                <option value="">Pilih Dosen</option>
+                                @foreach(\App\Models\FtiData::where('role', 'lecturer')->get() as $lecturer)
+                                    <option value="{{ $lecturer->id }}">{{ $lecturer->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -590,6 +601,15 @@ function rejectRegistration(formId, modalId) {
                         <div class="mb-3">
                             <label class="form-label">Proposal</label>
                             <a id="detailNonmitraProposal" href="#" target="_blank" class="btn btn-link">Lihat File</a>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Dosen Pembimbing</label>
+                            <select class="form-select" id="detailNonmitraDosen" name="dosen_id" form="approveFormNonmitra">
+                                <option value="">Pilih Dosen</option>
+                                @foreach(\App\Models\FtiData::where('role', 'lecturer')->get() as $lecturer)
+                                    <option value="{{ $lecturer->id }}">{{ $lecturer->nama }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                 </div>

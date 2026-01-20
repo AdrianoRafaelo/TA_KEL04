@@ -33,13 +33,12 @@ class PengumumanController extends Controller
         $request->validate([
             'judul' => 'required|string|max:255',
             'deskripsi' => 'required|string',
-            'kategori' => 'required|in:' . implode(',', Pengumuman::KATEGORI_OPTIONS),
+            'kategori' => 'required|string|max:255',
         ]);
 
         Pengumuman::create($request->all());
 
-        return redirect()->route('pengumuman.index')
-                         ->with('success', 'Pengumuman berhasil ditambahkan!');
+        return response()->json(['success' => true, 'message' => 'Pengumuman berhasil ditambahkan!']);
     }
 
     /**
@@ -64,6 +63,10 @@ class PengumumanController extends Controller
 
         $pengumuman->update($request->all());
 
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Pengumuman berhasil diperbarui!']);
+        }
+
         return redirect()->route('pengumuman.index')
                          ->with('success', 'Pengumuman berhasil diperbarui!');
     }
@@ -74,6 +77,10 @@ class PengumumanController extends Controller
     public function destroy(Pengumuman $pengumuman)
     {
         $pengumuman->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true, 'message' => 'Pengumuman berhasil dihapus!']);
+        }
 
         return redirect()->route('pengumuman.index')
                          ->with('success', 'Pengumuman berhasil dihapus!');

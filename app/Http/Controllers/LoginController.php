@@ -158,12 +158,10 @@ class LoginController extends Controller
 
     public function home()
     {
-        // Ambil data Pengumuman terbaru untuk setiap kategori
-        $pengumuman_kompetisi = Pengumuman::where('kategori', 'Kompetisi')->latest()->take(2)->get();
-        $pengumuman_magang = Pengumuman::where('kategori', 'Magang')->latest()->take(2)->get();
-        $pengumuman_umum = Pengumuman::where('kategori', 'Umum')->latest()->take(1)->get(); 
+        // Ambil semua data Pengumuman dan kelompokkan berdasarkan kategori
+        $pengumuman = Pengumuman::latest()->get()->groupBy('kategori');
 
         // Menggunakan view 'beranda' Anda, sesuai dengan konten dashboard
-        return view('welcome', compact('pengumuman_kompetisi', 'pengumuman_magang', 'pengumuman_umum'));
+        return view('welcome', compact('pengumuman'));
     }
 }

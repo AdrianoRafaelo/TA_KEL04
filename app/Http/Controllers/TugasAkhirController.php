@@ -269,13 +269,6 @@ class TugasAkhirController extends Controller
         ]);
 
         if ($pendaftaran) {
-            if (is_null($pendaftaran->dosen)) {
-                // Dosen ambil judul mahasiswa, update status menjadi 'disetujui'
-                $statusDisetujui = \App\Models\RefStatusTa::where('name', 'disetujui')->first();
-                if ($statusDisetujui) {
-                    $pendaftaran->update(['status_id' => $statusDisetujui->id]);
-                }
-            }
             // Mahasiswa ambil tawaran dosen, hanya masukkan ke transaksi, tidak buat pendaftaran baru
         }
 
@@ -944,7 +937,7 @@ class TugasAkhirController extends Controller
                 'ta_pendaftaran.updated_at',
                 \DB::raw('COALESCE(creator.nama, ta_pendaftaran.created_by) as creator_nama'),
                 \DB::raw('COALESCE(creator.nim, "") as creator_nim'),
-                \DB::raw('COALESCE(student.nama, creator.nama, ta_pendaftaran.created_by) as nama'),
+                \DB::raw('COALESCE(student.nama, ta_pendaftaran_transaksi.username, creator.nama, ta_pendaftaran.created_by) as nama'),
                 \DB::raw('COALESCE(student.nim, creator.nim, "") as nim'),
                 \DB::raw('ta_pendaftaran_transaksi.username as student_username')
             )

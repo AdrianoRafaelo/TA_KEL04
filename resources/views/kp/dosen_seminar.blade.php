@@ -14,7 +14,6 @@
                     <li class="breadcrumb-item active" aria-current="page">Seminar KP</li>
                 </ol>
             </nav>
-            <h4 class="mb-0">Seminar KP</h4>
         </div>
     </div>
 

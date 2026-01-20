@@ -173,7 +173,9 @@ Route::post('/mbkm/pendaftaran-mhs/store', [MbkmController::class, 'storePendaft
 Route::get('/mbkm/pendaftaran-mhs/get/{id}', [MbkmController::class, 'getPendaftaranMbkm'])->name('mbkm.pendaftaran-mhs.get')->middleware('auth.session');
 Route::delete('/mbkm/pendaftaran-mhs/delete/{id}', [MbkmController::class, 'deletePendaftaranMbkm'])->name('mbkm.pendaftaran-mhs.delete')->middleware('auth.session');
 Route::get('/mbkm/pelaksanaan-mhs', [MbkmController::class, 'pelaksanaan'])->name('mbkm.pelaksanaan-mhs')->middleware('auth.session');
+Route::get('/mbkm/pelaksanaan-nonmitra-mhs', [MbkmController::class, 'pelaksanaanNonmitraMhs'])->name('mbkm.pelaksanaan-nonmitra-mhs')->middleware('auth.session');
 Route::post('/mbkm/pelaksanaan-mhs/store', [MbkmController::class, 'storePelaksanaan'])->name('mbkm.store.pelaksanaan')->middleware('auth.session');
+Route::post('/mbkm/pelaksanaan-nonmitra/store', [MbkmController::class, 'storePelaksanaanNonmitra'])->name('mbkm.store.pelaksanaan-nonmitra')->middleware('auth.session');
 Route::get('/mbkm/seminar-mhs', [MbkmController::class, 'seminar'])->name('mbkm.seminar-mhs')->middleware('auth.session');
 Route::post('/mbkm/seminar-ekotek/store', [MbkmController::class, 'storeSeminarEkotek'])->name('mbkm.seminar-ekotek.store')->middleware('auth.session');
 Route::post('/mbkm/seminar-pmb/store', [MbkmController::class, 'storeSeminarPmb'])->name('mbkm.seminar-pmb.store')->middleware('auth.session');
@@ -196,6 +198,8 @@ Route::get('/mbkm/pendaftaran-nonmitra/edit/{id}', [MbkmController::class, 'edit
 Route::post('/mbkm/konversi-mk/store', [MbkmController::class, 'storeKonversiMk'])->name('mbkm.konversi-mk.store')->middleware('auth.session');
 Route::post('/mbkm/konversi-mk/approve/{id}', [MbkmController::class, 'approveKonversiMk'])->name('mbkm.konversi-mk.approve')->middleware('auth.session');
 Route::post('/mbkm/konversi-mk/reject/{id}', [MbkmController::class, 'rejectKonversiMk'])->name('mbkm.konversi-mk.reject')->middleware('auth.session');
+Route::post('/mbkm/pelaksanaan/approve/{id}', [MbkmController::class, 'approvePelaksanaan'])->name('mbkm.pelaksanaan.approve')->middleware('auth.session');
+Route::post('/mbkm/pelaksanaan/reject/{id}', [MbkmController::class, 'rejectPelaksanaan'])->name('mbkm.pelaksanaan.reject')->middleware('auth.session');
 route::get('/mbkm/informasi-nonmitra', [MbkmController::class, 'informasinonmitra'])->name('mbkm.informasi-nonmitra-mhs')->middleware('auth.session');
 route::get('/mbkm/seminar-nonmitra', [MbkmController::class, 'seminarnonmitra'])->name('mbkm.seminar-nonmitra-mhs')->middleware('auth.session');
 Route::get('/mbkm/dosen-konversi-matkul', [MbkmController::class, 'konversimatkul'])->name('mbkm.dosen.konversi-matkul')->middleware('auth.session');
@@ -203,6 +207,8 @@ Route::get('/mbkm/dosen-konversi-matkul/{courseId}/pendaftar', [MbkmController::
 Route::put('/mbkm/dosen-konversi-matkul/{courseId}/cpmk', [MbkmController::class, 'updateCpmk'])->name('mbkm.dosen.update-cpmk')->middleware('auth.session');
 route::get('/mbkm/dosen-pelaksanaan', [MbkmController::class, 'pelaksanaandosen'])->name('mbkm.dosen-pelaksanaan')->middleware('auth.session');
 route::get('/mbkm/dosen-seminar', [MbkmController::class,    'seminardosen'])->name('mbkm.dosen-seminar')->middleware('auth.session');
+Route::post('/mbkm/seminar/update-nilai/{id}', [MbkmController::class, 'updateNilaiSeminar'])->name('mbkm.seminar.update-nilai')->middleware('auth.session');
+Route::post('/mbkm/upload-jadwal-seminar', [MbkmController::class, 'uploadJadwalSeminar'])->name('mbkm.upload.jadwal.seminar')->middleware('auth.session');
 Route::post('/mbkm/store-program-nonmitra', [MbkmController::class, 'storeProgramNonmitra'])->name('mbkm.store.program-nonmitra')->middleware('auth.session');
 Route::put('/mbkm/program-nonmitra/{id}', [MbkmController::class, 'updateProgramNonmitra'])->name('mbkm.update.program-nonmitra')->middleware('auth.session');
 Route::delete('/mbkm/program-nonmitra/{id}', [MbkmController::class, 'deleteProgramNonmitra'])->name('mbkm.delete.program-nonmitra')->middleware('auth.session');

@@ -210,9 +210,19 @@ class KerjaPraktikController extends Controller
             'perusahaan_id' => 'required|exists:kp_perusahaans,id',
             'nama_supervisor' => 'required|string|max:255',
             'no_supervisor' => 'required|string|max:255',
+            'divisi' => 'required|string|max:255',
+            'surat_keterangan_diterima' => 'required|file|mimes:pdf,doc,docx|max:5120',
         ]);
 
         $perusahaan = KpPerusahaan::find($request->perusahaan_id);
+
+        // Handle file upload
+        $filePath = null;
+        if ($request->hasFile('surat_keterangan_diterima')) {
+            $file = $request->file('surat_keterangan_diterima');
+            $fileName = $file->getClientOriginalName();
+            $filePath = $file->storeAs('kp_supervisor', $fileName, 'public');
+        }
 
         // Create or find company
         $company = KpCompany::firstOrCreate(
@@ -232,6 +242,7 @@ class KerjaPraktikController extends Controller
             'company_id' => $company->id,
             'nama_supervisor' => $request->nama_supervisor,
             'no_supervisor' => $request->no_supervisor,
+            'file_surat_keterangan' => $filePath,
             'created_by' => $user['username'],
         ]);
 
@@ -241,6 +252,7 @@ class KerjaPraktikController extends Controller
             'company_id' => $company->id,
             'supervisor_id' => $supervisor->id,
             'mahasiswa_id' => $user['username'],
+            'divisi' => $request->divisi,
             'status' => 'pending',
             'created_by' => $user['username'],
         ]);
@@ -306,6 +318,7 @@ class KerjaPraktikController extends Controller
             'perusahaan_id' => $kpRequest->company->kp_perusahaan_id ?? null,
             'nama_supervisor' => $kpRequest->supervisor->nama_supervisor ?? '',
             'no_supervisor' => $kpRequest->supervisor->no_supervisor ?? '',
+            'divisi' => $kpRequest->divisi ?? '',
         ]);
     }
 
@@ -409,9 +422,23 @@ class KerjaPraktikController extends Controller
             'perusahaan_id' => 'required|exists:kp_perusahaans,id',
             'nama_supervisor' => 'required|string|max:255',
             'no_supervisor' => 'required|string|max:255',
+            'divisi' => 'required|string|max:255',
+            'surat_keterangan_diterima' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
         ]);
 
         $perusahaan = KpPerusahaan::find($request->perusahaan_id);
+
+        // Handle file upload
+        $filePath = $kpRequest->supervisor->file_surat_keterangan;
+        if ($request->hasFile('surat_keterangan_diterima')) {
+            // Delete old file if exists
+            if ($filePath) {
+                Storage::delete('public/' . $filePath);
+            }
+            $file = $request->file('surat_keterangan_diterima');
+            $fileName = $file->getClientOriginalName();
+            $filePath = $file->storeAs('kp_supervisor', $fileName, 'public');
+        }
 
         // Update company
         $company = $kpRequest->company;
@@ -420,11 +447,16 @@ class KerjaPraktikController extends Controller
             'alamat_perusahaan' => $perusahaan->alamat,
         ]);
 
+        // Update request
+        $kpRequest->divisi = $request->divisi;
+        $kpRequest->save();
+
         // Update supervisor
         $supervisor = $kpRequest->supervisor;
         $supervisor->update([
             'nama_supervisor' => $request->nama_supervisor,
             'no_supervisor' => $request->no_supervisor,
+            'file_surat_keterangan' => $filePath,
         ]);
 
         return response()->json(['success' => true, 'message' => 'Surat pengantar berhasil diperbarui']);
@@ -443,10 +475,14 @@ class KerjaPraktikController extends Controller
             return response()->json(['error' => 'Not found'], 404);
         }
 
-        // Delete the request, supervisor, and company
-        $kpRequest->supervisor->delete();
-        $kpRequest->company->delete();
+        // Delete the request first
         $kpRequest->delete();
+        // Then delete supervisor
+        $kpRequest->supervisor->delete();
+        // Then delete company if no other requests use it
+        if (KpRequest::where('company_id', $kpRequest->company_id)->count() == 0) {
+            $kpRequest->company->delete();
+        }
 
         return response()->json(['success' => true, 'message' => 'Surat pengantar berhasil dihapus']);
     }
@@ -855,26 +891,23 @@ class KerjaPraktikController extends Controller
 
     public function koordinatorSeminarKp()
     {
-        // Get all students with approved KP requests who can apply for seminar
-        $approvedRequests = KpRequest::with(['company', 'mahasiswa', 'dosen'])
+        // Get all students with approved KP requests who have registered for seminar
+        $approvedRequests = KpRequest::with(['company', 'mahasiswa', 'dosen', 'seminar'])
             ->where('type', 'pengantar')
             ->whereIn('status', ['approved', 'assigned'])
+            ->whereHas('seminar', function($q) {
+                $q->where('active', true);
+            })
             ->get();
 
         // Get lecturers from fti_datas where role is 'lecturer'
         $lecturers = FtiData::where('role', 'lecturer')->get();
 
-        // Get seminar data
-        $seminars = KpSeminar::whereIn('kp_request_id', $approvedRequests->pluck('id'))
-            ->where('active', true)
-            ->get()
-            ->keyBy('kp_request_id');
-
-        $seminarKp = $approvedRequests->map(function ($request) use ($seminars) {
+        $seminarKp = $approvedRequests->map(function ($request) {
             $student = $request->mahasiswa;
             $company = $request->company;
             $dosen = $request->dosen;
-            $seminar = $seminars->get($request->id);
+            $seminar = $request->seminar;
 
             if (!$student) return null;
 
@@ -886,6 +919,9 @@ class KerjaPraktikController extends Controller
                 'pembimbing' => $dosen->nama ?? 'Belum ditentukan',
                 'penguji' => $seminar ? $seminar->penguji : null,
                 'file_laporan_kp' => $seminar ? $seminar->file_laporan_kp : null,
+                'file_krs_anggota' => $seminar ? $seminar->file_krs_anggota : null,
+                'file_surat_persetujuan' => $seminar ? $seminar->file_surat_persetujuan : null,
+                'file_lembar_konfirmasi' => $seminar ? $seminar->file_lembar_konfirmasi : null,
                 'jadwal_seminar_file' => $seminar ? $seminar->jadwal_seminar_file : null,
                 'status' => $seminar ? $seminar->status : 'pending'
             ];
@@ -1351,6 +1387,9 @@ class KerjaPraktikController extends Controller
             'file_laporan_kp' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
             'file_penilaian_perusahaan' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
             'file_surat_kp' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+            'file_krs_anggota' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+            'file_surat_persetujuan' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
+            'file_lembar_konfirmasi' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
         ]);
 
         $user = Session::get('user');
@@ -1394,6 +1433,30 @@ class KerjaPraktikController extends Controller
             Storage::disk('public')->makeDirectory('seminar');
             Storage::disk('public')->put('seminar/' . $filename, file_get_contents($file));
             $data['file_surat_kp'] = 'seminar/' . $filename;
+        }
+
+        if ($request->hasFile('file_krs_anggota')) {
+            $file = $request->file('file_krs_anggota');
+            $filename = 'krs_anggota_' . time() . '.' . $file->getClientOriginalExtension();
+            Storage::disk('public')->makeDirectory('seminar');
+            Storage::disk('public')->put('seminar/' . $filename, file_get_contents($file));
+            $data['file_krs_anggota'] = 'seminar/' . $filename;
+        }
+
+        if ($request->hasFile('file_surat_persetujuan')) {
+            $file = $request->file('file_surat_persetujuan');
+            $filename = 'surat_persetujuan_' . time() . '.' . $file->getClientOriginalExtension();
+            Storage::disk('public')->makeDirectory('seminar');
+            Storage::disk('public')->put('seminar/' . $filename, file_get_contents($file));
+            $data['file_surat_persetujuan'] = 'seminar/' . $filename;
+        }
+
+        if ($request->hasFile('file_lembar_konfirmasi')) {
+            $file = $request->file('file_lembar_konfirmasi');
+            $filename = 'lembar_konfirmasi_' . time() . '.' . $file->getClientOriginalExtension();
+            Storage::disk('public')->makeDirectory('seminar');
+            Storage::disk('public')->put('seminar/' . $filename, file_get_contents($file));
+            $data['file_lembar_konfirmasi'] = 'seminar/' . $filename;
         }
 
         if ($seminar) {
@@ -1505,7 +1568,7 @@ class KerjaPraktikController extends Controller
     {
         $request->validate([
             'kp_request_id' => 'required|exists:kp_requests,id',
-            'field' => 'required|in:file_laporan_kp,file_penilaian_perusahaan,file_surat_kp',
+            'field' => 'required|in:file_laporan_kp,file_penilaian_perusahaan,file_surat_kp,file_krs_anggota,file_surat_persetujuan,file_lembar_konfirmasi',
         ]);
 
         $user = Session::get('user');

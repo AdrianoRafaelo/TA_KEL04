@@ -12,7 +12,6 @@
                     <li class="breadcrumb-item active" aria-current="page">Pelaksanaan</li>
                 </ol>
             </nav>
-            <h4 class="mb-0">Pelaksanaan MBKM</h4>
         </div>
     </div>
 
@@ -48,27 +47,27 @@
                     <th style="width: 200px;">Mahasiswa</th>
                     <th style="width: 250px;">Perusahaan MBKM</th>
                     <th style="width: 100px;" class="text-center">Minggu</th>
+                    <th style="width: 120px;">Matkul</th>
                     <th style="width: 250px;">Deskripsi Kegiatan</th>
                     <th style="width: 150px;">Bimbingan</th>
                 </tr>
             </thead>
             <tbody style="font-size:14px; color:#111;">
-                <tr class="hover-row">
-                    <td class="text-center">1.</td>
-                    <td class="fw-semibold">Sahalis Simboling</td>
-                    <td>PT. Kineva Systrans Media</td>
-                    <td class="text-center">W1</td>
-                    <td>Lorem ipsum</td>
-                    <td>Lorem ipsum</td>
+                @forelse($logData as $index => $log)
+                <tr>
+                    <td class="text-center">{{ $index + 1 }}.</td>
+                    <td>{{ $log->mahasiswa->nama ?? 'N/A' }}</td>
+                    <td>{{ $companies[$log->mahasiswa_id] ?? 'N/A' }}</td>
+                    <td class="text-center">W{{ $log->minggu }}</td>
+                    <td>{{ $log->matkul }}</td>
+                    <td>{{ $log->deskripsi_kegiatan }}</td>
+                    <td>{{ $log->bimbingan ?? '-' }}</td>
                 </tr>
-                <tr class="hover-row">
-                    <td class="text-center">2.</td>
-                    <td class="fw-semibold">Willy Silaen</td>
-                    <td>PT. Kineva Systrans Media</td>
-                    <td class="text-center">W1</td>
-                    <td>Lorem ipsum</td>
-                    <td>Lorem ipsum</td>
+                @empty
+                <tr>
+                    <td colspan="7" class="text-center">Tidak ada data log activity.</td>
                 </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
@@ -86,37 +85,170 @@
                 </tr>
             </thead>
             <tbody style="font-size:14px; color:#111;">
+                @forelse($bimbinganStudents as $index => $student)
                 <tr class="hover-row">
-                    <td class="text-center">1.</td>
-                    <td class="fw-semibold">Hansel Septiyan Pasaribu</td>
-                    <td>PT. MRT Jakarta Perseroda</td>
+                    <td class="text-center">{{ $index + 1 }}.</td>
+                    <td class="fw-semibold">{{ $student['nama'] }}</td>
+                    <td>{{ $student['lokasi_mbkm'] }}</td>
                     <td class="text-center">
-                        <button class="btn btn-success btn-sm rounded-pill px-4 shadow-sm"
+                        <button class="btn btn-success btn-sm rounded-pill px-4 shadow-sm lihat-pelaksanaan"
                                 style="background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
-                                       border: none; font-weight: 500;">
+                                       border: none; font-weight: 500;"
+                                data-nama="{{ $student['nama'] }}"
+                                data-pelaksanaans="{{ $student['pelaksanaans']->toJson() }}">
                             Lihat
                         </button>
                     </td>
                 </tr>
-                <tr class="hover-row">
-                    <td class="text-center">2.</td>
-                    <td class="fw-semibold">Yuni Magdalena Sinaga</td>
-                    <td>PT. DanLiris</td>
-                    <td class="text-center">
-                        <button class="btn btn-success btn-sm rounded-pill px-4 shadow-sm"
-                                style="background: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
-                                       border: none; font-weight: 500;">
-                            Lihat
-                        </button>
-                    </td>
+                @empty
+                <tr>
+                    <td colspan="4" class="text-center">Tidak ada mahasiswa bimbingan.</td>
                 </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
 
+
 </div>
 
-    
+<!-- Modal for Pelaksanaan Details -->
+<div class="modal fade" id="pelaksanaanModal" tabindex="-1" aria-labelledby="pelaksanaanModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="pelaksanaanModalLabel">Pelaksanaan MBKM - <span id="studentName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Minggu</th>
+                            <th>Deskripsi Kegiatan</th>
+                            <th>Bimbingan</th>
+                            <th>Status</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pelaksanaanTableBody">
+                        <!-- Data will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.lihat-pelaksanaan').forEach(button => {
+        button.addEventListener('click', function() {
+            const nama = this.getAttribute('data-nama');
+            const pelaksanaans = JSON.parse(this.getAttribute('data-pelaksanaans'));
+
+            document.getElementById('studentName').textContent = nama;
+
+            const tbody = document.getElementById('pelaksanaanTableBody');
+            tbody.innerHTML = '';
+
+            if (pelaksanaans.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">Belum ada log aktivitas.</td></tr>';
+            } else {
+                pelaksanaans.forEach(pelaksanaan => {
+                    const row = document.createElement('tr');
+                    let statusBadge = '';
+                    let actionButtons = '';
+
+                    if (pelaksanaan.status === 'approved') {
+                        statusBadge = '<span class="badge bg-success">Disetujui</span>';
+                        actionButtons = '<span class="text-muted">Sudah disetujui</span>';
+                    } else if (pelaksanaan.status === 'rejected') {
+                        statusBadge = '<span class="badge bg-danger">Ditolak</span>';
+                        actionButtons = '<span class="text-muted">Sudah ditolak</span>';
+                    } else {
+                        statusBadge = '<span class="badge bg-warning">Pending</span>';
+                        actionButtons = `
+                            <button class="btn btn-success btn-sm me-1 approve-btn" data-id="${pelaksanaan.id}">Terima</button>
+                            <button class="btn btn-danger btn-sm reject-btn" data-id="${pelaksanaan.id}">Tolak</button>
+                        `;
+                    }
+
+                    row.innerHTML = `
+                        <td>W${pelaksanaan.minggu}</td>
+                        <td>${pelaksanaan.deskripsi_kegiatan}</td>
+                        <td>${pelaksanaan.bimbingan || '-'}</td>
+                        <td>${statusBadge}</td>
+                        <td>${actionButtons}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('pelaksanaanModal'));
+            modal.show();
+        });
+    });
+
+    // Event delegation for approve and reject buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('approve-btn')) {
+            const id = e.target.getAttribute('data-id');
+            if (confirm('Apakah Anda yakin ingin menyetujui pelaksanaan ini?')) {
+                fetch(`/mbkm/pelaksanaan/approve/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload(); // Reload to update the modal
+                    } else {
+                        alert(data.error || 'Terjadi kesalahan');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat memproses permintaan');
+                });
+            }
+        }
+
+        if (e.target.classList.contains('reject-btn')) {
+            const id = e.target.getAttribute('data-id');
+            if (confirm('Apakah Anda yakin ingin menolak pelaksanaan ini?')) {
+                fetch(`/mbkm/pelaksanaan/reject/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload(); // Reload to update the modal
+                    } else {
+                        alert(data.error || 'Terjadi kesalahan');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat memproses permintaan');
+                });
+            }
+        }
+
+    });
+});
+</script>
+
 @endsection
 <!-- Tambahan CSS -->
 <style>

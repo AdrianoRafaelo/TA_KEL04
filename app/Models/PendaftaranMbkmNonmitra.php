@@ -18,6 +18,7 @@ class PendaftaranMbkmNonmitra extends Model
         'file_proposal',
         'masa_mbkm',
         'matakuliah_ekuivalensi',
+        'dosen_id',
         'status',
         'created_by',
         'updated_by',
@@ -42,5 +43,21 @@ class PendaftaranMbkmNonmitra extends Model
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function pelaksanaans()
+    {
+        return $this->hasMany(\App\Models\MbkmPelaksanaan::class, 'pendaftaran_mbkm_id');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($pendaftaran) {
+            if ($pendaftaran->pelaksanaans()->exists()) {
+                throw new \Exception('Tidak dapat menghapus pendaftaran MBKM Non-Mitra karena masih ada data pelaksanaan terkait.');
+            }
+        });
     }
 }

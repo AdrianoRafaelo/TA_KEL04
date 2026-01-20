@@ -78,7 +78,7 @@
         </div>
         <div class="col-md-6 pl-md-4 border-left">
           <h5 class="kp-form-title mb-3">Surat Pengantar KP</h5>
-          <form method="POST" action="{{ route('pendaftaran-kp.pengantar') }}">
+          <form method="POST" action="{{ route('pendaftaran-kp.pengantar') }}" enctype="multipart/form-data">
             @csrf
             <div class="form-group">
               <label>Perusahaan KP</label>
@@ -98,6 +98,14 @@
             <div class="form-group">
               <label>No. Supervisor</label>
               <input type="text" name="no_supervisor" class="form-control" placeholder="Ketik nomor supervisor" required>
+            </div>
+            <div class="form-group">
+              <label>Divisi</label>
+              <input type="text" name="divisi" class="form-control" placeholder="Ketik divisi" required>
+            </div>
+            <div class="form-group">
+              <label>Upload Surat Keterangan Diterima Kerja Praktik</label>
+              <input type="file" name="surat_keterangan_diterima" class="form-control" accept=".pdf,.doc,.docx">
             </div>
             <button type="submit" class="btn btn-primary">Req Surat</button>
             @if(isset($pengantar_requests) && $pengantar_requests->where('status', 'pending')->count() > 0)
@@ -196,6 +204,10 @@
                     <div class="col-md-6">
                         <label class="form-label">No. Supervisor</label>
                         <input type="text" name="no_supervisor" id="edit_no_supervisor" class="form-control" placeholder="Ketik nomor supervisor" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Divisi</label>
+                        <input type="text" name="divisi" id="edit_divisi" class="form-control" placeholder="Ketik divisi" required>
                     </div>
                 </div>
             </div>
@@ -406,6 +418,7 @@ function editPengantar(id) {
             $('#edit_perusahaan_id').val(data.perusahaan_id);
             $('#edit_nama_supervisor').val(data.nama_supervisor);
             $('#edit_no_supervisor').val(data.no_supervisor);
+            $('#edit_divisi').val(data.divisi);
             $('#editPengantarForm').attr('action', `/pendaftaran-kp/update-pengantar/${id}`);
             $('#editPengantarModal').css('display', 'flex');
         },

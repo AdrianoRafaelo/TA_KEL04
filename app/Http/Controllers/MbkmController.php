@@ -54,12 +54,154 @@ class MbkmController extends Controller
 
     public function seminardosen()
     {
-        return view('mbkm.seminar_dosen');
+        // Get current lecturer
+        $user = FtiData::where('username', session('username'))->first();
+        if (!$user) {
+            abort(403, 'User tidak ditemukan.');
+        }
+
+        // Get students assigned to this lecturer as pembimbing
+        $bimbinganStudentIds = collect();
+
+        // Get approved MBKM mitra students assigned to this lecturer
+        $mitraStudents = PendaftaranMbkm::with('mahasiswa', 'mitra')
+            ->where('status', 'approved')
+            ->where('dosen_id', $user->id)
+            ->get();
+
+        foreach ($mitraStudents as $student) {
+            $bimbinganStudentIds->push($student->mahasiswa_id);
+        }
+
+        // Get approved MBKM non-mitra students assigned to this lecturer
+        $nonmitraStudents = PendaftaranMbkmNonmitra::with('mahasiswa')
+            ->where('status', 'approved')
+            ->where('dosen_id', $user->id)
+            ->get();
+
+        foreach ($nonmitraStudents as $student) {
+            $bimbinganStudentIds->push($student->mahasiswa_id);
+        }
+
+        // Get seminars for these students
+        $seminars = SeminarMbkm::with('mahasiswa')
+            ->whereIn('mahasiswa_id', $bimbinganStudentIds)
+            ->where('active', true)
+            ->get();
+
+        // Get company info for each seminar
+        $companies = [];
+        foreach ($seminars as $seminar) {
+            // Get approved MBKM registration
+            $approvedMbkm = PendaftaranMbkm::where('mahasiswa_id', $seminar->mahasiswa_id)
+                ->where('status', 'approved')
+                ->first();
+
+            if ($approvedMbkm) {
+                $companies[$seminar->mahasiswa_id] = $approvedMbkm->mitra->nama_perusahaan ?? 'N/A';
+            } else {
+                $approvedNonmitra = PendaftaranMbkmNonmitra::where('mahasiswa_id', $seminar->mahasiswa_id)
+                    ->where('status', 'approved')
+                    ->first();
+                $companies[$seminar->mahasiswa_id] = $approvedNonmitra ? $approvedNonmitra->nama_perusahaan : 'N/A';
+            }
+        }
+
+        return view('mbkm.seminar_dosen', compact('seminars', 'companies'));
     }
 
     public function pelaksanaandosen()
     {
-        return view('mbkm.pelaksanaan_dosen');
+        // Get current lecturer
+        $user = FtiData::where('username', session('username'))->first();
+        if (!$user) {
+            abort(403, 'User tidak ditemukan.');
+        }
+
+        // Get courses taught by this lecturer
+        $courses = Kurikulum::where('dosen_id', $user->id)
+            ->where('active', 1)
+            ->get();
+
+        $courseIds = $courses->pluck('id');
+
+        // Get approved course conversions for these courses
+        $konversiData = MkKonversi::with('mahasiswa')
+            ->whereIn('kurikulum_id', $courseIds)
+            ->where('status', 'approved')
+            ->where('active', '1')
+            ->get();
+
+        $konversiStudents = $konversiData->pluck('mahasiswa_id')->unique();
+
+        // Get log activities for students with approved conversions
+        $logData = MkKonversi::with('mahasiswa')
+            ->whereIn('mahasiswa_id', $konversiStudents)
+            ->where('status', 'approved')
+            ->where('active', '1')
+            ->whereNull('kurikulum_id')
+            ->whereNotNull('minggu')
+            ->get();
+
+        // Get companies for these students
+        $companies = [];
+        foreach ($konversiData as $konversi) {
+            $mahasiswaId = $konversi->mahasiswa_id;
+            if (!isset($companies[$mahasiswaId])) {
+                $approvedNonmitra = PendaftaranMbkmNonmitra::where('mahasiswa_id', $mahasiswaId)
+                    ->where('status', 'approved')
+                    ->first();
+                $companies[$mahasiswaId] = $approvedNonmitra ? $approvedNonmitra->nama_perusahaan : 'N/A';
+            }
+        }
+
+        // Get students assigned to this lecturer as pembimbing
+        $bimbinganStudentIds = collect();
+
+        // Get approved MBKM mitra students assigned to this lecturer
+        $mitraStudents = PendaftaranMbkm::with('mahasiswa', 'mitra')
+            ->where('status', 'approved')
+            ->where('dosen_id', $user->id)
+            ->get();
+
+        $bimbinganStudents = collect();
+        foreach ($mitraStudents as $student) {
+            $bimbinganStudentIds->push($student->mahasiswa_id);
+            $pelaksanaans = MbkmPelaksanaan::where('mahasiswa_id', $student->mahasiswa_id)
+                ->where('active', true)
+                ->orderBy('minggu')
+                ->get();
+            $bimbinganStudents->push([
+                'nama' => $student->mahasiswa->nama ?? 'N/A',
+                'lokasi_mbkm' => $student->mitra->nama_perusahaan ?? 'N/A',
+                'pelaksanaans' => $pelaksanaans,
+            ]);
+        }
+
+        // Get approved MBKM non-mitra students assigned to this lecturer
+        $nonmitraStudents = PendaftaranMbkmNonmitra::with('mahasiswa')
+            ->where('status', 'approved')
+            ->where('dosen_id', $user->id)
+            ->get();
+
+        foreach ($nonmitraStudents as $student) {
+            $bimbinganStudentIds->push($student->mahasiswa_id);
+            $pelaksanaans = MbkmPelaksanaan::where('mahasiswa_id', $student->mahasiswa_id)
+                ->whereNotNull('pendaftaran_mbkm_nonmitra_id')
+                ->where('active', true)
+                ->orderBy('minggu')
+                ->get();
+            $bimbinganStudents->push([
+                'nama' => $student->mahasiswa->nama ?? 'N/A',
+                'lokasi_mbkm' => $student->nama_perusahaan ?? 'N/A',
+                'pelaksanaans' => $pelaksanaans,
+            ]);
+        }
+
+        // Exclude bimbingan students from konversi students
+        $konversiStudents = $konversiStudents->diff($bimbinganStudentIds);
+
+        return view('mbkm.pelaksanaan_dosen', compact('logData', 'companies', 'bimbinganStudents'));
     }
 
     public function seminarnonmitra()
@@ -109,6 +251,33 @@ class MbkmController extends Controller
         return view('mbkm.pelaksanaan_mhs', compact('user', 'approvedMbkm', 'pelaksanaans', 'progressPercentage', 'completedWeeks', 'totalWeeks'));
     }
 
+    public function pelaksanaanNonmitraMhs()
+    {
+        $user = \App\Models\FtiData::where('username', session('username'))->first();
+        if (!$user) {
+            abort(403, 'User tidak ditemukan.');
+        }
+
+        // Check if user has approved MBKM non-mitra
+        $approvedMbkm = PendaftaranMbkmNonmitra::where('mahasiswa_id', $user->id)
+            ->where('status', 'approved')
+            ->first();
+
+        // Fetch pelaksanaan data for non-mitra
+        $pelaksanaans = MkKonversi::where('mahasiswa_id', $user->id)
+            ->whereNull('kurikulum_id')
+            ->where('active', '1')
+            ->orderBy('minggu')
+            ->get();
+
+        // Calculate progress (assume 16 weeks total)
+        $totalWeeks = 16;
+        $completedWeeks = $pelaksanaans->max('minggu') ?? 0;
+        $progressPercentage = $totalWeeks > 0 ? min(100, ($completedWeeks / $totalWeeks) * 100) : 0;
+
+        return view('mbkm.pelaksanaan_nonmitra_mhs', compact('user', 'approvedMbkm', 'pelaksanaans', 'progressPercentage', 'completedWeeks', 'totalWeeks'));
+    }
+
     public function seminar()
     {
         $user = \App\Models\FtiData::where('username', session('username'))->first();
@@ -131,29 +300,75 @@ class MbkmController extends Controller
 
     public function pelaksanaankoordinator()
     {
-        $pelaksanaans = MbkmPelaksanaan::with(['mahasiswa'])
-            ->where('active', true)
-            ->orderBy('created_at', 'desc')
+        // Get all approved MBKM registrations
+        $approvedMitra = PendaftaranMbkm::with('mahasiswa', 'mitra')
+            ->where('status', 'approved')
             ->get();
 
-        // Get companies for mitra
-        $companies = [];
-        foreach ($pelaksanaans as $pelaksanaan) {
-            $approvedMbkm = PendaftaranMbkm::where('mahasiswa_id', $pelaksanaan->mahasiswa_id)
-                ->where('status', 'approved')
-                ->first();
-            if ($approvedMbkm) {
-                $companies[$pelaksanaan->mahasiswa_id] = $approvedMbkm->mitra->nama_perusahaan ?? 'N/A';
+        $approvedNonmitra = PendaftaranMbkmNonmitra::with('mahasiswa', 'program')
+            ->where('status', 'approved')
+            ->get();
+
+        // Get all pelaksanaans mitra
+        $pelaksanaansMitra = MbkmPelaksanaan::with(['mahasiswa'])
+            ->whereNotNull('pendaftaran_mbkm_id')
+            ->where('active', true)
+            ->orderBy('mahasiswa_id')
+            ->orderBy('minggu')
+            ->get();
+
+        // Get all pelaksanaans non-mitra from mk_konversi table
+        $pelaksanaansNonmitra = MkKonversi::with(['mahasiswa'])
+            ->whereNull('kurikulum_id')
+            ->where('active', '1')
+            ->where('status', 'approved')
+            ->orderBy('mahasiswa_id')
+            ->orderBy('minggu')
+            ->get();
+
+        // Group pelaksanaans by mahasiswa_id
+        $pelaksanaansByStudentMitra = $pelaksanaansMitra->groupBy('mahasiswa_id');
+
+        // Prepare data for mitra
+        $pelaksanaansMitra = collect();
+        $companiesMitra = [];
+
+        foreach ($approvedMitra as $registration) {
+            $mahasiswaId = $registration->mahasiswa_id;
+            $companiesMitra[$mahasiswaId] = $registration->mitra->nama_perusahaan ?? 'N/A';
+
+            $studentPelaksanaans = $pelaksanaansByStudentMitra->get($mahasiswaId, collect());
+
+            if ($studentPelaksanaans->isNotEmpty()) {
+                // Add existing pelaksanaans
+                foreach ($studentPelaksanaans as $pelaksanaan) {
+                    $pelaksanaansMitra->push($pelaksanaan);
+                }
             } else {
-                // Check non-mitra
-                $approvedNonmitra = PendaftaranMbkmNonmitra::where('mahasiswa_id', $pelaksanaan->mahasiswa_id)
-                    ->where('status', 'approved')
-                    ->first();
-                $companies[$pelaksanaan->mahasiswa_id] = $approvedNonmitra ? ($approvedNonmitra->program->nama_program ?? 'N/A') : 'N/A';
+                // Add a placeholder pelaksanaan for students with no logs
+                $placeholder = (object) [
+                    'id' => null,
+                    'mahasiswa_id' => $mahasiswaId,
+                    'mahasiswa' => $registration->mahasiswa,
+                    'minggu' => '-',
+                    'deskripsi_kegiatan' => 'Belum ada log aktivitas',
+                    'bimbingan' => '-',
+                    'matkul' => '-',
+                    'created_at' => null,
+                    'updated_at' => null,
+                    'active' => true,
+                ];
+                $pelaksanaansMitra->push($placeholder);
             }
         }
 
-        return view('mbkm.pelaksanaan_koordinator', compact('pelaksanaans', 'companies'));
+        // Get companies for non-mitra students
+        $companiesNonmitra = [];
+        foreach ($approvedNonmitra as $registration) {
+            $companiesNonmitra[$registration->mahasiswa_id] = $registration->nama_perusahaan ?? 'N/A';
+        }
+
+        return view('mbkm.pelaksanaan_koordinator', compact('pelaksanaansMitra', 'pelaksanaansNonmitra', 'companiesMitra', 'companiesNonmitra'));
     }
 
     public function seminarkoordinator()
@@ -227,10 +442,18 @@ class MbkmController extends Controller
         return redirect()->route('mbkm.pendaftaran-koordinator')->with('success', 'Perusahaan MBKM berhasil dihapus.');
     }
 
-    public function approvePendaftaranMbkm($id)
+    public function approvePendaftaranMbkm(Request $request, $id)
     {
+        $request->validate([
+            'dosen_id' => 'nullable|exists:fti_datas,id',
+        ]);
+
         $registration = PendaftaranMbkm::findOrFail($id);
-        $registration->update(['status' => 'approved', 'updated_by' => auth()->id()]);
+        $registration->update([
+            'status' => 'approved',
+            'dosen_id' => $request->dosen_id,
+            'updated_by' => auth()->id()
+        ]);
 
         return redirect()->back()->with('success', 'Pendaftaran MBKM berhasil disetujui.');
     }
@@ -328,10 +551,18 @@ class MbkmController extends Controller
         return response()->json(['success' => true, 'message' => 'Pendaftaran MBKM berhasil diperbarui.']);
     }
 
-    public function approvePendaftaranMbkmNonmitra($id)
+    public function approvePendaftaranMbkmNonmitra(Request $request, $id)
     {
+        $request->validate([
+            'dosen_id' => 'nullable|exists:fti_datas,id',
+        ]);
+
         $registration = PendaftaranMbkmNonmitra::findOrFail($id);
-        $registration->update(['status' => 'approved', 'updated_by' => auth()->id()]);
+        $registration->update([
+            'status' => 'approved',
+            'dosen_id' => $request->dosen_id,
+            'updated_by' => auth()->id()
+        ]);
 
         return redirect()->back()->with('success', 'Pendaftaran MBKM Non-Mitra berhasil disetujui.');
     }
@@ -471,15 +702,82 @@ class MbkmController extends Controller
             return redirect()->route('mbkm.pendaftaran-mhs')->with('error', 'User tidak ditemukan.');
         }
 
-        MbkmPelaksanaan::create([
+        // Find the approved MBKM registration for this user
+        $pendaftaranMbkm = PendaftaranMbkm::where('mahasiswa_id', $user->id)
+            ->where('status', 'approved')
+            ->first();
+
+        if ($pendaftaranMbkm) {
+            // Mitra
+            MbkmPelaksanaan::create([
+                'mahasiswa_id' => $user->id,
+                'pendaftaran_mbkm_id' => $pendaftaranMbkm->id,
+                'pendaftaran_mbkm_nonmitra_id' => null,
+                'minggu' => $request->minggu,
+                'matkul' => $request->matkul,
+                'deskripsi_kegiatan' => $request->deskripsi_kegiatan,
+                'bimbingan' => $request->bimbingan,
+                'created_by' => $user->id,
+                'updated_by' => $user->id,
+                'active' => true,
+            ]);
+        } else {
+            // Check non-mitra
+            $pendaftaranNonmitra = PendaftaranMbkmNonmitra::where('mahasiswa_id', $user->id)
+                ->where('status', 'approved')
+                ->first();
+            if ($pendaftaranNonmitra) {
+                MkKonversi::create([
+                    'mahasiswa_id' => $user->id,
+                    'kurikulum_id' => null,
+                    'minggu' => $request->minggu,
+                    'matkul' => $request->matkul,
+                    'deskripsi_kegiatan' => $request->deskripsi_kegiatan,
+                    'bimbingan' => $request->bimbingan,
+                    'status' => 'approved',
+                    'created_by' => $user->id,
+                    'updated_by' => $user->id,
+                    'active' => '1',
+                ]);
+            }
+        }
+
+        return redirect()->back()->with('success', 'Log-activity berhasil ditambahkan.');
+    }
+
+    public function storePelaksanaanNonmitra(Request $request)
+    {
+        $request->validate([
+            'minggu' => 'required|integer|min:1|max:16',
+            'matkul' => 'required|string|max:255',
+            'deskripsi_kegiatan' => 'required|string',
+            'bimbingan' => 'nullable|string',
+        ]);
+
+        $user = \App\Models\FtiData::where('username', session('username'))->first();
+        if (!$user) {
+            return redirect()->route('mbkm.pelaksanaan-nonmitra-mhs')->with('error', 'User tidak ditemukan.');
+        }
+
+        // Check if user has approved MBKM non-mitra
+        $pendaftaranNonmitra = PendaftaranMbkmNonmitra::where('mahasiswa_id', $user->id)
+            ->where('status', 'approved')
+            ->first();
+        if (!$pendaftaranNonmitra) {
+            return redirect()->route('mbkm.pelaksanaan-nonmitra-mhs')->with('error', 'Anda tidak memiliki MBKM non-mitra yang disetujui.');
+        }
+
+        MkKonversi::create([
             'mahasiswa_id' => $user->id,
+            'kurikulum_id' => null,
             'minggu' => $request->minggu,
             'matkul' => $request->matkul,
             'deskripsi_kegiatan' => $request->deskripsi_kegiatan,
             'bimbingan' => $request->bimbingan,
+            'status' => 'approved',
             'created_by' => $user->id,
             'updated_by' => $user->id,
-            'active' => true,
+            'active' => '1',
         ]);
 
         return redirect()->back()->with('success', 'Log-activity berhasil ditambahkan.');
@@ -750,5 +1048,180 @@ class MbkmController extends Controller
         ]);
 
         return response()->json(['success' => true, 'message' => 'Konversi MK berhasil ditolak.']);
+    }
+
+    public function approvePelaksanaan($id)
+    {
+        // Get current lecturer
+        $user = FtiData::where('username', session('username'))->first();
+        if (!$user) {
+            return response()->json(['error' => 'User tidak ditemukan.'], 403);
+        }
+
+        $pelaksanaan = MbkmPelaksanaan::findOrFail($id);
+
+        // Check if lecturer is assigned as pembimbing for this student
+        $isAssigned = PendaftaranMbkm::where('mahasiswa_id', $pelaksanaan->mahasiswa_id)
+            ->where('dosen_id', $user->id)
+            ->where('status', 'approved')
+            ->exists() ||
+        PendaftaranMbkmNonmitra::where('mahasiswa_id', $pelaksanaan->mahasiswa_id)
+            ->where('dosen_id', $user->id)
+            ->where('status', 'approved')
+            ->exists();
+
+        if (!$isAssigned) {
+            return response()->json(['error' => 'Anda tidak memiliki akses untuk menyetujui pelaksanaan ini.'], 403);
+        }
+
+        $pelaksanaan->update([
+            'status' => 'approved',
+            'updated_by' => $user->id
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Pelaksanaan berhasil disetujui.']);
+    }
+
+    public function rejectPelaksanaan($id)
+    {
+        // Get current lecturer
+        $user = FtiData::where('username', session('username'))->first();
+        if (!$user) {
+            return response()->json(['error' => 'User tidak ditemukan.'], 403);
+        }
+
+        $pelaksanaan = MbkmPelaksanaan::findOrFail($id);
+
+        // Check if lecturer is assigned as pembimbing for this student
+        $isAssigned = PendaftaranMbkm::where('mahasiswa_id', $pelaksanaan->mahasiswa_id)
+            ->where('dosen_id', $user->id)
+            ->where('status', 'approved')
+            ->exists() ||
+        PendaftaranMbkmNonmitra::where('mahasiswa_id', $pelaksanaan->mahasiswa_id)
+            ->where('dosen_id', $user->id)
+            ->where('status', 'approved')
+            ->exists();
+
+        if (!$isAssigned) {
+            return response()->json(['error' => 'Anda tidak memiliki akses untuk menolak pelaksanaan ini.'], 403);
+        }
+
+        $pelaksanaan->update([
+            'status' => 'rejected',
+            'updated_by' => $user->id
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Pelaksanaan berhasil ditolak.']);
+    }
+
+    public function approvePelaksanaanNonmitra($id)
+    {
+        // Get current lecturer
+        $user = FtiData::where('username', session('username'))->first();
+        if (!$user) {
+            return response()->json(['error' => 'User tidak ditemukan.'], 403);
+        }
+
+        $pelaksanaan = MbkmPelaksanaan::findOrFail($id);
+
+        // Check if lecturer is assigned as pembimbing for this student
+        $isAssigned = PendaftaranMbkmNonmitra::where('mahasiswa_id', $pelaksanaan->mahasiswa_id)
+            ->where('dosen_id', $user->id)
+            ->where('status', 'approved')
+            ->exists();
+
+        if (!$isAssigned) {
+            return response()->json(['error' => 'Anda tidak memiliki akses untuk menyetujui pelaksanaan ini.'], 403);
+        }
+
+        $pelaksanaan->update([
+            'status' => 'approved',
+            'updated_by' => $user->id
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Pelaksanaan berhasil disetujui.']);
+    }
+
+    public function rejectPelaksanaanNonmitra($id)
+    {
+        // Get current lecturer
+        $user = FtiData::where('username', session('username'))->first();
+        if (!$user) {
+            return response()->json(['error' => 'User tidak ditemukan.'], 403);
+        }
+
+        $pelaksanaan = MbkmPelaksanaan::findOrFail($id);
+
+        // Check if lecturer is assigned as pembimbing for this student
+        $isAssigned = PendaftaranMbkmNonmitra::where('mahasiswa_id', $pelaksanaan->mahasiswa_id)
+            ->where('dosen_id', $user->id)
+            ->where('status', 'approved')
+            ->exists();
+
+        if (!$isAssigned) {
+            return response()->json(['error' => 'Anda tidak memiliki akses untuk menolak pelaksanaan ini.'], 403);
+        }
+
+        $pelaksanaan->update([
+            'status' => 'rejected',
+            'updated_by' => $user->id
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Pelaksanaan berhasil ditolak.']);
+    }
+
+    public function updateNilaiSeminar(Request $request, $id)
+    {
+        $request->validate([
+            'nilai' => 'required|integer|min:0|max:100',
+        ]);
+
+        // Get current lecturer
+        $user = FtiData::where('username', session('username'))->first();
+        if (!$user) {
+            return response()->json(['error' => 'User tidak ditemukan.'], 403);
+        }
+
+        $seminar = SeminarMbkm::findOrFail($id);
+
+        // Check if lecturer is assigned as pembimbing for this student
+        $isAssigned = PendaftaranMbkm::where('mahasiswa_id', $seminar->mahasiswa_id)
+            ->where('dosen_id', $user->id)
+            ->where('status', 'approved')
+            ->exists() ||
+        PendaftaranMbkmNonmitra::where('mahasiswa_id', $seminar->mahasiswa_id)
+            ->where('dosen_id', $user->id)
+            ->where('status', 'approved')
+            ->exists();
+
+        if (!$isAssigned) {
+            return response()->json(['error' => 'Anda tidak memiliki akses untuk mengupdate nilai seminar ini.'], 403);
+        }
+
+        $seminar->update([
+            'nilai' => $request->nilai,
+            'updated_by' => $user->id
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Nilai seminar berhasil diperbarui.']);
+    }
+
+    public function uploadJadwalSeminar(Request $request)
+    {
+        $request->validate([
+            'seminar_id' => 'required|exists:seminar_mbkm,id',
+            'jadwal_file' => 'required|file|mimes:pdf,doc,docx|max:5120', // 5MB max
+        ]);
+
+        $seminar = SeminarMbkm::findOrFail($request->seminar_id);
+
+        if ($request->hasFile('jadwal_file')) {
+            $jadwalPath = $request->file('jadwal_file')->store('mbkm/seminar/jadwal', 'public');
+            $seminar->jadwal_seminar_file = $jadwalPath;
+            $seminar->updated_by = auth()->id() ?? session('username');
+            $seminar->save();
+        }
+
+        return response()->json(['success' => true, 'message' => 'Jadwal seminar berhasil diupload.']);
     }
 }
