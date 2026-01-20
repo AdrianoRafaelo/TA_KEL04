@@ -186,7 +186,7 @@
                                             @endif
                                         </td>
                                         <td class="small">
-                                            <strong>{{ $jd->dosen }}</strong>
+                                            <strong>{{ $jd->dosen_nama ?: $jd->dosen }}</strong>
                                         </td>
                                         <td class="small text-muted">
                                             {{ $jd->judul }}
@@ -195,7 +195,7 @@
                                             <button type="button" class="btn btn-success btn-sm w-100 rounded-pill btn-selengkapnya" style="font-size: 0.765rem; padding: 0.25rem 0;"
                                                     data-id="{{ $jd->id }}"
                                                     data-judul="{{ $jd->judul }}"
-                                                    data-dosen="{{ $jd->dosen }}"
+                                                    data-dosen="{{ $jd->dosen_nama ?: $jd->dosen }}"
                                                     data-students='@json($jd->interested_students)'>Selengkapnya</button>
                                         </td>
                                     </tr>

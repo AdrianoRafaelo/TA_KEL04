@@ -130,11 +130,13 @@
                 @else
                   @if($pendaftaranDitutup)
                     <span class="btn btn-secondary btn-sm" disabled>Pendaftaran Ditutup</span>
-                  @else
+                  @elseif($mm->pendaftaran && $mm->pendaftaran->status_id == \App\Models\RefStatusTa::where('name', 'disetujui')->first()->id)
                     <form method="POST" action="{{ route('ta.terimaTransaksi', ['id' => $mm->id]) }}">
                       @csrf
                       <button type="submit" class="btn btn-primary btn-sm">Terima</button>
                     </form>
+                  @else
+                    <span class="btn btn-warning btn-sm" disabled>Judul Belum Disetujui</span>
                   @endif
                 @endif
               </td>

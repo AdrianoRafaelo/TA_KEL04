@@ -8,8 +8,8 @@ class TaPendaftaran extends Model
 {
     protected $table = 'ta_pendaftaran';
     protected $fillable = [
-        'judul', 'user_id', 'deskripsi', 'file', 'deskripsi_syarat', 'dosen',
-        'created_by', 'updated_by', 'active', 'status_id', 'user_id'
+        'judul', 'user_id', 'mahasiswa_id', 'deskripsi', 'file', 'deskripsi_syarat', 'dosen',
+        'created_by', 'updated_by', 'active', 'status_id'
     ];
 
     public function transaksi()
@@ -30,6 +30,11 @@ class TaPendaftaran extends Model
     public function user()
     {
         return $this->belongsTo(\App\Models\User::class, 'user_id');
+    }
+
+    public function mahasiswa()
+    {
+        return $this->belongsTo(\App\Models\FtiData::class, 'mahasiswa_id');
     }
 
     public function seminarProposal()

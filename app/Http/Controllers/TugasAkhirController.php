@@ -69,9 +69,17 @@ class TugasAkhirController extends Controller
             'active' => 1
         ];
 
-        // Jika pengajuan dari dosen, set field dosen
+        // Jika pengajuan dari dosen, set field dosen dan status menunggu
         if ($request->has('is_dosen') && $request->is_dosen == 1) {
             $data['dosen'] = $username;
+            $statusMenunggu = \App\Models\RefStatusTa::where('name', 'menunggu')->first();
+            if ($statusMenunggu) {
+                $data['status_id'] = $statusMenunggu->id;
+            }
+        } else {
+            // Untuk mahasiswa, set mahasiswa_id
+            $mahasiswa = \App\Models\FtiData::where('username', $username)->first();
+            $data['mahasiswa_id'] = $mahasiswa ? $mahasiswa->id : null;
         }
 
         $ta = TaPendaftaran::create($data);
@@ -288,7 +296,27 @@ class TugasAkhirController extends Controller
                 $pendaftaran = $transaksi->pendaftaran;
                 if ($pendaftaran) {
                     $pendaftaran->status_id = $statusDisetujui->id;
+                    // Set mahasiswa_id jika judul dari dosen
+                    if ($pendaftaran->dosen) {
+                        $mahasiswa = \App\Models\FtiData::where('username', $transaksi->username)->first();
+                        $pendaftaran->mahasiswa_id = $mahasiswa ? $mahasiswa->id : null;
+                    }
                     $pendaftaran->save();
+
+                    // Buat entry di mahasiswa_tugas_akhirs jika judul dari dosen
+                    if ($pendaftaran->dosen) {
+                        MahasiswaTugasAkhir::create([
+                            'mahasiswa' => $transaksi->username,
+                            'ta_pendaftaran_id' => $pendaftaran->id,
+                            'judul' => $pendaftaran->judul,
+                            'pembimbing' => null,
+                            'pengulas_1' => null,
+                            'pengulas_2' => null,
+                            'created_by' => session('username') ?? 'system',
+                            'updated_by' => session('username') ?? 'system',
+                            'active' => true,
+                        ]);
+                    }
                 }
             }
         }
@@ -853,11 +881,29 @@ class TugasAkhirController extends Controller
         $ids = $request->input('ids', []);
         foreach ($ids as $id) {
             $pendaftaran = TaPendaftaran::find($id);
-            if ($pendaftaran) {
+            if ($pendaftaran && $pendaftaran->dosen) { // Hanya untuk judul dosen
                 $statusDisetujui = \App\Models\RefStatusTa::where('name', 'disetujui')->first();
                 if ($statusDisetujui) {
                     $pendaftaran->status_id = $statusDisetujui->id;
                     $pendaftaran->save();
+
+                    // Buat entry di mahasiswa_tugas_akhirs untuk transaksi yang ada
+                    $transaksis = TaPendaftaranTransaksi::where('ta_pendaftaran_id', $id)->where('active', 1)->get();
+                    foreach ($transaksis as $transaksi) {
+                        if ($transaksi->ref_status_ta_id == $statusDisetujui->id) { // Jika sudah disetujui
+                            MahasiswaTugasAkhir::create([
+                                'mahasiswa' => $transaksi->username,
+                                'ta_pendaftaran_id' => $id,
+                                'judul' => $pendaftaran->judul,
+                                'pembimbing' => null,
+                                'pengulas_1' => null,
+                                'pengulas_2' => null,
+                                'created_by' => session('username') ?? 'system',
+                                'updated_by' => session('username') ?? 'system',
+                                'active' => true,
+                            ]);
+                        }
+                    }
                 }
             }
         }
@@ -869,11 +915,24 @@ class TugasAkhirController extends Controller
         $ids = $request->input('ids', []);
         foreach ($ids as $id) {
             $pendaftaran = TaPendaftaran::find($id);
-            if ($pendaftaran) {
+            if ($pendaftaran && !$pendaftaran->dosen) { // Hanya untuk judul mahasiswa
                 $statusDisetujui = \App\Models\RefStatusTa::where('name', 'disetujui')->first();
                 if ($statusDisetujui) {
                     $pendaftaran->status_id = $statusDisetujui->id;
                     $pendaftaran->save();
+
+                    // Buat entry di mahasiswa_tugas_akhirs
+                    MahasiswaTugasAkhir::create([
+                        'mahasiswa' => $pendaftaran->created_by,
+                        'ta_pendaftaran_id' => $id,
+                        'judul' => $pendaftaran->judul,
+                        'pembimbing' => null,
+                        'pengulas_1' => null,
+                        'pengulas_2' => null,
+                        'created_by' => session('username') ?? 'system',
+                        'updated_by' => session('username') ?? 'system',
+                        'active' => true,
+                    ]);
                 }
             }
         }
@@ -883,19 +942,25 @@ class TugasAkhirController extends Controller
     public function koordinatorPendaftaran()
     {
         // Fetch judul dari dosen (Batch I) dengan mahasiswa tertarik
-        $judul_dosen = TaPendaftaran::where('active', 1)->whereNotNull('dosen')->with(['transaksi' => function($q) {
-            $q->where('active', 1);
-        }])->get()->map(function($jd) {
-            $usernames = $jd->transaksi->pluck('username');
-            $namaMap = \App\Models\FtiData::whereIn('username', $usernames)->pluck('nama', 'username');
-            $jd->interested_students = $jd->transaksi->map(function($transaksi) use ($namaMap) {
-                return [
-                    'username' => $transaksi->username,
-                    'nama' => $namaMap[$transaksi->username] ?? $transaksi->username
-                ];
-            })->toArray();
-            return $jd;
-        });
+        $judul_dosen = TaPendaftaran::leftJoin('fti_datas', 'ta_pendaftaran.dosen', '=', 'fti_datas.username')
+            ->select('ta_pendaftaran.*', \DB::raw('COALESCE(fti_datas.nama, ta_pendaftaran.dosen) as dosen_nama'))
+            ->where('ta_pendaftaran.active', 1)
+            ->whereNotNull('ta_pendaftaran.dosen')
+            ->with(['transaksi' => function($q) {
+                $q->where('active', 1);
+            }])
+            ->get()
+            ->map(function($jd) {
+                $usernames = $jd->transaksi->pluck('username');
+                $namaMap = \App\Models\FtiData::whereIn('username', $usernames)->pluck('nama', 'username');
+                $jd->interested_students = $jd->transaksi->map(function($transaksi) use ($namaMap) {
+                    return [
+                        'username' => $transaksi->username,
+                        'nama' => $namaMap[$transaksi->username] ?? $transaksi->username
+                    ];
+                })->toArray();
+                return $jd;
+            });
 
         // Fetch judul dari mahasiswa (Batch II)
         $judul_mahasiswa = TaPendaftaran::leftJoin('fti_datas', 'ta_pendaftaran.created_by', '=', 'fti_datas.username')
@@ -937,8 +1002,8 @@ class TugasAkhirController extends Controller
                 'ta_pendaftaran.updated_at',
                 \DB::raw('COALESCE(creator.nama, ta_pendaftaran.created_by) as creator_nama'),
                 \DB::raw('COALESCE(creator.nim, "") as creator_nim'),
-                \DB::raw('COALESCE(student.nama, ta_pendaftaran_transaksi.username, creator.nama, ta_pendaftaran.created_by) as nama'),
-                \DB::raw('COALESCE(student.nim, creator.nim, "") as nim'),
+                \DB::raw('CASE WHEN ta_pendaftaran.dosen IS NOT NULL THEN COALESCE(student.nama, ta_pendaftaran_transaksi.username) ELSE COALESCE(creator.nama, ta_pendaftaran.created_by) END as nama'),
+                \DB::raw('CASE WHEN ta_pendaftaran.dosen IS NOT NULL THEN COALESCE(student.nim, "") ELSE COALESCE(creator.nim, "") END as nim'),
                 \DB::raw('ta_pendaftaran_transaksi.username as student_username')
             )
             ->where('ta_pendaftaran.status_id', $statusDisetujui->id)
@@ -965,12 +1030,17 @@ class TugasAkhirController extends Controller
                 'creator.nim',
                 'student.nama',
                 'student.nim',
-                'ta_pendaftaran_transaksi.username'
+                'ta_pendaftaran_transaksi.username',
+                'ta_pendaftaran.dosen'
             )
             ->with(['transaksi' => function($q) {
                 $q->where('active', 1);
             }])
-            ->get();
+            ->get()
+            ->filter(function($title) {
+                // Hanya tampilkan judul yang memiliki mahasiswa
+                return !is_null($title->student_username) || is_null($title->dosen);
+            });
 
         // Fetch lecturers from fti_datas where role is 'lecturer'
         $lecturers = \App\Models\FtiData::where('role', 'lecturer')->get();
