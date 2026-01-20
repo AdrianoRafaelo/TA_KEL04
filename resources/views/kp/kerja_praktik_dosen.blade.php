@@ -129,6 +129,13 @@ $(document).ready(function() {
                     logContent += '<div class="col-12"><h6 class="fw-bold text-primary">' + student.nama + '</h6>';
                     student.aktivitas.forEach(aktivitas => {
                         const detailId = 'detail-' + aktivitas.id;
+                        let actionButtons = '';
+                        if (aktivitas.status === 'menunggu') {
+                            actionButtons = '<div class="d-flex gap-1 mt-2">' +
+                                '<button class="btn btn-success btn-sm" onclick="approveAktivitas(' + aktivitas.id + ', \'approve\')">Terima</button>' +
+                                '<button class="btn btn-danger btn-sm" onclick="approveAktivitas(' + aktivitas.id + ', \'reject\')">Tolak</button>' +
+                            '</div>';
+                        }
                         logContent += '<div class="mb-3 p-3 bg-white rounded-3 shadow-sm log-item" onclick="toggleLogDetail(\'' + detailId + '\')" style="cursor: pointer;">' +
                             '<div class="d-flex align-items-center justify-content-between">' +
                                 '<h6 class="fw-bold mb-0 text-primary" style="font-size: 0.95rem;">' + aktivitas.judul + '</h6>' +
@@ -138,6 +145,7 @@ $(document).ready(function() {
                                 '<div class="border-top pt-2 mt-2">' +
                                     '<p class="small text-muted mb-1" style="font-size: 0.85rem;">' + (aktivitas.deskripsi || 'tidak ada') + '</p>' +
                                     '<small class="text-muted" style="font-size: 0.75rem;">' + new Date(aktivitas.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + '</small>' +
+                                    actionButtons +
                                 '</div>' +
                             '</div>' +
                         '</div>';
@@ -328,6 +336,31 @@ $(document).ready(function() {
         .then(data => {
             if (data.success) {
                 alert('Status topik khusus berhasil diperbarui');
+                location.reload();
+            } else {
+                alert('Kesalahan: ' + (data.message || 'Terjadi kesalahan'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memperbarui status');
+        });
+    };
+
+    // Approve aktivitas
+    window.approveAktivitas = function(id, action) {
+        fetch('{{ route("kp.aktivitas.approve") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ id: id, action: action })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Status aktivitas berhasil diperbarui');
                 location.reload();
             } else {
                 alert('Kesalahan: ' + (data.message || 'Terjadi kesalahan'));

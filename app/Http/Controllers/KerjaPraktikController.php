@@ -994,6 +994,7 @@ class KerjaPraktikController extends Controller
                 'original_name' => $originalName,
                 'created_by' => $user['username'],
                 'active' => true,
+                'status' => 'menunggu',
             ]);
         }
 
@@ -1274,6 +1275,20 @@ class KerjaPraktikController extends Controller
         $topik->save();
 
         return response()->json(['success' => true, 'message' => 'Status topik khusus berhasil diperbarui']);
+    }
+
+    public function approveAktivitas(Request $request)
+    {
+        $request->validate([
+            'id' => 'required|exists:kp_aktivitas,id',
+            'action' => 'required|in:approve,reject',
+        ]);
+
+        $aktivitas = KpAktivitas::find($request->id);
+        $aktivitas->status = $request->action === 'approve' ? 'diterima' : 'ditolak';
+        $aktivitas->save();
+
+        return response()->json(['success' => true, 'message' => 'Status aktivitas berhasil diperbarui']);
     }
 
     public function getStudentLogActivities($username)

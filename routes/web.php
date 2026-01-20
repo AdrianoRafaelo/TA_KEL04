@@ -63,6 +63,7 @@ Route::post('/kp/bimbingan/store', [KerjaPraktikController::class, 'storeBimbing
 Route::post('/kp/topik-khusus/store', [KerjaPraktikController::class, 'storeTopikKhusus'])->name('kp.topik-khusus.store')->middleware('auth.session');
 Route::post('/kp/bimbingan/approve', [KerjaPraktikController::class, 'approveBimbingan'])->name('kp.bimbingan.approve')->middleware('auth.session');
 Route::post('/kp/topik-khusus/approve', [KerjaPraktikController::class, 'approveTopikKhusus'])->name('kp.topik-khusus.approve')->middleware('auth.session');
+Route::post('/kp/aktivitas/approve', [KerjaPraktikController::class, 'approveAktivitas'])->name('kp.aktivitas.approve')->middleware('auth.session');
 Route::post('/kerja-praktik/store-log-activity', [KerjaPraktikController::class, 'storeLogActivity'])->name('kerja-praktik.store-log-activity')->middleware('auth.session');
 Route::get('/kerja-praktik/get-log-activities', [KerjaPraktikController::class, 'getLogActivities'])->name('kerja-praktik.get-log-activities')->middleware('auth.session');
 Route::get('/kerja-praktik/view-log-activity/{id}', [KerjaPraktikController::class, 'viewLogActivity'])->name('kerja-praktik.view-log-activity')->middleware('auth.session');

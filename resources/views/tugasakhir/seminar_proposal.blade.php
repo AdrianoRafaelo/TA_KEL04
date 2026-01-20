@@ -110,7 +110,7 @@
                 @forelse($pengujiAssignments as $index => $assignment)
                 <tr class="hover-row">
                     <td>{{ $index + 1 }}.</td>
-                    <td class="fw-semibold">{{ $assignment->mahasiswa }}</td>
+                    <td class="fw-semibold">{{ $assignment->nama }} ({{ $assignment->nim }})</td>
                     <td>{{ $assignment->judul }}</td>
                     <td>{{ $assignment->pembimbing }}</td>
                     <td>{{ $assignment->pengulas_1 }}</td>

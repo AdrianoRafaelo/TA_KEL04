@@ -1058,21 +1058,17 @@ class TugasAkhirController extends Controller
             $taPendaftaran = TaPendaftaran::find($titleId);
             if (!$taPendaftaran) continue;
 
-            // Delete existing assignments for this title
-            MahasiswaTugasAkhir::where('judul', $taPendaftaran->judul)->delete();
-
-            // Create new assignment
-            MahasiswaTugasAkhir::create([
-                'mahasiswa' => $taPendaftaran->created_by,
-                'ta_pendaftaran_id' => $titleId,
-                'judul' => $taPendaftaran->judul,
-                'pembimbing' => $data['pembimbing'] ?? null,
-                'pengulas_1' => $data['pengulas1'] ?? null,
-                'pengulas_2' => $data['pengulas2'] ?? null,
-                'created_by' => $username,
-                'updated_by' => $username,
-                'active' => true,
-            ]);
+            // Find existing assignment
+            $assignment = MahasiswaTugasAkhir::where('ta_pendaftaran_id', $titleId)->where('active', true)->first();
+            if ($assignment) {
+                // Update assignment
+                $assignment->update([
+                    'pembimbing' => $data['pembimbing'] ?? null,
+                    'pengulas_1' => $data['pengulas1'] ?? null,
+                    'pengulas_2' => $data['pengulas2'] ?? null,
+                    'updated_by' => $username,
+                ]);
+            }
         }
 
         return redirect()->back()->with('success', 'Data dosen berhasil disimpan');

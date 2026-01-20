@@ -17,7 +17,8 @@ class KpAktivitas extends Model
         'updated_at',
         'created_by',
         'updated_by',
-        'active'
+        'active',
+        'status'
     ];
 
     public function mahasiswa()
