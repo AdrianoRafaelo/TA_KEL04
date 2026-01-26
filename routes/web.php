@@ -118,10 +118,14 @@ Route::put('/sidang-akhir-mahasiswa/update-file/{field}', [TugasAkhirController:
 Route::delete('/sidang-akhir-mahasiswa/delete-file/{field}', [TugasAkhirController::class, 'deleteSidangAkhirFile'])->name('sidang.akhir.mahasiswa.delete.file')->middleware('auth.session');
 Route::post('/sidang-akhir-mahasiswa/upload-revisi', [TugasAkhirController::class, 'uploadRevisiSidangAkhir'])->name('sidang.akhir.mahasiswa.upload.revisi')->middleware('auth.session');
 Route::get('/bimbingan-mahasiswa', [TugasAkhirController::class, 'bimbinganMahasiswa'])->name('bimbingan.mahasiswa')->middleware('auth.session');
+Route::get('/bimbingan-dosen', [TugasAkhirController::class, 'bimbinganDosen'])->name('bimbingan.dosen')->middleware('auth.session');
 Route::post('/bimbingan-mahasiswa/store', [TugasAkhirController::class, 'storeBimbingan'])->name('bimbingan.mahasiswa.store')->middleware('auth.session');
 Route::put('/bimbingan-mahasiswa/update-file/{field}', [TugasAkhirController::class, 'updateSkripsiFile'])->name('bimbingan.mahasiswa.update.file')->middleware('auth.session');
 Route::delete('/bimbingan-mahasiswa/delete-file/{field}', [TugasAkhirController::class, 'deleteSkripsiFile'])->name('bimbingan.mahasiswa.delete.file')->middleware('auth.session');
 Route::post('/bimbingan-mahasiswa/upload-skripsi', [TugasAkhirController::class, 'uploadSkripsiMahasiswa'])->name('bimbingan.mahasiswa.upload.skripsi')->middleware('auth.session');
+Route::post('/bimbingan-dosen/approve/{id}', [TugasAkhirController::class, 'approveBimbingan'])->name('bimbingan.dosen.approve')->middleware('auth.session');
+Route::post('/bimbingan-dosen/reject/{id}', [TugasAkhirController::class, 'rejectBimbingan'])->name('bimbingan.dosen.reject')->middleware('auth.session');
+Route::get('/bimbingan-dosen/get-logs/{mahasiswa}', [TugasAkhirController::class, 'getBimbinganLogs'])->name('bimbingan.dosen.get.logs')->middleware('auth.session');
 Route::get('/koordinator-pendaftaran', [TugasAkhirController::class, 'koordinatorPendaftaran'])->name('koordinator.pendaftaran')->middleware('auth.session');
 Route::post('/koordinator/terima-judul-batch1', [TugasAkhirController::class, 'terimaJudulBatch1'])->name('koordinator.terima.judul.batch1')->middleware('auth.session');
 Route::post('/koordinator/terima-judul-batch2', [TugasAkhirController::class, 'terimaJudulBatch2'])->name('koordinator.terima.judul.batch2')->middleware('auth.session');
@@ -214,3 +218,13 @@ Route::post('/mbkm/upload-jadwal-seminar', [MbkmController::class, 'uploadJadwal
 Route::post('/mbkm/store-program-nonmitra', [MbkmController::class, 'storeProgramNonmitra'])->name('mbkm.store.program-nonmitra')->middleware('auth.session');
 Route::put('/mbkm/program-nonmitra/{id}', [MbkmController::class, 'updateProgramNonmitra'])->name('mbkm.update.program-nonmitra')->middleware('auth.session');
 Route::delete('/mbkm/program-nonmitra/{id}', [MbkmController::class, 'deleteProgramNonmitra'])->name('mbkm.delete.program-nonmitra')->middleware('auth.session');
+
+// Repository Routes
+Route::get('/repository', [App\Http\Controllers\RepositoryController::class, 'index'])->name('repository.index')->middleware('auth.session');
+Route::get('/repository/search', [App\Http\Controllers\RepositoryController::class, 'search'])->name('repository.search')->middleware('auth.session');
+Route::post('/repository/upload', [App\Http\Controllers\RepositoryController::class, 'upload'])->name('repository.upload')->middleware('auth.session');
+Route::get('/repository/download/{id}', [App\Http\Controllers\RepositoryController::class, 'download'])->name('repository.download')->middleware('auth.session');
+Route::get('/repository/edit/{id}', [App\Http\Controllers\RepositoryController::class, 'edit'])->name('repository.edit')->middleware('auth.session');
+Route::put('/repository/update/{id}', [App\Http\Controllers\RepositoryController::class, 'update'])->name('repository.update')->middleware('auth.session');
+Route::delete('/repository/delete/{id}', [App\Http\Controllers\RepositoryController::class, 'destroy'])->name('repository.destroy')->middleware('auth.session');
+Route::post('/repository/bulk-add-ta', [App\Http\Controllers\RepositoryController::class, 'bulkAddFromTa'])->name('repository.bulk-add-ta')->middleware('auth.session');

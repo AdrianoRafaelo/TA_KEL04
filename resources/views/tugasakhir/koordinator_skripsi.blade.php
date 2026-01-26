@@ -91,7 +91,8 @@
     </div>
 
     <!-- Footer -->
-    <div class="d-flex justify-content-end mt-3">
+    <div class="d-flex justify-content-end mt-3 gap-2">
+        <button class="btn btn-primary" id="sendToRepository">Kirim ke E-Repository</button>
         <button class="btn btn-success" id="downloadSelected">Download Terpilih</button>
     </div>
 </div>
@@ -162,6 +163,39 @@ $(document).ready(function(){
     // Pilih semua
     $('#selectAll').change(function(){
         $('.skripsi-checkbox').prop('checked', this.checked);
+    });
+
+    // Kirim ke E-Repository
+    $('#sendToRepository').click(function(){
+        const selected = $('.skripsi-checkbox:checked');
+        if (selected.length === 0) {
+            alert('Pilih setidaknya satu skripsi untuk dikirim ke repository.');
+            return;
+        }
+
+        const skripsiIds = selected.map(function(){
+            return $(this).val();
+        }).get();
+
+        if (confirm(`Kirim ${skripsiIds.length} dokumen skripsi ke E-Repository?`)) {
+            $.ajax({
+                url: '{{ route("repository.bulk-add-ta") }}',
+                method: 'POST',
+                data: {
+                    skripsi_ids: skripsiIds,
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function(response) {
+                    alert(response.message);
+                    // Uncheck all
+                    $('.skripsi-checkbox').prop('checked', false);
+                    $('#selectAll').prop('checked', false);
+                },
+                error: function(xhr) {
+                    alert('Terjadi kesalahan: ' + xhr.responseJSON?.message || 'Unknown error');
+                }
+            });
+        }
     });
 
     // Download file terpilih

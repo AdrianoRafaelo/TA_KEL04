@@ -71,4 +71,31 @@ class TaSidangAkhir extends Model
     {
         return $this->belongsTo(FtiData::class, 'pengulas_2');
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($sidang) {
+            // Create repository items when final TA document is uploaded
+            if ($sidang->file_dokumen_ta && $sidang->status !== 'rejected') {
+                $user = User::where('nim', $sidang->mahasiswa)->first();
+                $title = $sidang->judul ?? 'Dokumen TA Final';
+
+                RepositoryItem::updateOrCreate(
+                    ['file_path' => $sidang->file_dokumen_ta],
+                    [
+                        'type' => 'ta',
+                        'title' => $title,
+                        'author' => $sidang->mahasiswa,
+                        'year' => date('Y'),
+                        'file_path' => $sidang->file_dokumen_ta,
+                        'description' => 'Dokumen Tugas Akhir - Sidang Akhir',
+                        'category' => 'Tugas Akhir',
+                        'user_id' => $user ? $user->id : null,
+                    ]
+                );
+            }
+        });
+    }
 }

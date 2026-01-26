@@ -66,7 +66,7 @@
                                                 style="font-size: 0.765rem;"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#detailModal"
-                                                onclick="showDetail('{{ $m->nama }}', '{{ addslashes($m->judul) }}', '{{ $m->nim }}', '{{ $m->prodi }}')">
+                                                onclick="showDetail('{{ $m->nama }}', '{{ addslashes($m->judul) }}', '{{ $m->nim }}', '{{ $m->prodi }}', '{{ $m->mahasiswa }}')">
                                             Selengkapnya
                                         </button>
                                     </td>
@@ -83,34 +83,78 @@
 
 <!-- MODAL: Detail Mahasiswa -->
 <div class="modal fade" id="detailModal" tabindex="-1">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold">Detail Mahasiswa</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold">
+                    <i class="bi bi-person-circle me-2"></i>Detail Mahasiswa & Log Bimbingan
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <div class="row g-3">
-                    <div class="col-12">
-                        <label class="form-label small text-muted">Nama</label>
-                        <p class="mb-0 fw-medium" id="modal-nama">-</p>
+            <div class="modal-body p-4">
+                <!-- Student Info Card -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title fw-bold mb-3">
+                            <i class="bi bi-info-circle text-primary me-2"></i>Informasi Mahasiswa
+                        </h6>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted fw-semibold">Nama</label>
+                                <p class="mb-0 fw-medium fs-6" id="modal-nama">-</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted fw-semibold">NIM</label>
+                                <p class="mb-0 fs-6" id="modal-nim">-</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted fw-semibold">Program Studi</label>
+                                <p class="mb-0 fs-6" id="modal-prodi">-</p>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small text-muted fw-semibold">Judul TA</label>
+                                <p class="mb-0 small" id="modal-judul">-</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-12">
-                        <label class="form-label small text-muted">NIM</label>
-                        <p class="mb-0" id="modal-nim">-</p>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label small text-muted">Program Studi</label>
-                        <p class="mb-0" id="modal-prodi">-</p>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label small text-muted">Judul TA</label>
-                        <p class="mb-0 small" id="modal-judul">-</p>
+                </div>
+
+                <!-- Bimbingan Logs Section -->
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <h6 class="card-title fw-bold mb-3">
+                            <i class="bi bi-journal-text text-primary me-2"></i>Log Bimbingan
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle" id="bimbingan-table">
+                                <thead class="table-primary">
+                                    <tr>
+                                        <th class="fw-semibold">Tanggal</th>
+                                        <th class="fw-semibold">Topik Pembahasan</th>
+                                        <th class="fw-semibold">Tugas Selanjutnya</th>
+                                        <th class="fw-semibold text-center">Status</th>
+                                        <th class="fw-semibold text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bimbingan-logs">
+                                    <tr>
+                                        <td colspan="5" class="text-center text-muted py-4">
+                                            <div class="d-flex flex-column align-items-center">
+                                                <i class="bi bi-hourglass-split fs-1 text-muted mb-2"></i>
+                                                <span>Memuat data bimbingan...</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Tutup</button>
+            <div class="modal-footer border-0 bg-light">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Tutup
+                </button>
             </div>
         </div>
     </div>
@@ -119,11 +163,107 @@
 
 @section('scripts')
 <script>
-function showDetail(nama, judul, nim, prodi) {
+function showDetail(nama, judul, nim, prodi, mahasiswa) {
     document.getElementById('modal-nama').textContent = nama;
     document.getElementById('modal-nim').textContent = nim;
     document.getElementById('modal-prodi').textContent = prodi;
     document.getElementById('modal-judul').textContent = judul;
+
+    // Fetch bimbingan logs from server
+    const logsContainer = document.getElementById('bimbingan-logs');
+    logsContainer.innerHTML = '<p class="text-muted">Memuat data...</p>';
+
+    fetch(`/bimbingan-dosen/get-logs/${mahasiswa}`, {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(bimbingans => {
+        logsContainer.innerHTML = '';
+
+        if (bimbingans && bimbingans.length > 0) {
+            bimbingans.forEach(function(bimbingan) {
+                const row = document.createElement('tr');
+                const statusBadge = bimbingan.status === 'approved' ? '<span class="badge bg-success">Disetujui</span>' :
+                                   bimbingan.status === 'rejected' ? '<span class="badge bg-danger">Ditolak</span>' :
+                                   '<span class="badge bg-warning">Menunggu</span>';
+
+                const actionButtons = bimbingan.status === 'pending' ?
+                    `<button class="btn btn-success btn-sm me-1" onclick="approveBimbingan(${bimbingan.id})">Setujui</button>
+                     <button class="btn btn-danger btn-sm" onclick="rejectBimbingan(${bimbingan.id})">Tolak</button>` :
+                    '-';
+
+                row.innerHTML = `
+                    <td>${bimbingan.tanggal}</td>
+                    <td>${bimbingan.topik_pembahasan}</td>
+                    <td>${bimbingan.tugas_selanjutnya || '-'}</td>
+                    <td>${statusBadge}</td>
+                    <td>${actionButtons}</td>
+                `;
+                logsContainer.appendChild(row);
+            });
+        } else {
+            logsContainer.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Belum ada log bimbingan.</td></tr>';
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching bimbingan logs:', error);
+        logsContainer.innerHTML = '<p class="text-danger">Gagal memuat data bimbingan.</p>';
+    });
+}
+
+function approveBimbingan(id) {
+    if (confirm('Apakah Anda yakin ingin menyetujui log bimbingan ini?')) {
+        // Send AJAX request to approve
+        fetch(`/bimbingan-dosen/approve/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Log bimbingan berhasil disetujui');
+                location.reload();
+            } else {
+                alert('Gagal menyetujui log bimbingan: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memproses permintaan');
+        });
+    }
+}
+
+function rejectBimbingan(id) {
+    if (confirm('Apakah Anda yakin ingin menolak log bimbingan ini?')) {
+        // Send AJAX request to reject
+        fetch(`/bimbingan-dosen/reject/${id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Log bimbingan berhasil ditolak');
+                location.reload();
+            } else {
+                alert('Gagal menolak log bimbingan: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memproses permintaan');
+        });
+    }
 }
 </script>
 @endsection

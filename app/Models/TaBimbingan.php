@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class TaBimbingan extends Model
 {
     protected $fillable = [
-        'ta_pendaftaran_id',
+        'mahasiswa_id',
         'tanggal',
         'topik_pembahasan',
         'tugas_selanjutnya',
@@ -22,9 +22,9 @@ class TaBimbingan extends Model
     ];
 
     // Relationships
-    public function taPendaftaran()
+    public function mahasiswaTa()
     {
-        return $this->belongsTo(TaPendaftaran::class, 'ta_pendaftaran_id');
+        return $this->belongsTo(MahasiswaTugasAkhir::class, 'mahasiswa_id');
     }
 
     public function createdBy()

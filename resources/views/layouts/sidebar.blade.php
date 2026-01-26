@@ -81,6 +81,16 @@
         <span class="menu-title">Dashboard</span>
       </a>
     </li>
+    <li class="nav-item menu-items">
+      <a class="nav-link @if(request()->is('repository*')) active @endif" href="{{ url('/repository') }}" data-toggle="tooltip" data-placement="right" title="E-Repository">
+        <span class="menu-icon">
+          <span class="icon-bg bg-success rounded-circle">
+            <i class="mdi mdi-file-document text-white"></i>
+          </span>
+        </span>
+        <span class="menu-title">E-Repository</span>
+      </a>
+    </li>
     @if (session('role') == 'Admin')
       <li class="nav-item menu-items">
         <a class="nav-link @if(request()->is('admin/roles*')) active @endif" href="{{ url('/admin/roles') }}">

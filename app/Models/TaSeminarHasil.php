@@ -60,4 +60,31 @@ class TaSeminarHasil extends Model
     {
         return $this->belongsTo(TaSeminarProposal::class, 'ta_seminar_proposals_id');
     }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saved(function ($seminar) {
+            // Create repository items when TA document is uploaded
+            if ($seminar->file_dokumen_ta && $seminar->status !== 'rejected') {
+                $user = User::where('nim', $seminar->mahasiswa)->first();
+                $title = $seminar->judul ?? 'Dokumen TA';
+
+                RepositoryItem::updateOrCreate(
+                    ['file_path' => $seminar->file_dokumen_ta],
+                    [
+                        'type' => 'ta',
+                        'title' => $title,
+                        'author' => $seminar->mahasiswa,
+                        'year' => date('Y'),
+                        'file_path' => $seminar->file_dokumen_ta,
+                        'description' => 'Dokumen Tugas Akhir - Seminar Hasil',
+                        'category' => 'Tugas Akhir',
+                        'user_id' => $user ? $user->id : null,
+                    ]
+                );
+            }
+        });
+    }
 }

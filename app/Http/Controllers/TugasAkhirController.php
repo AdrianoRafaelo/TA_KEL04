@@ -833,20 +833,20 @@ class TugasAkhirController extends Controller
     {
         $username = Session::get('username') ?? null;
 
-        // Get mahasiswa id from fti_datas
-        $mahasiswa = FtiData::where('username', $username)->first();
-        $mahasiswaId = $mahasiswa ? $mahasiswa->id : null;
+        // Cari data mahasiswa tugas akhir
+        $mahasiswaTa = MahasiswaTugasAkhir::where('mahasiswa', $username)->where('active', true)->first();
 
         // Ambil data bimbingan mahasiswa dari database
-        $bimbingans = $mahasiswaId ? TaBimbingan::where('mahasiswa_id', $mahasiswaId)
+        $bimbingans = $mahasiswaTa ? TaBimbingan::where('mahasiswa_id', $mahasiswaTa->id)
             ->orderBy('tanggal', 'desc')
             ->get() : collect();
 
         // Ambil data skripsi mahasiswa
-        $skripsi = TaSkripsi::where('mahasiswa', $username)->first();
+        $skripsi = TaSkripsi::where('mahasiswa_tugas_akhir_id', $mahasiswaTa ? $mahasiswaTa->id : null)->first();
 
         return view('tugasakhir.bimbingan_mahasiswa', compact('bimbingans', 'skripsi'));
     }
+
 
     public function storeBimbingan(Request $request)
     {
@@ -874,6 +874,88 @@ class TugasAkhirController extends Controller
         ]);
 
         return response()->json(['success' => true, 'message' => 'Log bimbingan berhasil ditambahkan!']);
+    }
+
+    public function approveBimbingan($id)
+    {
+        $bimbingan = TaBimbingan::findOrFail($id);
+
+        // Check if the current user is the supervisor for this student
+        $username = Session::get('username') ?? null;
+        $ftiData = \App\Models\FtiData::where('username', $username)->first();
+        $namaDosen = $ftiData ? $ftiData->nama : $username;
+
+        $mahasiswaTa = $bimbingan->mahasiswaTa;
+
+        if (!$mahasiswaTa || $mahasiswaTa->pembimbing !== $namaDosen) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses untuk menyetujui log bimbingan ini.'
+            ], 403);
+        }
+
+        $bimbingan->update([
+            'status' => 'approved',
+            'updated_by' => $username,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Log bimbingan berhasil disetujui.'
+        ]);
+    }
+
+    public function rejectBimbingan($id)
+    {
+        $bimbingan = TaBimbingan::findOrFail($id);
+
+        // Check if the current user is the supervisor for this student
+        $username = Session::get('username') ?? null;
+        $ftiData = \App\Models\FtiData::where('username', $username)->first();
+        $namaDosen = $ftiData ? $ftiData->nama : $username;
+
+        $mahasiswaTa = $bimbingan->mahasiswaTa;
+
+        if (!$mahasiswaTa || $mahasiswaTa->pembimbing !== $namaDosen) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Anda tidak memiliki akses untuk menolak log bimbingan ini.'
+            ], 403);
+        }
+
+        $bimbingan->update([
+            'status' => 'rejected',
+            'updated_by' => $username,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Log bimbingan berhasil ditolak.'
+        ]);
+    }
+
+    public function getBimbinganLogs($mahasiswa)
+    {
+        // For debugging: temporarily return all bimbingan data
+        // TODO: Remove this and implement proper authorization
+        $bimbingans = TaBimbingan::with('mahasiswaTa')
+            ->orderBy('tanggal', 'desc')
+            ->get()
+            ->filter(function($bimbingan) use ($mahasiswa) {
+                return $bimbingan->mahasiswaTa && $bimbingan->mahasiswaTa->mahasiswa === $mahasiswa;
+            })
+            ->map(function($bimbingan) {
+                return [
+                    'id' => $bimbingan->id,
+                    'tanggal' => $bimbingan->tanggal->format('d M Y'),
+                    'topik_pembahasan' => $bimbingan->topik_pembahasan,
+                    'tugas_selanjutnya' => $bimbingan->tugas_selanjutnya,
+                    'status' => $bimbingan->status,
+                ];
+            })
+            ->values();
+
+        return response()->json($bimbingans);
     }
 
     public function terimaJudulBatch1(Request $request)
