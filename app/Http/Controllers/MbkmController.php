@@ -285,9 +285,11 @@ class MbkmController extends Controller
             return redirect()->route('mbkm.seminar-mhs')->with('error', 'User tidak ditemukan. Silakan hubungi administrator.');
         }
 
-        $seminar = SeminarMbkm::where('mahasiswa_id', $user->id ?? null)->where('active', true)->first();
+        $seminars = SeminarMbkm::with('mkKonversi.kurikulum')->where('mahasiswa_id', $user->id ?? null)->where('active', true)->get();
 
-        return view('mbkm.seminar_mhs', compact('user', 'seminar'));
+        $mkKonversis = \App\Models\MkKonversi::with('kurikulum')->where('mahasiswa_id', $user->id)->where('status', 'approved')->where('active', '1')->get();
+
+        return view('mbkm.seminar_mhs', compact('user', 'seminars', 'mkKonversis'));
     }
 
     public function pendaftarankoordinator()
@@ -855,6 +857,7 @@ class MbkmController extends Controller
     public function storeSeminarEkotek(Request $request)
     {
         $request->validate([
+            'mk_konversi_id' => 'required|exists:mk_konversis,id',
             'cpmk_ekotek' => 'required|string',
             'laporan_ekotek_file' => 'required|file|mimes:pdf,doc,docx|max:51200',
         ]);
@@ -864,7 +867,13 @@ class MbkmController extends Controller
             return redirect()->route('mbkm.seminar-mhs')->with('error', 'User tidak ditemukan. Silakan hubungi administrator.');
         }
 
-        $seminar = SeminarMbkm::firstOrNew(['mahasiswa_id' => $user->id, 'active' => true]);
+        // Ensure the mk_konversi belongs to the user
+        $mkKonversi = \App\Models\MkKonversi::where('id', $request->mk_konversi_id)->where('mahasiswa_id', $user->id)->first();
+        if (!$mkKonversi) {
+            return redirect()->route('mbkm.seminar-mhs')->with('error', 'Konversi MK tidak valid.');
+        }
+
+        $seminar = SeminarMbkm::firstOrNew(['mahasiswa_id' => $user->id, 'mk_konversi_id' => $request->mk_konversi_id, 'active' => true]);
 
         if ($request->hasFile('laporan_ekotek_file')) {
             $ekotekPath = $request->file('laporan_ekotek_file')->store('mbkm/seminar/ekotek', 'public');

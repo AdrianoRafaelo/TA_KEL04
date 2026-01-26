@@ -10,6 +10,7 @@ class SeminarMbkm extends Model
 
     protected $fillable = [
         'mahasiswa_id',
+        'mk_konversi_id',
         'is_magang',
         'cpmk_ekotek',
         'cpmk_pmb',
@@ -62,5 +63,10 @@ class SeminarMbkm extends Model
     public function mahasiswa()
     {
         return $this->belongsTo(FtiData::class, 'mahasiswa_id');
+    }
+
+    public function mkKonversi()
+    {
+        return $this->belongsTo(MkKonversi::class, 'mk_konversi_id');
     }
 }

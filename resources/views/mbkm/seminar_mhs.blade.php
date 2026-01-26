@@ -78,57 +78,27 @@
                     <i class="mdi mdi-upload"></i> Unggah Laporan MBKM
                 </h5>
 
-                <div class="mb-4">
-                    <label class="fw-bold">Apakah kegiatan termasuk magang?</label><br>
-                    <label class="me-3"><input type="radio" name="is_magang_ekotek" value="1" {{ old('is_magang', $seminar->is_magang ?? false) ? 'checked' : '' }}> Ya</label>
-                    <label><input type="radio" name="is_magang_ekotek" value="0" {{ !old('is_magang', $seminar->is_magang ?? false) ? 'checked' : '' }}> Tidak</label>
-                </div>
-
-                <form id="ekotek-form" action="{{ route('mbkm.seminar-ekotek.store') }}" method="POST" enctype="multipart/form-data">
-                    @csrf
-                    <input type="hidden" name="is_magang" value="{{ old('is_magang_ekotek', $seminar->is_magang ?? 0) }}">
-
-                <!-- ===================== -->
-                <!-- Laporan EKOTEK -->
-                <!-- ===================== -->
+                @foreach($mkKonversis as $mkKonversi)
                 <div class="mb-5">
-                    <h6 class="fw-bold">Laporan EKOTEK</h6>
-                    <label class="fw-bold d-block mb-1">CPMK</label>
-                    <textarea class="form-control mb-3" rows="4" name="cpmk_ekotek" placeholder="Masukkan Capaian Pembelajaran Mata Kuliah (CPMK) untuk laporan EKOTEK">{{ old('cpmk_ekotek', $seminar->cpmk_ekotek ?? '') }}</textarea>
-
-                    <label class="fw-bold d-block mb-1">Unggah laporan MK 1</label>
-                    <div class="input-group mb-2" style="max-width: 350px;">
-                        <input type="file" class="form-control" name="laporan_ekotek_file" accept=".pdf,.doc,.docx">
-                    </div>
-
-                    <a href="#" class="small text-primary d-block mb-3">Template laporan</a>
-
-                    <button type="submit" class="btn btn-dark px-4">Submit</button>
-                </form>
-                </div>
-
-                <hr>
-
-                <!-- ===================== -->
-                <!-- Laporan PMB -->
-                <!-- ===================== -->
-                <div class="mt-4 mb-5">
+                    <h6 class="fw-bold">Laporan ({{ $mkKonversi->kurikulum->nama_mk }})</h6>
                     <div class="mb-4">
                         <label class="fw-bold">Apakah kegiatan termasuk magang?</label><br>
-                        <label class="me-3"><input type="radio" name="is_magang_pmb" value="1" {{ old('is_magang', $seminar->is_magang ?? false) ? 'checked' : '' }}> Ya</label>
-                        <label><input type="radio" name="is_magang_pmb" value="0" {{ !old('is_magang', $seminar->is_magang ?? false) ? 'checked' : '' }}> Tidak</label>
+                        <label class="me-3"><input type="radio" name="is_magang_ekotek_{{ $mkKonversi->id }}" value="1" {{ old('is_magang', $seminars->where('mk_konversi_id', $mkKonversi->id)->first()->is_magang ?? false) ? 'checked' : '' }}> Ya</label>
+                        <label><input type="radio" name="is_magang_ekotek_{{ $mkKonversi->id }}" value="0" {{ !old('is_magang', $seminars->where('mk_konversi_id', $mkKonversi->id)->first()->is_magang ?? false) ? 'checked' : '' }}> Tidak</label>
                     </div>
 
-                    <form id="pmb-form" action="{{ route('mbkm.seminar-pmb.store') }}" method="POST" enctype="multipart/form-data">
+                    <form id="ekotek-form-{{ $mkKonversi->id }}" action="{{ route('mbkm.seminar-ekotek.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
-                        <input type="hidden" name="is_magang" value="{{ old('is_magang_pmb', $seminar->is_magang ?? 0) }}">
-                        <h6 class="fw-bold">Laporan PMB</h6>
-                        <label class="fw-bold d-block mb-1">CPMK</label>
-                        <textarea class="form-control mb-3" rows="4" name="cpmk_pmb" placeholder="Masukkan Capaian Pembelajaran Mata Kuliah (CPMK) untuk laporan PMB">{{ old('cpmk_pmb', $seminar->cpmk_pmb ?? '') }}</textarea>
+                        <input type="hidden" name="mk_konversi_id" value="{{ $mkKonversi->id }}">
+                        <input type="hidden" name="is_magang" value="{{ old('is_magang_ekotek_' . $mkKonversi->id, $seminars->where('mk_konversi_id', $mkKonversi->id)->first()->is_magang ?? 0) }}">
 
-                        <label class="fw-bold d-block mb-1">Unggah laporan MK 2</label>
+                
+                        <label class="fw-bold d-block mb-1">CPMK</label>
+                        <textarea class="form-control mb-3" rows="4" name="cpmk_ekotek" placeholder="Masukkan Capaian Pembelajaran Mata Kuliah (CPMK) untuk laporan EKOTEK">{{ old('cpmk_ekotek', $seminars->where('mk_konversi_id', $mkKonversi->id)->first()->cpmk_ekotek ?? '') }}</textarea>
+
+                        <label class="fw-bold d-block mb-1">Unggah laporan {{ $mkKonversi->kurikulum->nama_mk }}</label>
                         <div class="input-group mb-2" style="max-width: 350px;">
-                            <input type="file" class="form-control" name="laporan_pmb_file" accept=".pdf,.doc,.docx">
+                            <input type="file" class="form-control" name="laporan_ekotek_file" accept=".pdf,.doc,.docx">
                         </div>
 
                         <a href="#" class="small text-primary d-block mb-3">Template laporan</a>
@@ -136,7 +106,12 @@
                         <button type="submit" class="btn btn-dark px-4">Submit</button>
                     </form>
                 </div>
+                @endforeach
 
+                <hr>
+
+
+                
                 <div class="text-end">
                     <button class="btn btn-dark px-5">Kirim</button>
                 </div>
@@ -200,17 +175,19 @@ Swal.fire({
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle radio button changes for EKOTEK form
-    const ekotekRadios = document.querySelectorAll('input[name="is_magang_ekotek"]');
-    const ekotekHidden = document.querySelector('#ekotek-form input[name="is_magang"]');
+    // Handle radio button changes for EKOTEK forms
+    @foreach($mkKonversis as $mkKonversi)
+    const ekotekRadios{{ $mkKonversi->id }} = document.querySelectorAll('input[name="is_magang_ekotek_{{ $mkKonversi->id }}"]');
+    const ekotekHidden{{ $mkKonversi->id }} = document.querySelector('#ekotek-form-{{ $mkKonversi->id }} input[name="is_magang"]');
 
-    ekotekRadios.forEach(radio => {
+    ekotekRadios{{ $mkKonversi->id }}.forEach(radio => {
         radio.addEventListener('change', function() {
-            if (ekotekHidden) {
-                ekotekHidden.value = this.value;
+            if (ekotekHidden{{ $mkKonversi->id }}) {
+                ekotekHidden{{ $mkKonversi->id }}.value = this.value;
             }
         });
     });
+    @endforeach
 
     // Handle radio button changes for PMB form
     const pmbRadios = document.querySelectorAll('input[name="is_magang_pmb"]');
