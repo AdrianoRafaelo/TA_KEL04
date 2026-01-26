@@ -1432,7 +1432,7 @@ class TugasAkhirController extends Controller
     {
         $request->validate([
             'file' => 'required|file|mimes:pdf,doc,docx|max:10240',
-            'field' => 'required|string|in:file_dokumen_ta,file_log_activity,file_persetujuan,jadwal_sidang_file,berita_acara,form_penilaian,revisi_dokumen,form_revisi',
+            'field' => 'required|string|in:file_dokumen_ta,file_log_activity,file_persetujuan,jadwal_sidang_file,berita_acara_pembimbing,penilaian_pembimbing,berita_acara_pengulas1,penilaian_pengulas1,berita_acara_pengulas2,penilaian_pengulas2,revisi_dokumen,form_revisi',
             'sidang_id' => 'required|exists:ta_sidang_akhirs,id'
         ]);
 
@@ -1494,7 +1494,7 @@ class TugasAkhirController extends Controller
     {
         $request->validate([
             'file' => 'required|file|mimes:pdf,doc,docx|max:10240',
-            'field' => 'required|string|in:file_dokumen_ta,file_log_activity,file_persetujuan,jadwal_seminar_file,rubrik_penilaian,form_review',
+            'field' => 'required|string|in:file_dokumen_ta,file_log_activity,file_persetujuan,jadwal_seminar_file,rubrik_penilaian,form_review,berita_acara_pembimbing,penilaian_pembimbing,berita_acara_pengulas1,penilaian_pengulas1,berita_acara_pengulas2,penilaian_pengulas2,revisi_dokumen,form_revisi',
             'hasil_id' => 'required|exists:ta_seminar_hasils,id'
         ]);
 

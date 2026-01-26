@@ -597,9 +597,9 @@
               @endif
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span>Rubrik Penilaian</span>
-              @if($seminarProposal && $seminarProposal->rubrik_penilaian)
-                <button class="btn btn-sm btn-outline-primary view-file-btn" data-file-url="{{ route('storage.file', ['path' => $seminarProposal->rubrik_penilaian]) }}" data-file-name="Rubrik Penilaian">
+              <span>Form Revisi</span>
+              @if($seminarProposal && $seminarProposal->form_revisi)
+                <button class="btn btn-sm btn-outline-primary view-file-btn" data-file-url="{{ route('storage.file', ['path' => $seminarProposal->form_revisi]) }}" data-file-name="Form Revisi">
                   <i class="bi bi-file-pdf"></i> Lihat
                 </button>
               @else
@@ -607,9 +607,9 @@
               @endif
             </li>
             <li class="list-group-item d-flex justify-content-between align-items-center">
-              <span>Form Review</span>
-              @if($seminarProposal && $seminarProposal->form_review)
-                <button class="btn btn-sm btn-outline-primary view-file-btn" data-file-url="{{ route('storage.file', ['path' => $seminarProposal->form_review]) }}" data-file-name="Form Review">
+              <span>Form Persetujuan</span>
+              @if($seminarProposal && $seminarProposal->form_persetujuan)
+                <button class="btn btn-sm btn-outline-primary view-file-btn" data-file-url="{{ route('storage.file', ['path' => $seminarProposal->form_persetujuan]) }}" data-file-name="Form Persetujuan">
                   <i class="bi bi-file-pdf"></i> Lihat
                 </button>
               @else

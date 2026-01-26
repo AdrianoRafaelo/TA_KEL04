@@ -63,6 +63,8 @@
                     <th style="width: 130px;">Pengulas I</th>
                     <th style="width: 130px;">Pengulas II</th>
                     <th style="width: 100px;">Dokumen</th>
+                    <th style="width: 120px;">Berita Acara</th>
+                    <th style="width: 100px;">Penilaian</th>
                 </tr>
             </thead>
             <tbody style="font-size:14px; color:#111;">
@@ -81,10 +83,24 @@
                             Belum upload
                         @endif
                     </td>
+                    <td>
+                        @if($assignment->seminarHasil && $assignment->seminarHasil->berita_acara_pembimbing)
+                            <a href="{{ asset('storage/' . $assignment->seminarHasil->berita_acara_pembimbing) }}" target="_blank" class="text-primary"><i class="fas fa-file-pdf"></i> Lihat</a>
+                        @else
+                            -
+                        @endif
+                    </td>
+                    <td>
+                        @if($assignment->seminarHasil && $assignment->seminarHasil->penilaian_pembimbing)
+                            <a href="{{ asset('storage/' . $assignment->seminarHasil->penilaian_pembimbing) }}" target="_blank" class="text-primary"><i class="fas fa-file-pdf"></i> Lihat</a>
+                        @else
+                            -
+                        @endif
+                    </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="text-center">Tidak ada mahasiswa yang di-assign sebagai pembimbing.</td>
+                    <td colspan="9" class="text-center">Tidak ada mahasiswa yang di-assign sebagai pembimbing.</td>
                 </tr>
                 @endforelse
             </tbody>
@@ -104,6 +120,8 @@
                     <th style="width: 130px;">Pengulas I</th>
                     <th style="width: 130px;">Pengulas II</th>
                     <th style="width: 100px;">Dokumen</th>
+                    <th style="width: 120px;">Berita Acara</th>
+                    <th style="width: 100px;">Penilaian</th>
                 </tr>
             </thead>
             <tbody style="font-size:14px; color:#111;">
@@ -122,10 +140,32 @@
                             Belum upload
                         @endif
                     </td>
+                    <td>
+                        @php
+                            $dosenName = session('nama');
+                            $isPengulas1 = $assignment->pengulas_1 == $dosenName;
+                            $beritaAcara = $isPengulas1 ? $assignment->seminarHasil->berita_acara_pengulas1 : $assignment->seminarHasil->berita_acara_pengulas2;
+                        @endphp
+                        @if($assignment->seminarHasil && $beritaAcara)
+                            <a href="{{ asset('storage/' . $beritaAcara) }}" target="_blank" class="text-primary"><i class="fas fa-file-pdf"></i> Lihat</a>
+                        @else
+                            -
+                        @endif
+                    </td>
+                    <td>
+                        @php
+                            $penilaian = $isPengulas1 ? $assignment->seminarHasil->penilaian_pengulas1 : $assignment->seminarHasil->penilaian_pengulas2;
+                        @endphp
+                        @if($assignment->seminarHasil && $penilaian)
+                            <a href="{{ asset('storage/' . $penilaian) }}" target="_blank" class="text-primary"><i class="fas fa-file-pdf"></i> Lihat</a>
+                        @else
+                            -
+                        @endif
+                    </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="7" class="text-center">Tidak ada mahasiswa yang di-assign sebagai penguji.</td>
+                    <td colspan="9" class="text-center">Tidak ada mahasiswa yang di-assign sebagai penguji.</td>
                 </tr>
                 @endforelse
             </tbody>

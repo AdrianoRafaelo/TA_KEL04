@@ -106,6 +106,12 @@
                             data-form_review="{{ $hasil->form_review ? asset('storage/' . $hasil->form_review) : '' }}"
                             data-revisi_dokumen="{{ $hasil->revisi_dokumen ? asset('storage/' . $hasil->revisi_dokumen) : '' }}"
                             data-form_revisi="{{ $hasil->form_revisi ? asset('storage/' . $hasil->form_revisi) : '' }}"
+                            data-berita_acara_pembimbing="{{ $hasil->berita_acara_pembimbing ? asset('storage/' . $hasil->berita_acara_pembimbing) : '' }}"
+                            data-penilaian_pembimbing="{{ $hasil->penilaian_pembimbing ? asset('storage/' . $hasil->penilaian_pembimbing) : '' }}"
+                            data-berita_acara_pengulas1="{{ $hasil->berita_acara_pengulas1 ? asset('storage/' . $hasil->berita_acara_pengulas1) : '' }}"
+                            data-penilaian_pengulas1="{{ $hasil->penilaian_pengulas1 ? asset('storage/' . $hasil->penilaian_pengulas1) : '' }}"
+                            data-berita_acara_pengulas2="{{ $hasil->berita_acara_pengulas2 ? asset('storage/' . $hasil->berita_acara_pengulas2) : '' }}"
+                            data-penilaian_pengulas2="{{ $hasil->penilaian_pengulas2 ? asset('storage/' . $hasil->penilaian_pengulas2) : '' }}"
                         >
                             Details
                         </button>
@@ -363,18 +369,18 @@ $(document).ready(function() {
                         '<div class="tabs-content">' +
                             // Pembimbing
                             generateTab('pembimbing', ['Berita Acara', 'Penilaian'], [
-                                { dataKey: 'fileLogActivity', field: 'file_log_activity' },
-                                { dataKey: 'rubrikPenilaian', field: 'rubrik_penilaian' }
+                                { dataKey: 'berita_acara_pembimbing', field: 'berita_acara_pembimbing' },
+                                { dataKey: 'penilaian_pembimbing', field: 'penilaian_pembimbing' }
                             ]) +
                             // Pengulas I
                             generateTab('pengulas1', ['Berita Acara', 'Penilaian'], [
-                                { dataKey: 'filePersetujuan', field: 'file_persetujuan' },
-                                { dataKey: 'rubrikPenilaian', field: 'rubrik_penilaian' }
+                                { dataKey: 'berita_acara_pengulas1', field: 'berita_acara_pengulas1' },
+                                { dataKey: 'penilaian_pengulas1', field: 'penilaian_pengulas1' }
                             ]) +
                             // Pengulas II
                             generateTab('pengulas2', ['Berita Acara', 'Penilaian'], [
-                                { dataKey: 'filePersetujuan', field: 'file_persetujuan' },
-                                { dataKey: 'rubrikPenilaian', field: 'rubrik_penilaian' }
+                                { dataKey: 'berita_acara_pengulas2', field: 'berita_acara_pengulas2' },
+                                { dataKey: 'penilaian_pengulas2', field: 'penilaian_pengulas2' }
                             ]) +
                             // Mahasiswa
                             generateTab('mahasiswa', ['Revisi Dokumen', 'Form Revisi'], [
@@ -399,13 +405,13 @@ $(document).ready(function() {
                 const hasFile = !!path;
                 const field = obj.field;
 
-                html += '<div class="upload-item" data-field="' + field + '" data-has-file="' + hasFile + '">';
-                html += '<div class="upload-label"><i class="bi bi-file-earmark-text" style="margin-right:8px;color:#1E3A8A;"></i>' + labels[i] + '</div>';
+                const uploadedClass = hasFile ? ' uploaded' : '';
+                html += '<div class="upload-item' + uploadedClass + '" data-field="' + field + '" data-has-file="' + hasFile + '">';
+                html += '<div class="upload-label"><i class="bi bi-file-earmark-text" style="margin-right:8px;color:#1E3A8A;"></i>' + labels[i] + (hasFile ? ' <i class="bi bi-check-circle-fill text-success"></i>' : '') + '</div>';
                 html += '<div class="file-actions">';
 
                 if (hasFile) {
-                    // Tombol Unduh + Ganti
-                    html += '<button class="btn-download btn-sm me-2" onclick="window.open(\'' + path + '\', \'_blank\')" title="Unduh file"><i class="bi bi-download me-1"></i>Unduh</button>';
+                    // Tombol Ganti
                     html += '<button class="btn-upload btn-sm">Ganti</button>';
                     // Simpan path di hidden div (untuk backend)
                     html += '<div class="hidden-file-path" style="display:none;" data-path="' + path + '"></div>';
@@ -511,6 +517,11 @@ $(document).ready(function() {
     vertical-align: middle !important;
     text-align: left !important;
     padding: 8px 12px !important;
+}
+
+.upload-item.uploaded {
+    background-color: rgba(34, 197, 94, 0.1);
+    border: 1px solid #22c55e;
 }
 
 /* Kolom checkbox rata tengah */

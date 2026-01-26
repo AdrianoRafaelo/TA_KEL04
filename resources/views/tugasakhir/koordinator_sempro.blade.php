@@ -384,11 +384,11 @@ $(document).ready(function() {
                             '</button>' +
                         '</div>' +
                         '<div class="tabs-content">' +
-                            generateTab('pembimbing', ['Berita Acara', 'Penilaian'], ['berita_acara_pembimbing', 'penilaian_pembimbing']) +
-                            generateTab('pengulas1', ['Berita Acara', 'Penilaian'], ['berita_acara_pengulas1', 'penilaian_pengulas1']) +
-                            generateTab('pengulas2', ['Berita Acara', 'Penilaian'], ['berita_acara_pengulas2', 'penilaian_pengulas2']) +
+                            generateTab('pembimbing', ['Berita Acara', 'Penilaian'], ['berita_acara_pembimbing', 'penilaian_pembimbing'], data) +
+                            generateTab('pengulas1', ['Berita Acara', 'Penilaian'], ['berita_acara_pengulas1', 'penilaian_pengulas1'], data) +
+                            generateTab('pengulas2', ['Berita Acara', 'Penilaian'], ['berita_acara_pengulas2', 'penilaian_pengulas2'], data) +
                             generateTab('mahasiswa', ['File Proposal', 'Form Persetujuan', 'Proposal Penelitian', 'Revisi Dokumen', 'Form Revisi'],
-                                ['file_proposal', 'form_persetujuan', 'proposal_penelitian', 'revisi_dokumen', 'form_revisi']) +
+                                ['file_proposal', 'form_persetujuan', 'proposal_penelitian', 'revisi_dokumen', 'form_revisi'], data) +
                         '</div>' +
                     '</div>' +
                 '</div>' +
@@ -400,14 +400,18 @@ $(document).ready(function() {
             '</div>' +
         '</div>');
 
-        function generateTab(tabId, labels, keys) {
+        function generateTab(tabId, labels, keys, data) {
             let html = '<div id="tab-' + tabId + '" class="tab-content">';
             html += '<div class="doc-grid">';
             keys.forEach((key, i) => {
-                html += '<div class="upload-item" data-field="' + key + '" data-proposal-id="' + proposalId + '">' +
-                    '<div class="upload-label">' + labels[i] + '</div>' +
+                const hasFile = data[key] && data[key] !== '';
+                const uploadedClass = hasFile ? 'uploaded' : '';
+                const buttonText = hasFile ? 'Replace' : 'Upload';
+                const buttonIcon = hasFile ? 'bi-arrow-repeat' : 'bi-cloud-upload';
+                html += '<div class="upload-item ' + uploadedClass + '" data-field="' + key + '" data-proposal-id="' + proposalId + '">' +
+                    '<div class="upload-label">' + labels[i] + (hasFile ? ' <i class="bi bi-check-circle-fill text-success"></i>' : '') + '</div>' +
                     '<button class="btn-upload btn-sm">' +
-                        '<i class="bi bi-cloud-upload me-1"></i>Upload' +
+                        '<i class="bi ' + buttonIcon + ' me-1"></i>' + buttonText +
                     '</button>' +
                     '<input type="file" class="file-input" accept=".pdf,.doc,.docx" style="display:none;">' +
                     '<div class="upload-status text-success small mt-1" style="display:none;"></div>' +
@@ -485,6 +489,11 @@ $(document).ready(function() {
     vertical-align: middle !important;
     text-align: left !important;
     padding: 8px 12px !important;
+}
+
+.upload-item.uploaded {
+    background-color: rgba(34, 197, 94, 0.1);
+    border: 1px solid #22c55e;
 }
 
 /* Kolom checkbox rata tengah */

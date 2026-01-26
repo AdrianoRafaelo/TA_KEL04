@@ -21,6 +21,14 @@ class TaSeminarHasil extends Model
         'jadwal_seminar_file',
         'rubrik_penilaian',
         'form_review',
+        'berita_acara_pembimbing',
+        'penilaian_pembimbing',
+        'berita_acara_pengulas1',
+        'penilaian_pengulas1',
+        'berita_acara_pengulas2',
+        'penilaian_pengulas2',
+        'revisi_dokumen',
+        'form_revisi',
         'status',
         'catatan'
     ];

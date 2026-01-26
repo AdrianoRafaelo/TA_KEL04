@@ -21,8 +21,6 @@ return new class extends Migration
             $table->string('pengulas_2')->nullable(); // Pengulas II
             $table->string('file_skripsi')->nullable(); // File skripsi
             $table->string('jadwal_sidang_file')->nullable(); // File jadwal sidang
-            $table->string('berita_acara')->nullable(); // Berita acara sidang
-            $table->string('form_penilaian')->nullable(); // Form penilaian
             $table->string('revisi_dokumen')->nullable(); // Dokumen revisi
             $table->string('form_revisi')->nullable(); // Form revisi
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending'); // Status sidang

@@ -106,8 +106,12 @@
                             data-file_log_activity="{{ $sidang->file_log_activity ? asset('storage/' . $sidang->file_log_activity) : '' }}"
                             data-file_persetujuan="{{ $sidang->file_persetujuan ? asset('storage/' . $sidang->file_persetujuan) : '' }}"
                             data-jadwal_sidang_file="{{ $sidang->jadwal_sidang_file ? asset('storage/' . $sidang->jadwal_sidang_file) : '' }}"
-                            data-berita_acara="{{ $sidang->berita_acara ? asset('storage/' . $sidang->berita_acara) : '' }}"
-                            data-form_penilaian="{{ $sidang->form_penilaian ? asset('storage/' . $sidang->form_penilaian) : '' }}"
+                            data-berita_acara_pembimbing="{{ $sidang->berita_acara_pembimbing ? asset('storage/' . $sidang->berita_acara_pembimbing) : '' }}"
+                            data-penilaian_pembimbing="{{ $sidang->penilaian_pembimbing ? asset('storage/' . $sidang->penilaian_pembimbing) : '' }}"
+                            data-berita_acara_pengulas1="{{ $sidang->berita_acara_pengulas1 ? asset('storage/' . $sidang->berita_acara_pengulas1) : '' }}"
+                            data-penilaian_pengulas1="{{ $sidang->penilaian_pengulas1 ? asset('storage/' . $sidang->penilaian_pengulas1) : '' }}"
+                            data-berita_acara_pengulas2="{{ $sidang->berita_acara_pengulas2 ? asset('storage/' . $sidang->berita_acara_pengulas2) : '' }}"
+                            data-penilaian_pengulas2="{{ $sidang->penilaian_pengulas2 ? asset('storage/' . $sidang->penilaian_pengulas2) : '' }}"
                             data-file_dokumen_ta="{{ $sidang->file_dokumen_ta ? asset('storage/' . $sidang->file_dokumen_ta) : '' }}"
                             data-file_log_activity="{{ $sidang->file_log_activity ? asset('storage/' . $sidang->file_log_activity) : '' }}"
                             data-file_persetujuan="{{ $sidang->file_persetujuan ? asset('storage/' . $sidang->file_persetujuan) : '' }}"
@@ -367,18 +371,18 @@ $(document).ready(function() {
                         '<div class="tabs-content">' +
                             // Pembimbing
                             generateTab('pembimbing', ['Berita Acara', 'Form Penilaian'], [
-                                { dataKey: 'beritaAcara', field: 'berita_acara' },
-                                { dataKey: 'formPenilaian', field: 'form_penilaian' }
+                                { dataKey: 'berita_acara_pembimbing', field: 'berita_acara_pembimbing' },
+                                { dataKey: 'penilaian_pembimbing', field: 'penilaian_pembimbing' }
                             ]) +
                             // Pengulas I
                             generateTab('pengulas1', ['Berita Acara', 'Form Penilaian'], [
-                                { dataKey: 'beritaAcara', field: 'berita_acara' },
-                                { dataKey: 'formPenilaian', field: 'form_penilaian' }
+                                { dataKey: 'berita_acara_pengulas1', field: 'berita_acara_pengulas1' },
+                                { dataKey: 'penilaian_pengulas1', field: 'penilaian_pengulas1' }
                             ]) +
                             // Pengulas II
                             generateTab('pengulas2', ['Berita Acara', 'Form Penilaian'], [
-                                { dataKey: 'beritaAcara', field: 'berita_acara' },
-                                { dataKey: 'formPenilaian', field: 'form_penilaian' }
+                                { dataKey: 'berita_acara_pengulas2', field: 'berita_acara_pengulas2' },
+                                { dataKey: 'penilaian_pengulas2', field: 'penilaian_pengulas2' }
                             ]) +
                             // Mahasiswa
                             generateTab('mahasiswa', ['Dokumen TA', 'Log Activity', 'Form Persetujuan', 'Revisi Dokumen', 'Form Revisi'], [
@@ -405,14 +409,18 @@ $(document).ready(function() {
                 const path = data[obj.dataKey] || '';
                 const hasFile = !!path;
                 const field = obj.field;
+                const uploadedClass = hasFile ? 'uploaded' : '';
 
-                html += '<div class="upload-item" data-field="' + field + '" data-has-file="' + hasFile + '">';
-                html += '<div class="upload-label"><i class="bi bi-file-earmark-text" style="margin-right:8px;color:#1E3A8A;"></i>' + labels[i] + '</div>';
+                html += '<div class="upload-item ' + uploadedClass + '" data-field="' + field + '" data-has-file="' + hasFile + '">';
+                html += '<div class="upload-label"><i class="bi bi-file-earmark-text" style="margin-right:8px;color:#1E3A8A;"></i>' + labels[i];
+                if (hasFile) {
+                    html += ' <i class="bi bi-check-circle-fill text-success" title="File sudah diunggah"></i>';
+                }
+                html += '</div>';
                 html += '<div class="file-actions">';
 
                 if (hasFile) {
-                    // Tombol Unduh + Ganti
-                    html += '<button class="btn-download btn-sm me-2" onclick="window.open(\'' + path + '\', \'_blank\')" title="Unduh file"><i class="bi bi-download me-1"></i>Unduh</button>';
+                    // Tombol Ganti
                     html += '<button class="btn-upload btn-sm">Ganti</button>';
                     // Simpan path di hidden div (untuk backend)
                     html += '<div class="hidden-file-path" style="display:none;" data-path="' + path + '"></div>';
@@ -645,6 +653,11 @@ $(document).ready(function() {
     display: inline-flex; align-items: center; gap: 8px;
 }
 .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(30,58,138,0.3); }
+
+.upload-item.uploaded {
+    background-color: rgba(34, 197, 94, 0.1);
+    border: 1px solid #22c55e;
+}
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes slideIn { from { opacity: 0; transform: scale(0.9) translateY(-20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
