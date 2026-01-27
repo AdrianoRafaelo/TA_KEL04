@@ -278,6 +278,203 @@
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+/* KP Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1050;
+    animation: fadeIn 0.3s ease-out;
+}
+.modal-container {
+    background: white;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease-out;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #dee2e6;
+    background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+.modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+.modal-body {
+    padding: 24px;
+}
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    background: #f8f9fa;
+    border-radius: 0 0 12px 12px;
+}
+.btn-primary {
+    background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(30, 58, 138, 0.3);
+}
+.proposal-info-card {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.info-item.full-width {
+    grid-column: 1 / -1;
+}
+.info-icon {
+    color: #1E3A8A;
+    font-size: 1.2rem;
+}
+.info-content label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.tabs-container {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+}
+.tabs-header {
+    display: flex;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+.tab-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+.tab-btn.active {
+    background: white;
+    border-bottom: 2px solid #1E3A8A;
+}
+.tab-content {
+    padding: 20px;
+    display: none;
+}
+.tab-content.active {
+    display: block;
+}
+.doc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+.upload-item {
+    border: 1px solid #dee2e6;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+.upload-label {
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+.btn-upload {
+    background: #1E3A8A;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.kp-members-section h6 {
+    margin-bottom: 15px;
+}
+.kp-members-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.kp-member-item {
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+@keyframes slideIn {
+    from { opacity: 0; transform: scale(0.9) translateY(-20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Perusahaan Table Styles */
+.table th {
+    vertical-align: middle !important;
+    font-weight: 600;
+}
+
+.table td {
+    vertical-align: middle !important;
+    padding: 10px !important;
+}
+</style>
 <script>
     // Chart KP: 60 Mahasiswa (22% hijau)
     new Chart(document.getElementById('chart-kp'), {
@@ -324,33 +521,23 @@
                 if (data.length === 0) {
                     content = '<div class="text-center text-muted"><p>Belum ada kelompok kerja praktik yang terdaftar.</p></div>';
                 } else {
-                    content = '<div class="kp-groups-grid">';
-                    data.forEach(group => {
+                    content = '<div class="table-responsive"><table class="table table-striped"><thead><tr><th>No.</th><th>Nama Kelompok</th><th>Jumlah Mahasiswa</th><th>Aksi</th></tr></thead><tbody>';
+                    data.forEach((group, index) => {
                         content += `
-                            <div class="kp-group-card">
-                                <div class="kp-group-title">
-                                    <i class="fas fa-users"></i>
-                                    ${group.nama_kelompok}
-                                </div>
-                                <div class="kp-group-info">
-                                    <div class="kp-group-info-item">
-                                        <span class="kp-group-info-label">Jumlah Mahasiswa</span>
-                                        <span class="kp-group-info-value">${group.jumlah_mahasiswa}</span>
-                                    </div>
-                                </div>
-                                <div class="kp-group-members">
-                                    <div class="kp-group-members-title">Anggota Kelompok:</div>
-                                    <div class="kp-group-members-list">
-                                        ${group.mahasiswa.map(name => `<span class="kp-member-tag">${name}</span>`).join('')}
-                                    </div>
-                                </div>
-                                <div class="kp-group-date">
-                                    Dibuat: ${group.created_at}
-                                </div>
-                            </div>
+                            <tr>
+                                <td>${index + 1}</td>
+                                <td>${group.nama_kelompok}</td>
+                                <td>${group.jumlah_mahasiswa}</td>
+                                <td>
+                                    <button class="btn btn-sm btn-primary btn-kp-details"
+                                            data-group='${JSON.stringify(group).replace(/'/g, "'")}'>
+                                        <i class="fas fa-eye"></i> Details
+                                    </button>
+                                </td>
+                            </tr>
                         `;
                     });
-                    content += '</div>';
+                    content += '</tbody></table></div>';
                 }
                 document.getElementById('kpGroupsContent').innerHTML = content;
             })
@@ -367,6 +554,121 @@
             });
     });
 
+    // Handle KP Group Details Modal
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.btn-kp-details')) {
+            const button = e.target.closest('.btn-kp-details');
+            const group = JSON.parse(button.getAttribute('data-group').replace(/'/g, "'"));
+
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.innerHTML = `
+                <div class="modal-container">
+                    <div class="modal-header">
+                        <div class="modal-title">
+                            <i class="fas fa-users me-2"></i>
+                            Detail Kelompok: ${group.nama_kelompok}
+                        </div>
+                        <button class="modal-close-btn" onclick="this.parentElement.parentElement.remove()">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="proposal-info-card">
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <i class="fas fa-users info-icon"></i>
+                                    <div class="info-content">
+                                        <label>Nama Kelompok</label>
+                                        <span>${group.nama_kelompok}</span>
+                                    </div>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-user-friends info-icon"></i>
+                                    <div class="info-content">
+                                        <label>Jumlah Mahasiswa</label>
+                                        <span>${group.jumlah_mahasiswa}</span>
+                                    </div>
+                                </div>
+                                <div class="info-item full-width">
+                                    <i class="fas fa-calendar info-icon"></i>
+                                    <div class="info-content">
+                                        <label>Tanggal Dibuat</label>
+                                        <span>${group.created_at}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tabs-container">
+                            <div class="tabs-header">
+                                <button class="tab-btn active" data-tab="anggota">
+                                    <i class="fas fa-user-graduate me-1"></i>Anggota Kelompok
+                                </button>
+                                <button class="tab-btn" data-tab="supervisor">
+                                    <i class="fas fa-user-tie me-1"></i>Supervisor
+                                </button>
+                                <button class="tab-btn" data-tab="dokumen">
+                                    <i class="fas fa-file-alt me-1"></i>Dokumen
+                                </button>
+                            </div>
+                            <div class="tabs-content">
+                                <div id="tab-anggota" class="tab-content active">
+                                    <div class="kp-members-section">
+                                        <h6>Anggota Kelompok:</h6>
+                                        <div class="kp-members-list">
+                                            ${group.mahasiswa.map(name => `<div class="kp-member-item"><i class="fas fa-user"></i> ${name}</div>`).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div id="tab-supervisor" class="tab-content">
+                                    <div class="text-center text-muted">
+                                        <p>Informasi supervisor akan ditampilkan di sini.</p>
+                                    </div>
+                                </div>
+                                <div id="tab-dokumen" class="tab-content">
+                                    <div class="doc-grid">
+                                        <div class="upload-item">
+                                            <div class="upload-label"><i class="bi bi-file-earmark-text" style="margin-right:8px;color:#1E3A8A;"></i>Laporan KP</div>
+                                            <button class="btn-upload btn-sm">Upload</button>
+                                            <input type="file" class="file-input" accept=".pdf,.doc,.docx" style="display:none;">
+                                        </div>
+                                        <div class="upload-item">
+                                            <div class="upload-label"><i class="bi bi-file-earmark-text" style="margin-right:8px;color:#1E3A8A;"></i>Form Penilaian</div>
+                                            <button class="btn-upload btn-sm">Upload</button>
+                                            <input type="file" class="file-input" accept=".pdf,.doc,.docx" style="display:none;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-primary" onclick="this.parentElement.parentElement.remove()">
+                            <i class="bi bi-check-circle me-2"></i>Tutup
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.body.appendChild(modal);
+
+            // Tab functionality
+            modal.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    modal.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    modal.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    this.classList.add('active');
+                    modal.querySelector('#tab-' + this.getAttribute('data-tab')).classList.add('active');
+                });
+            });
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) modal.remove();
+            });
+        }
+    });
+
     // Show Perusahaan modal
     document.querySelector('[data-bs-target="#perusahaanModal"]').addEventListener('click', function () {
         loadPerusahaans();
@@ -378,29 +680,26 @@
             .then(data => {
                 let content = '';
                 if (data.length === 0) {
-                    content = '<div class="text-center text-muted"><p>Belum ada perusahaan yang terdaftar.</p></div>';
+                    content = '<div class="text-center text-muted py-4"><i class="fas fa-building fa-3x text-muted mb-3"></i><p>Belum ada perusahaan yang terdaftar.</p></div>';
                 } else {
-                    content = '<div class="row">';
-                    data.forEach(perusahaan => {
+                    content = '<div class="table-responsive"><table class="table table-striped table-bordered"><thead class="table-dark"><tr><th class="text-center" width="5%">No.</th><th width="30%">Nama Perusahaan</th><th width="45%">Alamat</th><th width="20%">Kontak</th></tr></thead><tbody>';
+                    data.forEach((perusahaan, index) => {
                         content += `
-                            <div class="col-md-6 mb-3">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <h6 class="card-title">${perusahaan.nama_perusahaan}</h6>
-                                        <p class="card-text small">${perusahaan.alamat || 'Alamat tidak tersedia'}</p>
-                                        <p class="card-text small"><strong>Kontak:</strong> ${perusahaan.kontak || 'Tidak tersedia'}</p>
-                                    </div>
-                                </div>
-                            </div>
+                            <tr>
+                                <td class="text-center">${index + 1}</td>
+                                <td class="fw-semibold">${perusahaan.nama_perusahaan}</td>
+                                <td class="small">${perusahaan.alamat || '<em class="text-muted">Alamat tidak tersedia</em>'}</td>
+                                <td class="small">${perusahaan.kontak || '<em class="text-muted">Tidak tersedia</em>'}</td>
+                            </tr>
                         `;
                     });
-                    content += '</div>';
+                    content += '</tbody></table></div>';
                 }
                 document.getElementById('perusahaanContent').innerHTML = content;
             })
             .catch(error => {
                 console.error('Error loading perusahaans:', error);
-                document.getElementById('perusahaanContent').innerHTML = '<div class="text-center text-danger"><p>Terjadi kesalahan saat memuat data perusahaan.</p></div>';
+                document.getElementById('perusahaanContent').innerHTML = '<div class="text-center text-danger py-4"><i class="fas fa-exclamation-triangle fa-3x mb-3"></i><p>Terjadi kesalahan saat memuat data perusahaan.</p></div>';
             });
     }
 
