@@ -15,6 +15,7 @@ class MkKonversi extends Model
         'deskripsi_kegiatan',
         'bimbingan',
         'alokasi_waktu',
+        'file_kesesuaian',
         'status',
         'created_by',
         'updated_by',

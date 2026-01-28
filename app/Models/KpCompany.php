@@ -16,7 +16,8 @@ class KpCompany extends Model
         'mahasiswa',
         'created_by',
         'updated_by',
-        'active'
+        'active',
+        'reason'
     ];
 
     protected $casts = [

@@ -230,6 +230,14 @@ document.addEventListener('DOMContentLoaded', function() {
                                         <div class="mb-3">
                                             <strong>Alokasi Waktu:</strong> ${pendaftar.alokasi_waktu} jam
                                         </div>
+                                        ${pendaftar.file_kesesuaian ? `
+                                        <div class="mb-3">
+                                            <strong>Form Kesesuaian Aktivitas MBKM dengan CPMK:</strong>
+                                            <br><a href="/storage/${pendaftar.file_kesesuaian}" target="_blank" class="btn btn-sm btn-outline-primary mt-1">
+                                                <i class="bi bi-download"></i> Unduh File
+                                            </a>
+                                        </div>
+                                        ` : ''}
                                         ${pendaftar.status === 'pending' ? `
                                         <div class="d-flex gap-2">
                                             <button class="btn btn-success btn-sm" onclick="approveKonversi(${pendaftar.id})">Terima</button>

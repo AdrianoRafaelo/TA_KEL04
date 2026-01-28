@@ -44,6 +44,8 @@ Route::post('/pendaftaran-kp/update-permohonan/{id}', [KerjaPraktikController::c
 Route::get('/pendaftaran-kp/get-pengantar/{id}', [KerjaPraktikController::class, 'getPengantar'])->name('pendaftaran-kp.get-pengantar')->middleware('auth.session');
 Route::put('/pendaftaran-kp/update-pengantar/{id}', [KerjaPraktikController::class, 'updatePengantar'])->name('pendaftaran-kp.update-pengantar')->middleware('auth.session');
 Route::delete('/pendaftaran-kp/delete-pengantar/{id}', [KerjaPraktikController::class, 'deletePengantar'])->name('pendaftaran-kp.delete-pengantar')->middleware('auth.session');
+Route::post('/pendaftaran-kp/update-final', [KerjaPraktikController::class, 'updateFinalCompanies'])->name('pendaftaran-kp.update-final')->middleware('auth.session');
+Route::post('/pendaftaran-kp/update-student-final', [KerjaPraktikController::class, 'updateStudentFinalCompany'])->name('pendaftaran-kp.update-student-final')->middleware('auth.session');
 Route::get('/download-permohonan/{id}', [KerjaPraktikController::class, 'downloadPermohonan'])->name('download.permohonan')->middleware('auth.session');
 Route::get('/download-pengantar/{id}', [KerjaPraktikController::class, 'downloadPengantar'])->name('download.pengantar')->middleware('auth.session');
 Route::post('/kerja-praktik-koordinator/assign-dosen', [KerjaPraktikController::class, 'assignDosen'])->name('kerja-praktik-koordinator.assign-dosen')->middleware('auth.session');

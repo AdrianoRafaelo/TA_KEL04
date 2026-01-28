@@ -791,16 +791,21 @@ class MbkmController extends Controller
             'kurikulum_id' => 'required|exists:kurikulum,id',
             'deskripsi_kegiatan' => 'required|string',
             'alokasi_waktu' => 'required|integer|min:1',
+            'file_kesesuaian' => 'required|file|mimes:pdf,doc,docx,jpg,png|max:51200',
         ]);
 
         $user = \App\Models\FtiData::where('username', session('username'))->first();
         $userId = $user ? $user->id : null;
+
+        // Handle file upload
+        $kesesuaianPath = $request->file('file_kesesuaian')->store('mbkm/konversi', 'public');
 
         MkKonversi::create([
             'mahasiswa_id' => $userId,
             'kurikulum_id' => $request->kurikulum_id,
             'deskripsi_kegiatan' => $request->deskripsi_kegiatan,
             'alokasi_waktu' => $request->alokasi_waktu,
+            'file_kesesuaian' => $kesesuaianPath,
             'created_by' => $userId,
             'updated_by' => $userId,
             'active' => '1',

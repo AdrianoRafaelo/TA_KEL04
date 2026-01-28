@@ -140,6 +140,11 @@ $displayName = $user ? $user->nama : (session('username') ?? 'User');
                     </div>
                 </div>
 
+                <div class="mb-3">
+                    <label class="fw-bold">Unggah Form Kesesuaian Aktivitas MBKM dengan CPMK</label>
+                    <input type="file" name="file_kesesuaian" class="form-control" accept=".pdf,.doc,.docx,.jpg,.png" required>
+                </div>
+
                 <button type="submit" class="btn btn-dark px-4">Simpan</button>
             </div>
         </form>

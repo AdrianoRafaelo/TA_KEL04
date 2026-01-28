@@ -36,19 +36,12 @@
           <form method="POST" action="{{ route('pendaftaran-kp.permohonan') }}">
             @csrf
             <div class="form-group">
-              <label>Pilih Perusahaan</label>
-              <select name="perusahaan_id" class="form-control" id="perusahaan_select" required>
-                <option value="">Pilih Perusahaan</option>
-                @if(isset($perusahaans))
-                  @foreach($perusahaans as $perusahaan)
-                    <option value="{{ $perusahaan->id }}" data-alamat="{{ $perusahaan->alamat }}">{{ $perusahaan->nama_perusahaan }}</option>
-                  @endforeach
-                @endif
-              </select>
+              <label>Nama Perusahaan</label>
+              <input type="text" name="nama_perusahaan" class="form-control" placeholder="Ketik nama perusahaan" required>
             </div>
             <div class="form-group">
               <label>Alamat Perusahaan</label>
-              <input type="text" name="alamat_perusahaan" id="alamat_perusahaan" class="form-control" placeholder="Alamat akan terisi otomatis" readonly required>
+              <input type="text" name="alamat_perusahaan" class="form-control" placeholder="Ketik alamat perusahaan" required>
             </div>
             <div class="form-group">
               <label>Waktu Awal KP</label>
@@ -81,15 +74,8 @@
           <form method="POST" action="{{ route('pendaftaran-kp.pengantar') }}" enctype="multipart/form-data">
             @csrf
             <div class="form-group">
-              <label>Perusahaan KP</label>
-              <select name="perusahaan_id" class="form-control" required>
-                <option value="">Pilih Perusahaan KP</option>
-                @if(isset($perusahaans))
-                  @foreach($perusahaans as $perusahaan)
-                    <option value="{{ $perusahaan->id }}">{{ $perusahaan->nama_perusahaan }}</option>
-                  @endforeach
-                @endif
-              </select>
+              <label>Nama Perusahaan KP</label>
+              <input type="text" name="nama_perusahaan" class="form-control" placeholder="Ketik nama perusahaan" required>
             </div>
             <div class="form-group">
               <label>Supervisor</label>
@@ -155,16 +141,49 @@
     </div>
   </div>
   <div class="col-md-4">
-    <div class="kp-list-card">
-      <h6 class="kp-list-title mb-3">Perusahaan KP Final</h6>
-      @if(isset($final_companies) && $final_companies->count() > 0)
-        @foreach($final_companies as $company)
-          <div class="kp-list-item">{{ $company->nama_perusahaan }} <span class="kp-badge kp-badge-hapus"><a href="#" class="text-white">Hapus</a></span></div>
-        @endforeach
-      @else
-        <div class="kp-list-item text-muted">Belum ada perusahaan final</div>
-      @endif
-    </div>
+    @if (session('role') === 'Koordinator')
+      <div class="kp-list-card">
+        <h6 class="kp-list-title mb-3">Perusahaan KP Final</h6>
+        @if(isset($final_companies) && $final_companies->count() > 0)
+          @foreach($final_companies as $company)
+            <div class="kp-list-item">{{ $company->nama_perusahaan }}</div>
+          @endforeach
+        @else
+          <div class="kp-list-item text-muted">Belum ada perusahaan final</div>
+        @endif
+      </div>
+    @else
+      <div class="kp-list-card">
+        <h6 class="kp-list-title mb-3">Perusahaan KP Final</h6>
+        @if(isset($student_final) && $student_final->company)
+          <div class="kp-list-item">{{ $student_final->company->nama_perusahaan }}</div>
+          <div class="kp-list-item small text-muted">Alasan: {{ $student_final->reason }}</div>
+        @else
+          <form method="POST" action="{{ route('pendaftaran-kp.update-student-final') }}">
+            @csrf
+            @if(isset($final_companies) && $final_companies->count() > 0)
+              @foreach($final_companies as $company)
+                <div class="kp-list-item d-flex align-items-center">
+                  <div class="form-check me-3">
+                    <input class="form-check-input" type="radio" name="final_company" value="{{ $company->id }}" id="company_{{ $company->id }}" required>
+                    <label class="form-check-label" for="company_{{ $company->id }}">
+                      {{ $company->nama_perusahaan }}
+                    </label>
+                  </div>
+                </div>
+              @endforeach
+              <div class="mt-3">
+                <label for="reason" class="form-label">Alasan</label>
+                <textarea class="form-control" name="reason" id="reason" rows="3" placeholder="Masukkan alasan memilih perusahaan ini" required></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm mt-2">Pilih Final</button>
+            @else
+              <div class="kp-list-item text-muted">Belum ada perusahaan yang disetujui</div>
+            @endif
+          </form>
+        @endif
+      </div>
+    @endif
   </div>
 </div>
 
@@ -187,15 +206,8 @@
             <div class="modal-body">
                 <div class="row g-3">
                     <div class="col-md-12">
-                        <label class="form-label">Perusahaan KP</label>
-                        <select name="perusahaan_id" id="edit_perusahaan_id" class="form-select" required>
-                            <option value="">Pilih Perusahaan KP</option>
-                            @if(isset($perusahaans))
-                              @foreach($perusahaans as $perusahaan)
-                                <option value="{{ $perusahaan->id }}">{{ $perusahaan->nama_perusahaan }}</option>
-                              @endforeach
-                            @endif
-                        </select>
+                        <label class="form-label">Nama Perusahaan KP</label>
+                        <input type="text" name="nama_perusahaan" id="edit_nama_perusahaan" class="form-control" placeholder="Ketik nama perusahaan" required>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Supervisor</label>
@@ -415,7 +427,7 @@ function editPengantar(id) {
         url: `/pendaftaran-kp/get-pengantar/${id}`,
         type: 'GET',
         success: function(data) {
-            $('#edit_perusahaan_id').val(data.perusahaan_id);
+            $('#edit_nama_perusahaan').val(data.nama_perusahaan);
             $('#edit_nama_supervisor').val(data.nama_supervisor);
             $('#edit_no_supervisor').val(data.no_supervisor);
             $('#edit_divisi').val(data.divisi);

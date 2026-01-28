@@ -187,23 +187,6 @@
                             <p class="mt-2">Memuat data perusahaan...</p>
                         </div>
                     </div>
-                    <hr>
-                    <h6>Tambah Perusahaan Baru</h6>
-                    <form id="perusahaanForm">
-                        <div class="mb-3">
-                            <label for="nama_perusahaan" class="form-label">Nama Perusahaan</label>
-                            <input type="text" class="form-control" id="nama_perusahaan" name="nama_perusahaan" required autofocus>
-                        </div>
-                        <div class="mb-3">
-                            <label for="alamat" class="form-label">Alamat</label>
-                            <textarea class="form-control" id="alamat" name="alamat" rows="3"></textarea>
-                        </div>
-                        <div class="mb-3">
-                            <label for="kontak" class="form-label">Kontak</label>
-                            <input type="text" class="form-control" id="kontak" name="kontak">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Tambah Perusahaan</button>
-                    </form>
                 </div>
             </div>
         </div>
@@ -278,6 +261,9 @@
 
 @section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    window.userRole = '{{ session('role') }}';
+</script>
 
 <style>
 /* KP Modal Styles */
@@ -682,14 +668,13 @@
                 if (data.length === 0) {
                     content = '<div class="text-center text-muted py-4"><i class="fas fa-building fa-3x text-muted mb-3"></i><p>Belum ada perusahaan yang terdaftar.</p></div>';
                 } else {
-                    content = '<div class="table-responsive"><table class="table table-striped table-bordered"><thead class="table-dark"><tr><th class="text-center" width="5%">No.</th><th width="30%">Nama Perusahaan</th><th width="45%">Alamat</th><th width="20%">Kontak</th></tr></thead><tbody>';
+                    content = '<div class="table-responsive"><table class="table table-striped table-bordered"><thead class="table-dark"><tr><th class="text-center" width="5%">No.</th><th width="40%">Nama Perusahaan</th><th width="55%">Alamat</th></tr></thead><tbody>';
                     data.forEach((perusahaan, index) => {
                         content += `
                             <tr>
                                 <td class="text-center">${index + 1}</td>
                                 <td class="fw-semibold">${perusahaan.nama_perusahaan}</td>
                                 <td class="small">${perusahaan.alamat || '<em class="text-muted">Alamat tidak tersedia</em>'}</td>
-                                <td class="small">${perusahaan.kontak || '<em class="text-muted">Tidak tersedia</em>'}</td>
                             </tr>
                         `;
                     });

@@ -17,6 +17,7 @@ use App\Models\KpBimbingan;
 use App\Models\KpTopikKhusus;
 use App\Models\KpSeminar;
 use App\Models\FtiData;
+use App\Models\StudentFinalCompany;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -149,10 +150,56 @@ class KerjaPraktikController extends Controller
                   ->where('status', 'approved');
         })->get();
 
+        // Get all companies for koordinator selection
+        $all_companies = KpCompany::all();
+
+        // Get student's final company
+        $student_final = StudentFinalCompany::where('mahasiswa_id', $user['username'])->first();
+
         // Get all active companies from kp_perusahaans
         $perusahaans = KpPerusahaan::where('active', 1)->get();
 
-        return view('kp.pendaftaran_kp', compact('permohonan_requests', 'approved_permohonan_requests', 'pengantar_requests', 'approved_pengantar_requests', 'final_companies', 'perusahaans'));
+        return view('kp.pendaftaran_kp', compact('permohonan_requests', 'approved_permohonan_requests', 'pengantar_requests', 'approved_pengantar_requests', 'final_companies', 'all_companies', 'student_final', 'perusahaans'));
+    }
+
+    public function updateFinalCompanies(Request $request)
+    {
+        $finalCompanyIds = $request->input('final_companies', []);
+        $reasons = $request->input('reasons', []);
+
+        // Update all companies to inactive first
+        KpCompany::query()->update(['active' => 0, 'reason' => null]);
+
+        // Update selected companies to active and set reasons
+        foreach ($finalCompanyIds as $id) {
+            KpCompany::where('id', $id)->update([
+                'active' => 1,
+                'reason' => $reasons[$id] ?? null
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Perusahaan final berhasil diperbarui');
+    }
+
+    public function updateStudentFinalCompany(Request $request)
+    {
+        $user = Session::get('user');
+        $companyId = $request->input('final_company');
+        $reason = $request->input('reason');
+
+        // Delete existing
+        StudentFinalCompany::where('mahasiswa_id', $user['username'])->delete();
+
+        // Insert new
+        if ($companyId) {
+            StudentFinalCompany::create([
+                'mahasiswa_id' => $user['username'],
+                'company_id' => $companyId,
+                'reason' => $reason,
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Perusahaan final berhasil dipilih');
     }
 
     public function storePermohonan(Request $request)
@@ -163,14 +210,13 @@ class KerjaPraktikController extends Controller
         }
 
         $request->validate([
-            'perusahaan_id' => 'required|exists:kp_perusahaans,id',
+            'nama_perusahaan' => 'required',
+            'alamat_perusahaan' => 'required',
             'waktu_awal_kp' => 'required|date',
             'waktu_selesai_kp' => 'required|date|after:waktu_awal_kp',
             'tahun_ajaran' => 'required|string|max:255',
             'mahasiswa' => 'nullable|string',
         ]);
-
-        $perusahaan = KpPerusahaan::find($request->perusahaan_id);
 
         // Get user's group if exists
         $group = KpGroup::where('active', true)->whereJsonContains('mahasiswa', $user['username'])->first();
@@ -178,8 +224,8 @@ class KerjaPraktikController extends Controller
 
         // Create company
         $company = KpCompany::create([
-            'nama_perusahaan' => $perusahaan->nama_perusahaan,
-            'alamat_perusahaan' => $perusahaan->alamat,
+            'nama_perusahaan' => $request->nama_perusahaan,
+            'alamat_perusahaan' => $request->alamat_perusahaan,
             'waktu_awal_kp' => $request->waktu_awal_kp,
             'waktu_selesai_kp' => $request->waktu_selesai_kp,
             'tahun_ajaran' => $request->tahun_ajaran,
@@ -207,14 +253,12 @@ class KerjaPraktikController extends Controller
         }
 
         $request->validate([
-            'perusahaan_id' => 'required|exists:kp_perusahaans,id',
+            'nama_perusahaan' => 'required|string|max:255',
             'nama_supervisor' => 'required|string|max:255',
             'no_supervisor' => 'required|string|max:255',
             'divisi' => 'required|string|max:255',
             'surat_keterangan_diterima' => 'required|file|mimes:pdf,doc,docx|max:5120',
         ]);
-
-        $perusahaan = KpPerusahaan::find($request->perusahaan_id);
 
         // Handle file upload
         $filePath = null;
@@ -226,9 +270,9 @@ class KerjaPraktikController extends Controller
 
         // Create or find company
         $company = KpCompany::firstOrCreate(
-            ['nama_perusahaan' => $perusahaan->nama_perusahaan],
+            ['nama_perusahaan' => $request->nama_perusahaan],
             [
-                'alamat_perusahaan' => $perusahaan->alamat,
+                'alamat_perusahaan' => '', // Empty, can be updated later
                 'waktu_awal_kp' => now(), // Default
                 'waktu_selesai_kp' => now()->addMonths(3), // Default
                 'tahun_ajaran' => date('Y') . '/' . (date('Y') + 1),
@@ -315,7 +359,7 @@ class KerjaPraktikController extends Controller
         }
 
         return response()->json([
-            'perusahaan_id' => $kpRequest->company->kp_perusahaan_id ?? null,
+            'nama_perusahaan' => $kpRequest->company->nama_perusahaan ?? '',
             'nama_supervisor' => $kpRequest->supervisor->nama_supervisor ?? '',
             'no_supervisor' => $kpRequest->supervisor->no_supervisor ?? '',
             'divisi' => $kpRequest->divisi ?? '',
@@ -419,14 +463,12 @@ class KerjaPraktikController extends Controller
         }
 
         $request->validate([
-            'perusahaan_id' => 'required|exists:kp_perusahaans,id',
+            'nama_perusahaan' => 'required|string|max:255',
             'nama_supervisor' => 'required|string|max:255',
             'no_supervisor' => 'required|string|max:255',
             'divisi' => 'required|string|max:255',
             'surat_keterangan_diterima' => 'nullable|file|mimes:pdf,doc,docx|max:5120',
         ]);
-
-        $perusahaan = KpPerusahaan::find($request->perusahaan_id);
 
         // Handle file upload
         $filePath = $kpRequest->supervisor->file_surat_keterangan;
@@ -443,8 +485,7 @@ class KerjaPraktikController extends Controller
         // Update company
         $company = $kpRequest->company;
         $company->update([
-            'nama_perusahaan' => $perusahaan->nama_perusahaan,
-            'alamat_perusahaan' => $perusahaan->alamat,
+            'nama_perusahaan' => $request->nama_perusahaan,
         ]);
 
         // Update request
@@ -758,9 +799,17 @@ class KerjaPraktikController extends Controller
 
     public function getPerusahaans()
     {
-        $perusahaans = KpPerusahaan::where('active', 1)->get();
+        $perusahaans = StudentFinalCompany::with('company')->get()->unique('company_id');
 
-        return response()->json($perusahaans);
+        // Map the data to match the expected format
+        $mapped = $perusahaans->map(function ($final) {
+            return [
+                'nama_perusahaan' => $final->company->nama_perusahaan,
+                'alamat' => $final->company->alamat_perusahaan,
+            ];
+        });
+
+        return response()->json($mapped);
     }
 
     public function storePerusahaan(Request $request)

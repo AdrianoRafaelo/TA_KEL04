@@ -670,7 +670,7 @@ KONTEN DUA KOLOM
         <form action="{{ route('seminar.hasil.mahasiswa.upload.revisi') }}" method="POST" enctype="multipart/form-data">
           @csrf
           <div class="mb-3">
-            <label class="form-label">Unggah Poin Perbaikan</label>
+            <label class="form-label">Unggah Form Revisi</label>
             <input type="file" class="form-control" name="form_revisi" required>
             @if($mahasiswaTa && $mahasiswaTa->seminarHasil && $mahasiswaTa->seminarHasil->form_revisi)
               <div class="d-flex align-items-center mt-1">
