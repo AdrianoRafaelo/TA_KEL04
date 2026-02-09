@@ -48,6 +48,7 @@
                    <th style="width: 150px;" class="text-center">Laporan MBKM</th>
                    <th style="width: 150px;" class="text-center">Laporan Matakuliah</th>
                    <th style="width: 150px;" class="text-center">Jadwal Seminar</th>
+                   <th style="width: 150px;" class="text-center">Layak Seminar</th>
                    <th style="width: 100px;" class="text-center">Nilai</th>
                    <th style="width: 100px;" class="text-center">Aksi</th>
                </tr>
@@ -80,6 +81,13 @@
                        @endif
                    </td>
                    <td class="text-center">
+                       <select class="form-control form-control-sm layak-seminar" data-id="{{ $seminar->id }}" {{ $seminar->layak_seminar ? 'disabled' : '' }}>
+                           <option value="">Pilih</option>
+                           <option value="layak" {{ $seminar->layak_seminar == 'layak' ? 'selected' : '' }}>Layak</option>
+                           <option value="tidak_layak" {{ $seminar->layak_seminar == 'tidak_layak' ? 'selected' : '' }}>Tidak Layak</option>
+                       </select>
+                   </td>
+                   <td class="text-center">
                        <input type="number" class="form-control form-control-sm nilai-input" min="0" max="100" value="{{ $seminar->nilai ?? '' }}" data-id="{{ $seminar->id }}">
                    </td>
                    <td class="text-center">
@@ -88,7 +96,7 @@
                </tr>
                @empty
                <tr>
-                   <td colspan="8" class="text-center">Tidak ada data seminar.</td>
+                   <td colspan="9" class="text-center">Tidak ada data seminar.</td>
                </tr>
                @endforelse
            </tbody>
@@ -106,36 +114,93 @@ document.addEventListener('DOMContentLoaded', function() {
            const nilai = nilaiInput.value;
 
            if (nilai === '' || nilai < 0 || nilai > 100) {
-               alert('Nilai harus diisi antara 0-100');
+               Swal.fire('Error', 'Nilai harus diisi antara 0-100', 'error');
                return;
            }
 
-           if (confirm('Apakah Anda yakin ingin menyimpan nilai ini?')) {
-               fetch(`/mbkm/seminar/update-nilai/${seminarId}`, {
-                   method: 'POST',
-                   headers: {
-                       'Content-Type': 'application/json',
-                       'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                   },
-                   body: JSON.stringify({ nilai: nilai })
-               })
-               .then(response => response.json())
-               .then(data => {
-                   if (data.success) {
-                       alert('Nilai berhasil disimpan');
-                   } else {
-                       alert(data.error || 'Terjadi kesalahan');
-                   }
-               })
-               .catch(error => {
-                   console.error('Error:', error);
-                   alert('Terjadi kesalahan saat memproses permintaan');
-               });
+           Swal.fire({
+               title: 'Konfirmasi',
+               text: 'Apakah Anda yakin ingin menyimpan nilai ini?',
+               icon: 'question',
+               showCancelButton: true,
+               confirmButtonText: 'Ya',
+               cancelButtonText: 'Batal'
+           }).then((result) => {
+               if (result.isConfirmed) {
+                   fetch(`/mbkm/seminar/update-nilai/${seminarId}`, {
+                       method: 'POST',
+                       headers: {
+                           'Content-Type': 'application/json',
+                           'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                       },
+                       body: JSON.stringify({ nilai: nilai })
+                   })
+                   .then(response => response.json())
+                   .then(data => {
+                       if (data.success) {
+                           Swal.fire('Berhasil', 'Nilai berhasil disimpan', 'success');
+                       } else {
+                           Swal.fire('Error', data.error || 'Terjadi kesalahan', 'error');
+                       }
+                   })
+                   .catch(error => {
+                       console.error('Error:', error);
+                       Swal.fire('Error', 'Terjadi kesalahan saat memproses permintaan', 'error');
+                   });
+               }
+           });
            }
        });
    });
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.layak-seminar').forEach(select => {
+        select.addEventListener('change', function() {
+            const seminarId = this.getAttribute('data-id');
+            const layak = this.value;
+
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: 'Apakah Anda yakin ingin menyimpan status layak seminar ini?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    fetch(`/mbkm/seminar/update-layak/${seminarId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        },
+                        body: JSON.stringify({ layak_seminar: layak })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire('Berhasil', 'Status layak seminar berhasil disimpan', 'success');
+                            const select = document.querySelector(`.layak-seminar[data-id="${seminarId}"]`);
+                            select.disabled = true;
+                        } else {
+                            Swal.fire('Error', data.error || 'Terjadi kesalahan', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire('Error', 'Terjadi kesalahan saat memproses permintaan', 'error');
+                    });
+                }
+            });
+        });
+    });
+});
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 @endsection
    <style>

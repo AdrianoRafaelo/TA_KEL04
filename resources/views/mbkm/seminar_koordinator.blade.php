@@ -47,6 +47,7 @@
                 <th style="width: 250px;">Perusahaan MBKM</th>
                 <th style="width: 150px;" class="text-center">Laporan MBKM</th>
                 <th style="width: 150px;" class="text-center">Matakuliah Konversi</th>
+                <th style="width: 150px;" class="text-center">Status Layak Seminar</th>
                 <th style="width: 200px;" class="text-center">Jadwal Seminar</th>
             </tr>
         </thead>
@@ -65,12 +66,21 @@
                 </td>
                 <td class="text-center">{{ $konversiCounts[$seminar->mahasiswa_id] ?? 0 }}</td>
                 <td class="text-center">
+    @if($seminar->layak_seminar == 'layak')
+        <span class="badge bg-success">Layak</span>
+    @elseif($seminar->layak_seminar == 'tidak_layak')
+        <span class="badge bg-danger">Tidak Layak</span>
+    @else
+        <span class="badge bg-warning">Belum Ditentukan</span>
+    @endif
+</td>
+                <td class="text-center">
                     @if($seminar->jadwal_seminar_file)
                         <a href="{{ asset('storage/' . $seminar->jadwal_seminar_file) }}" target="_blank" class="btn btn-sm btn-outline-primary me-2">Download</a>
                     @endif
                     <form class="d-inline upload-form" data-id="{{ $seminar->id }}">
                         <input type="file" class="form-control form-control-sm d-none" id="file-{{ $seminar->id }}" name="jadwal_file" accept=".pdf,.doc,.docx">
-                        <button type="button" class="btn btn-sm {{ $seminar->jadwal_seminar_file ? 'btn-outline-primary' : 'btn-primary' }} choose-file" data-id="{{ $seminar->id }}">
+                        <button type="button" class="btn btn-sm {{ $seminar->jadwal_seminar_file ? 'btn-outline-primary' : 'btn-primary' }} choose-file{{ $seminar->layak_seminar != 'layak' ? ' disabled' : '' }}">
                             Choose File
                         </button>
                     </form>
@@ -78,7 +88,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="text-center">Tidak ada data seminar.</td>
+                <td colspan="7" class="text-center">Tidak ada data seminar.</td>
             </tr>
             @endforelse
         </tbody>

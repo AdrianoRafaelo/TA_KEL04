@@ -1220,6 +1220,42 @@ class MbkmController extends Controller
         return response()->json(['success' => true, 'message' => 'Nilai seminar berhasil diperbarui.']);
     }
 
+    public function updateLayakSeminar(Request $request, $id)
+    {
+        $request->validate([
+            'layak_seminar' => 'required|in:layak,tidak_layak',
+        ]);
+
+        // Get current lecturer
+        $user = FtiData::where('username', session('username'))->first();
+        if (!$user) {
+            return response()->json(['error' => 'User tidak ditemukan.'], 403);
+        }
+
+        $seminar = SeminarMbkm::findOrFail($id);
+
+        // Check if lecturer is assigned as pembimbing for this student
+        $isAssigned = PendaftaranMbkm::where('mahasiswa_id', $seminar->mahasiswa_id)
+            ->where('dosen_id', $user->id)
+            ->where('status', 'approved')
+            ->exists() ||
+        PendaftaranMbkmNonmitra::where('mahasiswa_id', $seminar->mahasiswa_id)
+            ->where('dosen_id', $user->id)
+            ->where('status', 'approved')
+            ->exists();
+
+        if (!$isAssigned) {
+            return response()->json(['error' => 'Anda tidak memiliki akses untuk mengupdate status layak seminar ini.'], 403);
+        }
+
+        $seminar->update([
+            'layak_seminar' => $request->layak_seminar,
+            'updated_by' => $user->id
+        ]);
+
+        return response()->json(['success' => true, 'message' => 'Status layak seminar berhasil diperbarui.']);
+    }
+
     public function uploadJadwalSeminar(Request $request)
     {
         $request->validate([

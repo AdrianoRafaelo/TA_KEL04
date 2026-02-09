@@ -216,6 +216,7 @@ Route::put('/mbkm/dosen-konversi-matkul/{courseId}/cpmk', [MbkmController::class
 route::get('/mbkm/dosen-pelaksanaan', [MbkmController::class, 'pelaksanaandosen'])->name('mbkm.dosen-pelaksanaan')->middleware('auth.session');
 route::get('/mbkm/dosen-seminar', [MbkmController::class,    'seminardosen'])->name('mbkm.dosen-seminar')->middleware('auth.session');
 Route::post('/mbkm/seminar/update-nilai/{id}', [MbkmController::class, 'updateNilaiSeminar'])->name('mbkm.seminar.update-nilai')->middleware('auth.session');
+Route::post('/mbkm/seminar/update-layak/{id}', [MbkmController::class, 'updateLayakSeminar'])->name('mbkm.seminar.update-layak')->middleware('auth.session');
 Route::post('/mbkm/upload-jadwal-seminar', [MbkmController::class, 'uploadJadwalSeminar'])->name('mbkm.upload.jadwal.seminar')->middleware('auth.session');
 Route::post('/mbkm/store-program-nonmitra', [MbkmController::class, 'storeProgramNonmitra'])->name('mbkm.store.program-nonmitra')->middleware('auth.session');
 Route::put('/mbkm/program-nonmitra/{id}', [MbkmController::class, 'updateProgramNonmitra'])->name('mbkm.update.program-nonmitra')->middleware('auth.session');

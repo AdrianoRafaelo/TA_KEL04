@@ -143,20 +143,20 @@
 </div>
 
 <!-- Modal for viewing students -->
-<div class="modal fade" id="pendaftarModal" tabindex="-1" aria-labelledby="pendaftarModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="pendaftarModalLabel">Pendaftar Konversi MK - <span id="modalCourseNamePendaftar"></span></h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<div id="pendaftarModal" class="modal-overlay" style="display: none;">
+    <div class="modal-container">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="bi bi-people-fill me-2"></i>
+                Pendaftar Konversi MK - <span id="modalCourseNamePendaftar"></span>
             </div>
-            <div class="modal-body">
-                <div id="pendaftarContainer">
-                    <!-- Student list will be added here -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+            <button id="closePendaftarModal" class="modal-close-btn">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div id="pendaftarContainer">
+                <!-- Student list will be added here -->
             </div>
         </div>
     </div>
@@ -212,56 +212,101 @@ document.addEventListener('DOMContentLoaded', function() {
                 .then(data => {
                     const container = document.getElementById('pendaftarContainer');
                     if (data.length > 0) {
-                        let html = '<div class="list-group">';
+                        let html = '';
                         data.forEach((pendaftar, index) => {
                             html += `
-                                <div class="card mb-3">
-                                    <div class="card-body">
-                                        <div class="mb-2">
-                                            <div>
-                                                <h6 class="card-title mb-1" style="color: #000;">${pendaftar.mahasiswa.nama}</h6>
-                                                <small class="text-muted">NIM: ${pendaftar.mahasiswa.nim || 'N/A'}</small>
+                                <div class="pendaftar-card">
+                                    <div class="pendaftar-info-card">
+                                        <div class="info-grid">
+                                            <div class="info-item">
+                                                <i class="bi bi-person-fill info-icon"></i>
+                                                <div class="info-content">
+                                                    <label>Mahasiswa</label>
+                                                    <span>${pendaftar.mahasiswa.nama}</span>
+                                                </div>
+                                            </div>
+                                            <div class="info-item">
+                                                <i class="bi bi-card-text info-icon"></i>
+                                                <div class="info-content">
+                                                    <label>NIM</label>
+                                                    <span>${pendaftar.mahasiswa.nim || 'N/A'}</span>
+                                                </div>
+                                            </div>
+                                            <div class="info-item full-width">
+                                                <i class="bi bi-file-text-fill info-icon"></i>
+                                                <div class="info-content">
+                                                    <label>Deskripsi Kegiatan</label>
+                                                    <span>${pendaftar.deskripsi_kegiatan}</span>
+                                                </div>
+                                            </div>
+                                            <div class="info-item">
+                                                <i class="bi bi-clock-fill info-icon"></i>
+                                                <div class="info-content">
+                                                    <label>Alokasi Waktu</label>
+                                                    <span>${pendaftar.alokasi_waktu} jam</span>
+                                                </div>
+                                            </div>
+                                            <div class="info-item">
+                                                <i class="bi bi-info-circle-fill info-icon"></i>
+                                                <div class="info-content">
+                                                    <label>Status</label>
+                                                    <span class="${pendaftar.status === 'approved' ? 'text-success' : pendaftar.status === 'rejected' ? 'text-danger' : 'text-warning'}">
+                                                        ${pendaftar.status === 'approved' ? 'Diterima' : pendaftar.status === 'rejected' ? 'Ditolak' : 'Menunggu'}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="mb-3">
-                                            <strong>Deskripsi Kegiatan:</strong>
-                                            <p class="mt-1">${pendaftar.deskripsi_kegiatan}</p>
-                                        </div>
-                                        <div class="mb-3">
-                                            <strong>Alokasi Waktu:</strong> ${pendaftar.alokasi_waktu} jam
-                                        </div>
-                                        ${pendaftar.file_kesesuaian ? `
-                                        <div class="mb-3">
-                                            <strong>Form Kesesuaian Aktivitas MBKM dengan CPMK:</strong>
-                                            <br><a href="/storage/${pendaftar.file_kesesuaian}" target="_blank" class="btn btn-sm btn-outline-primary mt-1">
-                                                <i class="bi bi-download"></i> Unduh File
+                                    </div>
+                                    ${pendaftar.file_kesesuaian ? `
+                                    <div class="file-section">
+                                        <div class="file-item">
+                                            <div class="file-label">
+                                                <i class="bi bi-file-earmark-pdf-fill me-2"></i>
+                                                Form Kesesuaian Aktivitas MBKM dengan CPMK
+                                            </div>
+                                            <a href="/storage/${pendaftar.file_kesesuaian}" target="_blank" class="btn-download">
+                                                <i class="bi bi-download me-1"></i>Unduh
                                             </a>
                                         </div>
-                                        ` : ''}
-                                        ${pendaftar.status === 'pending' ? `
-                                        <div class="d-flex gap-2">
-                                            <button class="btn btn-success btn-sm" onclick="approveKonversi(${pendaftar.id})">Terima</button>
-                                            <button class="btn btn-danger btn-sm" onclick="rejectKonversi(${pendaftar.id})">Tolak</button>
-                                        </div>
-                                        ` : ''}
                                     </div>
+                                    ` : ''}
+                                    ${pendaftar.status === 'pending' ? `
+                                    <div class="action-buttons">
+                                        <button class="btn-approve" onclick="approveKonversi(${pendaftar.id})">
+                                            <i class="bi bi-check-circle me-1"></i>Terima
+                                        </button>
+                                        <button class="btn-reject" onclick="rejectKonversi(${pendaftar.id})">
+                                            <i class="bi bi-x-circle me-1"></i>Tolak
+                                        </button>
+                                    </div>
+                                    ` : ''}
                                 </div>
                             `;
                         });
-                        html += '</div>';
                         container.innerHTML = html;
                     } else {
-                        container.innerHTML = '<p class="text-muted text-center">Belum ada pendaftar untuk mata kuliah ini.</p>';
+                        container.innerHTML = '<div class="no-data"><i class="bi bi-info-circle"></i><p>Belum ada pendaftar untuk mata kuliah ini.</p></div>';
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    document.getElementById('pendaftarContainer').innerHTML = '<p class="text-danger">Terjadi kesalahan saat memuat data.</p>';
+                    document.getElementById('pendaftarContainer').innerHTML = '<div class="error-message"><i class="bi bi-exclamation-triangle"></i><p>Terjadi kesalahan saat memuat data.</p></div>';
                 });
 
             // Show modal
-            new bootstrap.Modal(document.getElementById('pendaftarModal')).show();
+            document.getElementById('pendaftarModal').style.display = 'flex';
         });
+    });
+
+    // Close modal functionality
+    document.getElementById('closePendaftarModal').addEventListener('click', function() {
+        document.getElementById('pendaftarModal').style.display = 'none';
+    });
+
+    document.getElementById('pendaftarModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.style.display = 'none';
+        }
     });
 
     // Handle add CPMK button
@@ -435,4 +480,225 @@ function addCpmkInput(value) {
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
     }
 
-</style>
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1050;
+    }
+
+    .modal-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        max-width: 800px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: modalFadeIn 0.3s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    .modal-header {
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        padding: 1.5rem !important;
+        border-bottom: 1px solid #e9ecef !important;
+        background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%) !important;
+        color: white !important;
+        border-radius: 12px 12px 0 0 !important;
+    }
+
+    .modal-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .modal-close-btn {
+        background: none;
+        border: none;
+        color: white;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+    }
+
+    .modal-close-btn:hover {
+        background-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .modal-body {
+        padding: 1.5rem;
+    }
+
+    .pendaftar-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid #e9ecef;
+    }
+
+    .pendaftar-info-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .info-item.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .info-icon {
+        color: #1E3A8A;
+        font-size: 1.25rem;
+        min-width: 24px;
+    }
+
+    .info-content {
+        flex: 1;
+    }
+
+    .info-content label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.25rem;
+    }
+
+    .info-content span {
+        font-size: 0.9rem;
+        color: #212529;
+        font-weight: 500;
+    }
+
+    .file-section {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .file-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        background: #f8f9fa;
+        border-radius: 6px;
+        border: 1px solid #e9ecef;
+    }
+
+    .file-label {
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+        color: #495057;
+    }
+
+    .btn-download {
+        background: #1E3A8A;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: background-color 0.2s;
+    }
+
+    .btn-download:hover {
+        background: #152c5f;
+        color: white;
+        text-decoration: none;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: flex-end;
+    }
+
+    .btn-approve, .btn-reject {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 0.875rem;
+    }
+
+    .btn-approve {
+        background: #28a745;
+        color: white;
+    }
+
+    .btn-approve:hover {
+        background: #218838;
+        transform: translateY(-1px);
+    }
+
+    .btn-reject {
+        background: #dc3545;
+        color: white;
+    }
+
+    .btn-reject:hover {
+        background: #c82333;
+        transform: translateY(-1px);
+    }
+
+    .no-data, .error-message {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+
+    .no-data i, .error-message i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+
+    .error-message {
+        color: #dc3545;
+    }
+
+    </style>
